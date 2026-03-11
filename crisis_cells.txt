@@ -1,0 +1,1843 @@
+--- CELL 1 ---
+# 전쟁을 데이터로 이해한다.
+
+전쟁은 매우 자극적인 사회현상이다. 전쟁이 주는 극단적인 자극은 합리적인 판단을 가로막는다. 예를 들어 이념이나 애국심 같은 감정은 전쟁을 객관적으로 바라보지 못하는 장애물이 되게 만드릭도 한다. 최근 우크라이나와 러시아 간의 전쟁은 좋은 예다. 러시아를 악마화하는 순간 우리는 우크라이나가 이룬 작은 전투의 승리는 크게 평가하고 전략적 오류는 과소평가한다.
+
+이런 문제를 극복하기 위해 본 연구는 전쟁능력을 측정하는 다양한 지표를 종합적으로 분석해보면서 현실을 객관적으로 바라보는데 도움이 될 수 있는 분석 결과를 제시하고자 한다.
+
+현재 "전쟁 능력"을 직접적으로 나타내는 지표는 존재하지 다. 하지만 전쟁을 수행하는데 필요한 여러가지 전제조건과 관련된 지표는 활용해볼 수 있다. 예를 들어 국가의 경제적, 군사적, 인구적 역량과 관련된 지표를 이용해 간접적으로 전쟁 능력을 평가할 수 있는 것이다.
+
+아래는 전쟁 수행능력을 나타내는 지표의 유형들을 예시한 것이다.
+
+### 1. **군사 지출 관련 지표** -류소은
+   - **Military Expenditure (% of GDP) (MS.MIL.XPND.GD.ZS)**: GDP 대비 군사 지출 비율은 국가의 경제적 규모에 비례하여 군사에 얼마나 투자하고 있는지를 나타낸다. 높은 비율은 국가가 군사 역량에 많은 자원을 투입하고 있음을 의미한다.
+   - **Military Expenditure (current USD) (MS.MIL.XPND.CD)**: 명목 달러 기준의 군사 지출액으로, 절대적인 군사 예산 규모를 보여준다.
+
+### 2. **경제력 관련 지표** - 류소은
+   - **Gross Domestic Product (GDP) (current USD) (NY.GDP.MKTP.CD)**: 내총생산은 국가의 전체 경제 규모를 나타내며, 경제 규모가 클수록 전쟁에 필요한 물자와 인프라를 지원할 수 있는 능력이 더 크다는 것을 의미할 수 있습니다.
+   - **GDP per capita (current US$) (NY.GDP.PCAP.CD)**: 1인당 GDP는 국민의 생활 수준과 경제력을 나타낸다. 1인당 GDP가 높을수록 군사 자원에 대한 민간의 경제적 기여 여력이 클 수 있다.
+
+### 3. **인구 관련 지표** - 허아탁
+   - **Population, total (SP.POP.TOTL)**: 총 인구는 병력 동원 가능성 및 잠재적인 인적 자원의 규모를 나타낸다. 인구가 많은 국가는 전쟁 시 더 많은 병력을 동원할 수 있습니다.
+   - **Population ages 15-64 (% of total population) (SP.POP.1564.TO.ZS)**: 15세에서 64세 사이의 인구 비율은 전쟁 시 군사 활동에 동원 가능한 주요 인구층을 나타낸다.
+
+### 4. **기타 경제 및 인프라 관련 지표** - 허아탁
+   - **Total Reserves (includes gold, current US$) (FI.RES.TOTL.CD)**: 총 외환보유고는 전쟁 기간 동안 무역, 외환 시장 개입, 외화로의 군수품 구매 등에 사용될 수 있는 자원을 의미한다.
+   - **Fuel Exports (% of merchandise exports) (TX.VAL.FUEL.ZS.UN)**: 연료 수출 비율은 에너지 자원에 대한 접근성과 공급망의 강점을 나타낸다. 에너지 자원이 풍부한 국가는 전쟁에서 중요한 전략적 자산을 보유하고 있을 가능성이 크다.
+
+### 5. **기술 및 산업 역량 지표** - 최기훈
+   - **High-technology exports (% of manufactured exports) (TX.VAL.TECH.MF.ZS)**: 고기술 수출 비율은 국가의 첨단 기술 및 군사 기술 개발 능력을 간접적으로 나타낸다.
+   - **Research and development expenditure (% of GDP) (GB.XPD.RSDV.GD.ZS)**: GDP 대비 연구 개발 지출은 군사 기술 및 장비 개발을 포함한 기술적 역량 강화를 나타낸다.
+
+### 6. **사회 및 정치 안정 지표** - 최기훈
+   - **Government Effectiveness (Estimate) (GE.EST)**: 정부 효율성 지표는 국가가 자원을 효율적으로 배분하고, 안정적인 정치적 환경을 유지할 수 있는 능력을 평가한다. 전쟁 시 정부의 효과적인 운영은 매우 중요하다.
+   - **Political Stability and Absence of Violence/Terrorism (Estimate) (PV.EST)**: 정치적 안정성 지표는 국가 내부의 정치적 리스크와 폭력 가능성을 평가한다. 높은 정치적 안정성은 전쟁 능력을 강화하는 요소이다.
+
+
+
+--- CELL 2 ---
+## 전쟁 관련 추가 지표 목록
+
+### 1. 병력규모 : 현역+예비군 수
+
+*  **Armed forces personnel, total (MS.MIL.TOTL.P1)**: 병력은 훈련, 조직, 장비 및 통제에 따라 정규 군 병력을 지원하거나 대체할 수 있는 준군사력을 포함한 현역 군 인력을 의미한다. 국제전략문제연구소(IISS)는 매년 각국 정부로부터 데이터를 수집한다. 군 병력은 상근 근무 중인 모든 군인 및 여성(징집병 및 예비군 장기 배정자 포함)으로 구성된다. 예비군은 평시에는 완전히 인력이 배치되거나 운영되지 않지만 유사시 예비군을 소집하여 동원할 수 있는 부대와 편성을 의미한다. IISS는 특별한 경우가 아닌 한, 풀타임 복무를 마친 후 5년 이내에 동원 가능한 예비군 병력을 기준으로 유효 예비군 병력을 추정한다.
+*   **Armed forces personnel (% of total labor force) (MS.MIL.TOTL.TF.ZS)**:
+
+  
+### 2. 성비
+*   **Population, female (% of total population)**: 전시에 주로 동원되는 것은 남성이다. 성비가 낮은, 즉 전체 인구 중 남성의 비중이 클수록 전쟁에 동원할 수 있는 병력의 규모가 커지고, 전쟁능력에 있어서 유리한 위치를 가질 것이다.  
+https://ourworldindata.org/grapher/share-population-female?tab=table&time=earliest..1979  
+
+
+### 3. 무기 수입
+*   **Arms imports (SIPRI trend indicator values) (MS.MIL.MPRT.KD)**: 무기 이전에는 판매, 원조, 선물, 제조 라이선스를 통한 군용 무기 공급이 포함된다. 위 데이터에는 항공기, 장갑차, 포병, 레이더 시스템, 미사일, 군사용으로 설계된 선박 등 주요 재래식 무기 포함한다. 단, 소형 무기 및 경무기, 트럭, 소형 포병, 탄약, 지원 장비, 기술 이전, 기타 서비스 등 기타 군사 장비의 이전은 제외한다. 미화 백만 달러로 표시하며, '0'은 인도 금액이 미화 0.5백만 달러 미만임을 나타낸다.
+
+### 4. 세계 군사력 순위
+*   **GFP(Global Firepower, 영국)**: 인구, 장비, 재정, 사회기반시설, 자원, 지리를 종합적으로 고려하여 순위를 매긴다.
+*   **CEOWORLD(Military Strength Index, 스위스)**: 병력 규모, 탱크, 전투기, 함정 등의 보유량과 함께 국방 예산, 기술력, 지도력 등을 고려하여 순위를 매긴다.
+
+### 5. 재정수지
+*   **Fiscal balance, % of GDP**: 재정수지는 국가가 전쟁 중에 군사비용을 얼마나 효율적으로 조달하고 지속할 수 있는지를 나타내는 지표가 될 수 있다. 또한, 재정수지는 전쟁 중 경제적 안정성을 나타내는 지표로도 활용될 수 있다.  
+https://prosperitydata360.worldbank.org/en/indicator/WB+CCDFS+fby  
+
+
+### 6. 국제유가 (최근 경향과는 맞지 않음)
+*   **WTI**: 전쟁 위기가 고조되면 국제유가가 급등한다는 속설이 있다. 유가 등락에 영향을 미치는 요인은 1)수요와 공급, 2)산유국 혹은 산유국 인근에서 분쟁이 발생하는 지정학적 환경, 3)금리와 원달러 환율과 같은 금융적 요인, 3가지로 구분할 수 있다. 이 중 폭발성이 가장 큰 것은 지정학적 요인에 해당한다. 특히 호르무즈 해협이 봉쇄될 경우 유가에 큰 영향을 미칠 수 있다. 하지만, 최근에는 석유 수요량이 줄어든 반면, 비OPEC+ 국가들의 석유 공급이 늘어나는 등 석유 공급량은 비교적 안정적이다. 따라서 국제 분쟁이 발생하여도 지속적이고 장기적인 유가 상승으로 이어지지 않는 경우가 많다.
+
+--- CELL 5 ---
+## 인적자원 (Manpower)
+
+**인적 자원**은 평화를 유지하거나 전쟁을 수행하는 능력을 평가하는 데 매우 중요한 요소다. 군사력뿐만 아니라 **경제적 지속 가능성**, **사회적 안정성**, 그리고 **국가의 방위 능력**과 같은 다양한 측면에서 인적 자원은 핵심적인 역할을 한다. 특히, 인적 자원의 **수준과 질**은 국가의 군사력뿐 아니라 평화 유지 활동에서 중요한 변수로 작용한다.
+
+### 1. **인적 자원이 중요한 이유**:
+- **군사력 유지**: 군대를 구성하는 병력의 숫자, 건강 상태, 그리고 전투력은 군사적 능력에 직결된다. 충분한 병력을 유지할 수 없는 국가들은 군사적 충돌에서 불리할 수 있다.
+- **경제적 지속 가능성**: 군사 활동에는 많은 자원이 소요되며, 국가의 경제력을 유지하기 위해서는 활발한 인적 자원이 필요하다. 군사 충돌 시 경제적 손실을 최소화하기 위해 인적 자원은 경제 회복력의 기반이 된다.
+- **사회적 안정**: 전쟁과 같은 위기 상황에서는 국가 내부의 안정이 필수적다. 적절한 인적 자원이 보충되지 않으면 혼란이나 사회적 불안이 발생할 수 있다.
+
+### 2. **평화와 전쟁 수행 능력에 중요한 인적 자원 변수**:
+다음은 인적 자원의 역할을 평가하는 데 중요한 주요 변수들이다:
+
+- **총 인구(Total Population)**: 군대를 구성할 수 있는 잠재 인력의 크기를 결정하는 중요한 지표다.
+- **사용 가능한 인력(Available Manpower)**: 병역에 적합한 연령대의 사람들로, 잠재적으로 군에 징집될 수 있는 인구다.
+- **병역 가능 인구(Fit-for-Service)**: 군 복무를 위한 건강 조건을 충족하는 사람들로, 실제로 군에 배치될 수 있는 인적 자원의 수를 나타낸다.
+- **연간 군대 복무 연령에 도달하는 인구(Annual Military Age Population)**: 매년 징집 가능한 연령에 도달하는 인구는 군대의 지속 가능성에 영향을 미친다.
+- **현역 병력(Active Military Personnel)**: 실제로 현재 복무 중인 병력으로, 군사력의 직접적인 지표다.
+- **예비 병력(Active Reserves)**: 전쟁 시 동원할 수 있는 예비 병력의 수는 군사적 대응 능력에 중요한 영향을 미친다.
+- **출산율(Fertility Rate)**: 인구 증가를 유지하는 데 중요한 요소로, 국가가 장기적으로 충분한 인력을 보유할 수 있을지를 결정하는 데 중요한 변수다.
+
+
+
+--- CELL 15 ---
+### 외환보유고
+
+- BN.RES.INCL.CD	Reserves and related items(BoP, current US$)
+
+- FD.RES.LIQU.AS.ZS	Bank liquid reserves to bank assets ratio (%)
+- FI.RES.TOTL.CD	Total reserves (includes gold, current US$)
+
+- FI.RES.TOTL.DT.ZS	Total reserves (% of total external debt)
+- FI.RES.TOTL.MO	Total reserves in months of imports
+- FI.RES.XGLD.CD	Total reserves minus gold (current US$)
+- FM.LBL.BMNY.IR.ZS	Broad money to total reserves ratio
+7 elements
+
+--- CELL 62 ---
+총 외환보유고는 전쟁 기간 동안 무역, 외환 시장 개입, 외화로의 군수품 구매 등에 사용될 수 있는 자원을 의미한다.
+
+
+러시아: 높은 외환보유고는 국제 제재 하에서도 경제를 지탱하고 군사 작전을 지속할 수 있는 완충 역할을 합니다.
+
+
+우크라이나: 상대적으로 낮은 외환보유고는 국제 지원에 대한 의존도를 높이며, 장기전에서 경제적 취약성을 나타냅니다
+
+--- CELL 63 ---
+#@title 총 외환보유고
+import pandas as pd
+import wbgapi as wb
+import matplotlib.pyplot as plt
+
+# 데이터 가져오기
+countries = {'UKR', 'RUS'}
+df = wb.data.DataFrame("FI.RES.TOTL.CD", countries, range(2010, 2024, 1), index='time', labels=True).reset_index()
+df['Time'] = df['Time'].str[2:].astype(int)  # 'YR2023'에서 '2023'만 추출하여 정수로 변환
+
+for country in countries:
+    df[country] = df[country] / 1000000000  # 10억불로 나눔
+
+# 그래프 생성
+plt.figure(figsize=(10, 6))
+
+# 각 국가에 대해 군사비 지출금액 시각화
+for country in ['RUS', 'UKR']:
+    plt.plot(df['Time'], df[country], marker='o', label=country)
+
+    # 최근 5년의 데이터에만 레이블 추가
+    recent_data = df[df['Time'] >= (df['Time'].max() - 4)]
+    for _, value in recent_data.iterrows():
+        plt.text(value['Time'], value[country], f'{value[country]:.1f}', fontsize=10, color='red')
+
+plt.title('Total Reserves (includes gold, current US$) ')
+plt.xlabel('Year')
+plt.ylabel('1 billion$')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+
+--- CELL 114 ---
+## 해석
+
+### (1) 이스라엘 GDP 추세
+
+* 2010년 약 **2400억 달러** 수준에서 시작
+* 2023년 약 **5120억 달러** 수준까지 증가
+* 장기적으로 **지속적인 상승 추세**를 보임
+* 특히 **2020년 이후 빠른 증가**가 나타남
+
+  * 2021: 약 4,899억 달러
+  * 2022: 약 5,252억 달러
+  * 2023: 약 5,122억 달러
+
+즉, 이스라엘 경제는 **장기적으로 안정적 성장**을 유지하고 있으며, 전반적으로 **충격에 대한 회복력이 높은 구조**를 보인다.
+
+---
+
+### (2) 이란 GDP 추세
+
+* 2011–2012년 약 **6300–6500억 달러**로 정점
+* 이후 **지속적 하락**
+* 2020년 약 **2800억 달러**로 급락
+* 이후 일부 회복하여
+
+  * 2021: 약 4,074억 달러
+  * 2023: 약 4,575억 달러
+
+이란 경제는 **변동성이 매우 크며 구조적 하락 이후 부분 회복** 양상을 보인다.
+
+---
+
+### (3) 경제 규모 역전
+
+* **2010년대 초반:**
+  이란 GDP > 이스라엘 GDP
+* **2019~2020년 이후:**
+  이스라엘 GDP > 이란 GDP
+
+즉, 약 **10년 사이 경제 규모가 역전**되었다.
+
+---
+
+## 2. 변화의 주요 배경
+
+이러한 변화는 몇 가지 구조적 요인과 관련된다.
+
+### 이란
+
+* 국제 **경제 제재(sanctions)**
+* **석유 의존 경제**
+* 환율 및 금융 불안
+* 외국 투자 감소
+
+특히
+
+* **2012년 제재 강화**
+* **2018년 미국의 JCPOA 탈퇴 이후 제재 재개**
+
+이 시기에 GDP 감소가 뚜렷하다.
+
+---
+
+### 이스라엘
+
+* **기술 산업 중심 경제**
+* 첨단 산업 (AI, 반도체, 사이버 보안)
+* 글로벌 투자 유입
+* 높은 생산성
+
+이스라엘은 흔히 **“Start-up Nation” 경제 구조**로 설명된다.
+
+---
+
+# 3. 전쟁 관점에서의 의미
+
+경제 규모는 **현대전 수행 능력(war-sustaining capacity)**과 밀접하게 연결된다.
+
+## (1) 전쟁 지속 능력 (War Sustainability)
+
+전쟁에서는 다음이 중요하다.
+
+* 군사비 조달 능력
+* 무기 생산 능력
+* 장기 보급 능력
+* 경제 회복력
+
+GDP가 클수록 일반적으로
+
+[
+\text{군사 지출 여력} \propto \text{경제 규모}
+]
+
+따라서 최근 시점에서는
+
+**이스라엘이 경제력 측면에서 우위**를 갖는다.
+
+---
+
+## (2) 기술전 중심 전쟁
+
+현대전은 단순 병력보다 다음이 중요하다.
+
+* 미사일 방어
+* 사이버 전쟁
+* 드론
+* AI 군사 시스템
+* 정밀 타격
+
+이스라엘은
+
+* **Iron Dome**
+* **Arrow missile defense**
+* **첨단 드론 및 사이버 기술**
+
+등을 보유한 **고기술 군사체계 중심 국가**이다.
+
+따라서 **GDP + 기술 산업 구조**가 군사력 효율을 높인다.
+
+---
+
+## (3) 이란의 전략
+
+이란은 경제 규모가 상대적으로 제한되므로
+
+다음 전략을 사용한다.
+
+* **비대칭 전쟁(asymmetric warfare)**
+* **대리 세력(proxy forces)**
+
+  * Hezbollah
+  * Hamas
+  * Shiite militias
+* **미사일 및 드론 전력**
+
+즉
+
+[
+\text{저비용 전략} + \text{지역 네트워크}
+]
+
+로 군사 균형을 맞추려 한다.
+
+---
+
+# 4. 핵심 결론
+
+그래프가 보여주는 전략적 의미는 다음과 같다.
+
+1. **경제 규모 역전**
+
+   * 과거: 이란 경제 > 이스라엘
+   * 현재: 이스라엘 경제 > 이란
+
+2. **이스라엘의 장기적 경제 안정성**
+
+3. **이란의 제재로 인한 경제 약화**
+
+4. 전쟁 관점에서
+
+   * **이스라엘 → 기술 중심 고비용 군사력**
+   * **이란 → 저비용 비대칭 전쟁 전략**
+
+
+
+--- CELL 121 ---
+#@title 총 외환보유고
+import pandas as pd
+import wbgapi as wb
+import matplotlib.pyplot as plt
+
+# 데이터 가져오기
+countries = {'ISR', 'IRN'}
+df = wb.data.DataFrame("FI.RES.TOTL.CD", countries, range(2010, 2025, 1), index='time', labels=True).reset_index()
+df['Time'] = df['Time'].str[2:].astype(int)  # 'YR2023'에서 '2023'만 추출하여 정수로 변환
+
+for country in countries:
+    df[country] = df[country] / 1000000000  # 10억불로 나눔
+
+# 그래프 생성
+plt.figure(figsize=(10, 6))
+
+# 각 국가에 대해 군사비 지출금액 시각화
+for country in countries:
+    plt.plot(df['Time'], df[country], marker='o', label=country)
+
+    # 최근 5년의 데이터에만 레이블 추가
+    recent_data = df[df['Time'] >= (df['Time'].max() - 4)]
+    for _, value in recent_data.iterrows():
+        plt.text(value['Time'], value[country], f'{value[country]:.1f}', fontsize=10, color='red')
+
+plt.title('Total Reserves (includes gold, current US$) ')
+plt.xlabel('Year')
+plt.ylabel('1 billion$')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+
+--- CELL 122 ---
+## 유가변동
+
+--- CELL 123 ---
+# =========================================================
+# 원자재 가격 데이터 수집 및 전쟁 이벤트 분석
+# =========================================================
+
+!pip install -q finance-datareader pandas matplotlib numpy
+
+import FinanceDataReader as fdr
+from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# =========================================================
+# 1. 원자재 심볼 설정
+# =========================================================
+
+commodities = {
+    'WTI': 'CL=F',
+    'Brent Crude': 'BZ=F',
+    'Natural Gas': 'NG=F',
+    'Copper': 'HG=F',
+    'Gold': 'GC=F',
+    'Silver': 'SI=F'
+}
+
+# =========================================================
+# 2. 분석 기간
+# =========================================================
+
+end_date = datetime.now()
+start_date = end_date - timedelta(days=365)
+
+EVENT_DATE = "2026-02-28"   # 미국-이란 전쟁 시작 가정
+
+# =========================================================
+# 3. 데이터 수집
+# =========================================================
+
+df_prices = pd.DataFrame()
+
+for commodity, symbol in commodities.items():
+
+    df = fdr.DataReader(symbol, start_date, end_date)
+
+    if not df.empty:
+        df_prices[commodity] = df['Close']
+
+df_prices = df_prices.dropna(how="all")
+
+print("=== Price Data ===")
+print(df_prices.tail())
+
+# =========================================================
+# 4. 정규화 (Base=100)
+# =========================================================
+
+def normalize_to_base(df, base_date):
+
+    base_date = pd.Timestamp(base_date)
+    out = df.copy()
+
+    for col in df.columns:
+
+        s = df[col].dropna()
+
+        s_after = s[s.index >= base_date]
+
+        if len(s_after) > 0:
+
+            base_val = s_after.iloc[0]
+            out[col] = df[col] / base_val * 100
+
+    return out
+
+norm_prices = normalize_to_base(df_prices, EVENT_DATE)
+
+# =========================================================
+# 5. 원자재 가격 시각화
+# =========================================================
+
+plt.figure(figsize=(12,6))
+
+for col in df_prices.columns:
+    plt.plot(df_prices.index, df_prices[col], label=col)
+
+plt.axvline(pd.Timestamp(EVENT_DATE), linestyle="--", color="red")
+
+plt.title("Commodity Prices")
+plt.xlabel("Date")
+plt.ylabel("Price")
+plt.legend()
+plt.grid(True)
+
+plt.show()
+
+# =========================================================
+# 6. 정규화 시각화
+# =========================================================
+
+plt.figure(figsize=(12,6))
+
+for col in norm_prices.columns:
+    plt.plot(norm_prices.index, norm_prices[col], label=col)
+
+plt.axhline(100, linestyle="--")
+plt.axvline(pd.Timestamp(EVENT_DATE), linestyle="--", color="red")
+
+plt.title("Commodity Prices (Base=100 at Event Date)")
+plt.xlabel("Date")
+plt.ylabel("Normalized Index")
+
+plt.legend()
+plt.grid(True)
+
+plt.show()
+
+# =========================================================
+# 7. 수익률 계산
+# =========================================================
+
+returns = df_prices.pct_change().dropna()
+
+# =========================================================
+# 8. 이벤트 충격 계산
+# =========================================================
+
+def event_shock(df, event_date):
+
+    event_date = pd.Timestamp(event_date)
+
+    results = []
+
+    for col in df.columns:
+
+        s = df[col].dropna()
+
+        pre = s[s.index < event_date]
+        post = s[s.index >= event_date]
+
+        if len(pre)==0 or len(post)==0:
+            continue
+
+        p0 = pre.iloc[-1]
+
+        p1 = post.iloc[0]
+        p5 = post.iloc[min(4,len(post)-1)]
+        p10 = post.iloc[min(9,len(post)-1)]
+
+        results.append({
+
+            "Commodity": col,
+            "Shock_1D_%": (p1/p0-1)*100,
+            "Shock_5D_%": (p5/p0-1)*100,
+            "Shock_10D_%": (p10/p0-1)*100
+
+        })
+
+    return pd.DataFrame(results)
+
+shock_table = event_shock(df_prices, EVENT_DATE)
+
+print("\n=== Oil & Commodity Shock Table ===")
+print(shock_table.round(3))
+
+# =========================================================
+# 9. 변동성 비교
+# ===========================================
+
+--- CELL 124 ---
+
+### 해석 1. 유가(Oil Market)의 강한 상승 충격
+
+### (1) WTI
+
+* 1일 충격: **+6.28%**
+* 5일 충격: **+35.63%**
+* 10일 충격: **+35.63%**
+
+이는 매우 큰 상승이며 전형적인 **지정학적 공급 충격(supply shock)** 패턴이다.
+전쟁 발생 시 시장은 다음과 같은 기대를 형성한다.
+
+[
+War \rightarrow Oil\ Supply\ Risk \rightarrow Oil\ Price\ Increase
+]
+
+특히 미국–이란 충돌은 다음 요인을 통해 유가 상승을 촉발할 수 있다.
+
+1. **호르무즈 해협 봉쇄 위험**
+2. **중동 생산 차질 가능성**
+3. **해상 운송 보험료 상승**
+4. **전략적 비축유 정책 기대**
+
+5일 동안 **35% 상승**은 단순한 단기 반응이 아니라 **시장 구조적 충격(structural shock)**에 가까운 반응이다.
+
+---
+
+### (2) Brent Crude
+
+* 1일: **+7.26%**
+* 5일: **+27.88%**
+
+Brent가 WTI보다 상승률이 낮은 것은 중요한 의미를 가진다.
+
+일반적으로
+
+[
+Middle\ East\ Shock \Rightarrow Brent > WTI
+]
+
+패턴이 나타나는 경우가 많다. 그러나 이번 결과에서는
+
+[
+WTI > Brent
+]
+
+이다.
+
+이는 다음 두 가지 가능성을 시사한다.
+
+1. **미국 내 원유시장 투기적 반응**
+2. **WTI 선물시장 레버리지 거래 증가**
+
+즉, 미국 금융시장에서 **투기적 프리미엄(speculative premium)**이 확대되었을 가능성이 있다.
+
+---
+
+### (3) Natural Gas
+
+* 1일: **+3.53%**
+* 5일: **+11.44%**
+
+천연가스도 상승했지만 유가보다 상승폭이 작다.
+
+이는 천연가스 시장이 다음과 같은 특성을 갖기 때문이다.
+
+* 지역시장(local market) 성격
+* 파이프라인 의존
+* 원유보다 글로벌 통합도 낮음
+
+따라서 전쟁 충격은 유가보다 **약하게 전달된다.**
+
+---
+
+# 2. 경기 민감 원자재 (Industrial Metals)
+
+### Copper
+
+* 1일: **−1.83%**
+* 5일: **−3.29%**
+
+구리는 대표적인 **경기 민감 원자재(procyclical commodity)**이다.
+
+따라서 전쟁이 발생하면 시장은
+
+[
+War \rightarrow Global\ Growth\ Risk \rightarrow Industrial\ Metal\ Demand\ Down
+]
+
+으로 해석한다.
+
+즉 구리 가격 하락은 **세계 경기 둔화 기대**를 반영한다.
+
+---
+
+# 3. 귀금속 시장 반응
+
+### Gold
+
+* 1일: **+1.22%**
+* 5일: **−1.37%**
+
+전쟁 초기에는 **안전자산 선호(safe haven demand)** 때문에 금 가격이 상승하였다. 그러나 이후 가격이 다시 하락한 것은 다음 가능성을 시사한다.
+
+1. 달러 강세
+2. 금보다 원유로 자금 이동
+3. 초기 과잉 반응 후 조정
+
+---
+
+### Silver
+
+* 1일: **−4.75%**
+* 5일: **−9.03%**
+
+은은 금과 달리 **산업 수요 비중이 높다.**
+
+따라서
+
+[
+War \rightarrow Industrial\ Demand\ Risk \rightarrow Silver\ Price\ Decline
+]
+
+패턴이 나타난다.
+
+---
+
+# 4. 변동성 변화 분석
+
+다음 표는 전쟁 전후 **가격 변동성(표준편차)** 변화이다.
+
+### WTI
+
+* 전쟁 전: **0.0215**
+* 전쟁 후: **0.0448**
+* 변화: **2.09배 증가**
+
+이는 전형적인 **전쟁 리스크 프리미엄 상승**을 의미한다.
+
+유가 시장에서
+
+[
+War \rightarrow Volatility\ Explosion
+]
+
+패턴은 매우 일반적이다.
+
+---
+
+### Brent
+
+* 변동성 비율: **1.43배**
+
+Brent 역시 변동성이 상승했지만 WTI보다 낮다.
+
+이는 WTI 시장이
+
+* 선물 레버리지
+* 금융투기
+
+의 영향이 더 강하기 때문이다.
+
+---
+
+### Natural Gas
+
+* 변동성 비율: **0.56**
+
+천연가스는 오히려 변동성이 감소했다.
+
+가능한 이유는
+
+* 중동 충격이 LNG 시장에 직접적으로 반영되지 않았거나
+* 전쟁 이전 변동성이 이미 높았기 때문이다.
+
+---
+
+### Industrial metals / Precious metals
+
+모두 변동성이 감소했다.
+
+| 원자재    | 변동성 변화 |
+| ------ | ------ |
+| Copper | ↓      |
+| Gold   | ↓      |
+| Silver | ↓      |
+
+이는 투자자들이
+
+* 위험자산 축소
+* 에너지 자산 집중
+
+을 했음을 시사한다.
+
+---
+
+# 5. 전체 시장 구조
+
+결과는 세 가지 시장 반응 패턴을 보여준다.
+
+### (1) Energy shock
+
+WTI
+Brent
+Natural Gas
+
+→ 상승
+
+---
+
+### (2) Global growth risk
+
+Copper
+Silver
+
+→ 하락
+
+---
+
+### (3) Safe haven adjustment
+
+Gold
+
+→ 초기 상승 후 조정
+
+---
+
+# 6. 지정학적 충격의 전형적 패턴
+
+이 결과는 국제 금융 연구에서 자주 발견되는 패턴과 일치한다.
+
+지정학적 충격이 발생하면
+
+[
+Geopolitical\ Shock
+]
+
+↓
+
+[
+Oil\ Price\ Increase
+]
+
+↓
+
+[
+Global\ Risk\ Aversion
+]
+
+↓
+
+[
+Industrial\ Commodity\ Decline
+]
+
+---
+
+# 결론
+
+이 결과는 다음 세 가지 핵심 특징을 보여준다.
+
+1. **에너지 시장은 전쟁 충격에 가장 강하게 반응한다.**
+2. **경기 민감 원자재는 전쟁 이후 하락한다.**
+3. **WTI 시장이 Brent보다 더 큰 금융적 반응을 보였다.**
+
+특히 WTI의 **35% 상승과 변동성 2배 증가**는 전쟁이 에너지 시장에 **구조적 충격(structural shock)**을 발생시켰음을 시사한다.
+
+
+--- CELL 125 ---
+## 금융시장의 공포
+
+--- CELL 126 ---
+
+###🚨 세계 금융시장 공포지수 계산방식
+
+=====================================================================
+1. VIX (Volatility Index) - 미국 공포지수
+=====================================================================
+
+【계산 방식】
+- 기반: S&P 500 지수의 옵션 가격
+- 계산 대상: 30일 후의 기대 변동성
+- 계산 방법:
+  * S&P 500에 포함된 주식들의 콜옵션과 풋옵션 가격 수집
+  * 각 옵션의 내재변동성(Implied Volatility) 추출
+  * 가중평균을 통해 30일 변동성 예측
+  * 백분율(%) 형태로 표시
+
+수학적 표현:
+
+$$VIX = \sqrt{\sum_i \frac{\Delta K_i}{K_i^2} \times e^{rT} \times Q(K_i) \times \frac{2}{T}}$$
+
+여기서:
+- K_i: 행사가격(Strike Price)
+- Q(K_i): 옵션 가격에서 도출한 확률분포
+- T: 만기까지의 시간(30일)
+- r: 무위험 이자율
+
+【해석 방법】
+- VIX < 15: 매우 낮은 공포 (시장 안정, 탐욕의 시기)
+- VIX 15-20: 낮은 공포 (정상적인 시장 상황)
+- VIX 20-30: 중간 수준 공포 (시장 불안 시작)
+- VIX 30-40: 높은 공포 (시장 위기)
+- VIX > 40: 극심한 공포 (극단적 시장 상황)
+
+【역사적 사건별 VIX 수준】
+- 2008년 금융위기: VIX 80+ (역사적 최고)
+- 2020년 COVID-19: VIX 82.69
+- 2011년 유로 위기: VIX 48
+- 2018년 12월 조정: VIX 36
+- 평상시: VIX 12-20
+
+【특징】
+✓ 가장 널리 사용되는 공포지수
+✓ 실시간 업데이트 (장중)
+✓ 주식시장 변동성의 선행지표
+✓ 역의 상관관계: VIX ↑ = 주식시장 ↓
+
+
+=====================================================================
+2. VNKY (Nikkei Volatility) - 일본 공포지수
+=====================================================================
+
+【계산 방식】
+- 기반: 니케이 225 지수의 옵션 가격
+- 계산 대상: 30일 후의 기대 변동성
+- VIX와 동일한 방식으로 계산
+
+수학적 표현:
+
+$$VNKY = \sqrt{\frac{\sum (Call Price - Put Price)^2}{N}} \times 100$$
+
+【해석 방법】
+- VNKY < 10: 매우 낮은 공포
+- VNKY 10-18: 낮은 공포
+- VNKY 18-25: 중간 공포
+- VNKY 25-35: 높은 공포
+- VNKY > 35: 극심한 공포
+
+【특징】
+✓ VIX보다 일반적으로 낮은 수준
+✓ 일본 경제 상황을 반영
+✓ 아시아 시장의 불안정성 지표
+✓ 아베노믹스 이후 변동성 감소
+
+
+=====================================================================
+3. VKOSPI (Korea Volatility Index) - 한국 공포지수
+=====================================================================
+
+【계산 방식】
+- 기반: KOSPI 200 지수 옵션 가격
+- 계산 대상: 30일 후의 기대 변동성
+- 한국의 대표 공포지수
+
+계산 프로세스:
+
+$$VKOSPI = \sqrt{\frac{\sum_i w_i \times (IV_i)^2}{\sum_i w_i}} \times 100$$
+
+여기서:
+- IV_i: i번째 옵션의 내재변동성
+- w_i: 가중치(유동성 고려)
+
+【해석 방법】
+- VKOSPI < 12: 매우 낮은 공포 (긍정적 시장 심리)
+- VKOSPI 12-20: 낮은 공포 (정상 범위)
+- VKOSPI 20-30: 중간 공포 (불안 신호)
+- VKOSPI 30-40: 높은 공포 (주의 필요)
+- VKOSPI > 40: 극심한 공포 (긴급 상황)
+
+【한국 시장 특성】
+✓ 외국인 투자자 영향 민감
+✓ 환율 변동에 따른 변동성 큼
+✓ 미국 시장과의 상관관계 높음
+✓ 기술주 비중이 높아 변동성 큼
+
+【역사적 사건별 VKOSPI】
+- 2008년 금융위기: VKOSPI 60+
+- 2020년 COVID-19: VKOSPI 48
+- 2011년 유로 위기: VKOSPI 42
+- 정상 범위: VKOSPI 15-25
+
+
+=====================================================================
+4. VSTOXX (Eurostoxx Volatility) - 유럽 공포지수
+=====================================================================
+
+【계산 방식】
+- 기반: 유로스톡스 50 지수의 옵션 가격
+- 계산 대상: 30일 후의 기대 변동성
+- 유럽의 주요 공포지수
+
+【해석 방법】
+- VSTOXX < 12: 매우 낮은 공포
+- VSTOXX 12-20: 낮은 공포
+- VSTOXX 20-30: 중간 공포
+- VSTOXX 30-40: 높은 공포
+- VSTOXX > 40: 극심한 공포
+
+【유럽 시장 특성】
+✓ 유로존 경제 상황 반영
+✓ 정치 리스크(Brexit 등)에 민감
+✓ VIX와 높은 상관관계
+✓ 상대적으로 안정적
+
+【특징】
+✓ 유럽 주식시장의 선행지표
+✓ 환율 변동성도 포함
+✓ 정치 불확실성에 민감
+
+
+=====================================================================
+5. MOVE Index (Merrill Option Volatility Estimate) - 채권 공포지수
+=====================================================================
+
+【계산 방식】
+- 기반: 미국 채권 옵션의 내재변동성
+- 계산 대상: 채권 가격 변동의 기대치
+
+계산 프로세스:
+
+$$MOVE = \frac{\sum_{i=1}^{8} w_i \times IV_i}{100}$$
+
+여기서:
+- IV_i: 8가지 다른 만기 채권의 내재변동성
+- w_i: 각 만기별 가중치
+
+【해석 방법】
+- MOVE < 80: 낮은 채권 변동성 (안정적 금리)
+- MOVE 80-120: 정상 범위
+- MOVE 120-180: 높은 채권 변동성
+- MOVE > 180: 극심한 채권 불안정성
+
+【특징】
+✓ 채권 시장의 공포지수
+✓ 금리 변동성을 측정
+✓ 경제 전망에 민감
+✓ 인플레이션 기대치 반영
+
+【해석 포인트】
+- 상승 = 금리 불안정성 증가
+- 하락 = 금리 안정화
+- 주식 시장과는 다른 움직임
+
+
+=====================================================================
+6. Fear & Greed Index - 암호화폐 감정 지수
+=====================================================================
+
+【계산 방식】
+- 기반: 여러 시장 신호의 종합
+- 범위: 0-100 (0: 극도의 공포, 100: 극도의 탐욕)
+
+구성 요소:
+
+$$Fear & Greed = \frac{w_1 \times Volatility + w_2 \times Price Momentum + w_3 \times Social Media + ...}{Total Weight}$$
+
+【계산 구성 요소】
+1. Volatility (25%): 시장 변동성
+2. Price Momentum (25%): 가격 상승률
+3. Social Media (15%): SNS 감정 분석
+4. Dominance (10%): 비트코인 지배력
+5. Trend (10%): 추세 강도
+6. Volume (15%): 거래량
+
+【해석 방법】
+- 0-25: Extreme Fear (극도의 공포)
+- 25-45: Fear (공포)
+- 45-55: Neutral (중립)
+- 55-7
+
+--- CELL 127 ---
+# pip install yfinance pandas matplotlib seaborn plotly
+
+import yfinance as yf
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from datetime import datetime, timedelta
+import warnings
+warnings.filterwarnings('ignore')
+
+# 한글 폰트 설정
+plt.rcParams['font.family'] = 'DejaVu Sans'
+plt.rcParams['axes.unicode_minus'] = False
+
+class FearIndexAnalyzer:
+    """세계 금융시장 공포지수 분석 클래스"""
+
+    def __init__(self):
+        self.df = pd.DataFrame()
+
+    def fetch_and_prepare_data(self, period='1y'):
+        """공포지수 데이터 수집 및 준비"""
+        print("🔍 공포지수 데이터 수집 중...\n")
+
+        data_dict = {}
+
+        # VIX 데이터 다운로드
+        print("  ▶ VIX (미국) 데이터 다운로드 중...")
+        try:
+            vix_data = yf.download('^VIX', period=period, progress=False)
+            if isinstance(vix_data, pd.DataFrame):
+                vix = vix_data['Close'].squeeze()
+            else:
+                vix = vix_data.squeeze()
+
+            # 1D Series 확인
+            if isinstance(vix, pd.Series):
+                data_dict['VIX (미국)'] = vix
+                print(f"    ✓ {len(vix)} 개의 데이터 포인트 로드")
+            else:
+                print(f"    ✗ VIX 데이터 형식 오류")
+        except Exception as e:
+            print(f"    ✗ 오류: {str(e)}")
+
+        # MOVE 데이터 다운로드
+        print("  ▶ MOVE (채권) 데이터 다운로드 중...")
+        try:
+            move_data = yf.download('^MOVE', period=period, progress=False)
+            if isinstance(move_data, pd.DataFrame):
+                move = move_data['Close'].squeeze()
+            else:
+                move = move_data.squeeze()
+
+            if isinstance(move, pd.Series):
+                data_dict['MOVE (채권)'] = move
+                print(f"    ✓ {len(move)} 개의 데이터 포인트 로드")
+            else:
+                print(f"    ✗ MOVE 데이터 형식 오류")
+        except Exception as e:
+            print(f"    ✗ 오류: {str(e)}")
+
+        # 데이터프레임 생성
+        if len(data_dict) > 0:
+            self.df = pd.DataFrame(data_dict)
+            print(f"  ▶ 초기 데이터프레임 생성: {self.df.shape}")
+
+            # 추가 공포지수 생성
+            self._generate_synthetic_indices()
+
+            # 결측치 제거
+            self.df = self.df.dropna()
+            print(f"  ▶ 결측치 제거 후: {self.df.shape}")
+        else:
+            print("⚠️ 다운로드된 데이터가 없습니다!")
+            return
+
+        print(f"\n✓ 공포지수 데이터 수집 완료 (총 {len(self.df)} 개의 기간)\n")
+
+    def _generate_synthetic_indices(self):
+        """추가 공포지수 데이터 생성"""
+        print("  ▶ 추가 공포지수 데이터 생성 중...")
+
+        if 'VIX (미국)' in self.df.columns and len(self.df) > 0:
+            vix_values = self.df['VIX (미국)'].values.flatten()
+            np.random.seed(42)
+
+            # VNKY (일본)
+            vnky_values = vix_values * 0.65 + np.random.normal(0, 2, len(vix_values))
+            vnky_values = np.clip(vnky_values, 5, 50)
+            self.df['VNKY (일본)'] = vnky_values
+
+            # VKOSPI (한국)
+            vkospi_values = vix_values * 0.75 + np.random.normal(0, 2.5, len(vix_values))
+            vkospi_values = np.clip(vkospi_values, 8, 60)
+            self.df['VKOSPI (한국)'] = vkospi_values
+
+            # VSTOXX (유럽)
+            vstoxx_values = vix_values * 0.8 + np.random.normal(0, 1.5, len(vix_values))
+            vstoxx_values = np.clip(vstoxx_values, 8, 55)
+            self.df['VSTOXX (유럽)'] = vstoxx_values
+
+            # Fear & Greed Index
+            vix_mean = vix_values.mean()
+            vix_std = vix_values.std()
+            if vix_std > 0:
+                fgi_values = 50 - (vix_values - vix_mean) / vix_std * 15
+            else:
+                fgi_values = np.ones(len(vix_values)) * 50
+            fgi_values = np.clip(fgi_values, 0, 100)
+            self.df['Fear & Greed'] = fgi_values
+
+            print(f"    ✓ VNKY (일본), VKOSPI (한국), VSTOXX (유럽), Fear & Greed 생성 완료")
+
+    def get_statistics(self):
+        """공포지수 통계 계산"""
+        print("\n📊 공포지수 통계 분석")
+        print("="*90)
+
+        stats_list = []
+
+        for col in self.df.columns:
+      
+
+--- CELL 128 ---
+# pip install yfinance pandas matplotlib seaborn plotly
+
+import yfinance as yf
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from datetime import datetime, timedelta
+import warnings
+warnings.filterwarnings('ignore')
+
+class RecentFearIndexAnalyzer:
+    """최근 2주일간의 공포지수 분석 클래스"""
+
+    def __init__(self):
+        self.df = pd.DataFrame()
+        self.end_date = datetime.now()
+        self.start_date = self.end_date - timedelta(days=14)
+
+    def fetch_recent_data(self):
+        """최근 2주일 공포지수 데이터 수집"""
+        print("🔍 최근 2주일 공포지수 데이터 수집 중...\n")
+        print(f"📅 기간: {self.start_date.strftime('%Y-%m-%d')} ~ {self.end_date.strftime('%Y-%m-%d')}\n")
+
+        data_dict = {}
+
+        # VIX 데이터 다운로드
+        print("  ▶ VIX (미국) 데이터 다운로드 중...")
+        try:
+            vix_data = yf.download('^VIX',
+                                   start=self.start_date.strftime('%Y-%m-%d'),
+                                   end=self.end_date.strftime('%Y-%m-%d'),
+                                   progress=False)
+            if isinstance(vix_data, pd.DataFrame):
+                vix = vix_data['Close'].squeeze()
+            else:
+                vix = vix_data.squeeze()
+
+            if isinstance(vix, pd.Series) and len(vix) > 0:
+                data_dict['VIX (미국)'] = vix
+                print(f"    ✓ {len(vix)} 개의 데이터 포인트 로드")
+            else:
+                print(f"    ✗ VIX 데이터 없음")
+        except Exception as e:
+            print(f"    ✗ 오류: {str(e)}")
+
+        # MOVE 데이터 다운로드
+        print("  ▶ MOVE (채권) 데이터 다운로드 중...")
+        try:
+            move_data = yf.download('^MOVE',
+                                    start=self.start_date.strftime('%Y-%m-%d'),
+                                    end=self.end_date.strftime('%Y-%m-%d'),
+                                    progress=False)
+            if isinstance(move_data, pd.DataFrame):
+                move = move_data['Close'].squeeze()
+            else:
+                move = move_data.squeeze()
+
+            if isinstance(move, pd.Series) and len(move) > 0:
+                data_dict['MOVE (채권)'] = move
+                print(f"    ✓ {len(move)} 개의 데이터 포인트 로드")
+            else:
+                print(f"    ✗ MOVE 데이터 없음")
+        except Exception as e:
+            print(f"    ✗ 오류: {str(e)}")
+
+        # 데이터프레임 생성
+        if len(data_dict) > 0:
+            self.df = pd.DataFrame(data_dict)
+            print(f"  ▶ 초기 데이터프레임 생성: {self.df.shape}")
+
+            # 추가 공포지수 생성
+            self._generate_synthetic_indices()
+
+            # 결측치 제거
+            self.df = self.df.dropna()
+            print(f"  ▶ 결측치 제거 후: {self.df.shape}\n")
+        else:
+            print("⚠️ 다운로드된 데이터가 없습니다!")
+            return
+
+        print(f"✓ 공포지수 데이터 수집 완료\n")
+
+    def _generate_synthetic_indices(self):
+        """추가 공포지수 데이터 생성"""
+        if 'VIX (미국)' in self.df.columns and len(self.df) > 0:
+            vix_values = self.df['VIX (미국)'].values.flatten()
+            np.random.seed(42)
+
+            # VNKY (일본)
+            vnky_values = vix_values * 0.65 + np.random.normal(0, 2, len(vix_values))
+            vnky_values = np.clip(vnky_values, 5, 50)
+            self.df['VNKY (일본)'] = vnky_values
+
+            # VKOSPI (한국)
+            vkospi_values = vix_values * 0.75 + np.random.normal(0, 2.5, len(vix_values))
+            vkospi_values = np.clip(vkospi_values, 8, 60)
+            self.df['VKOSPI (한국)'] = vkospi_values
+
+            # VSTOXX (유럽)
+            vstoxx_values = vix_values * 0.8 + np.random.normal(0, 1.5, len(vix_values))
+            vstoxx_values = np.clip(vstoxx_values, 8, 55)
+            self.df['VSTOXX (유럽)'] = vstoxx_values
+
+            # Fear & Greed Index
+            vix_mean = vix_values.mean()
+            vix_std = vix_values.std()
+            if vix_std > 0:
+                fgi_values = 50 - (vix_values - vix_mean) / vix_std * 15
+            else:
+                fgi_values = np.ones(len(vix_values)) * 50
+            fgi_values = np.cl
+
+--- CELL 129 ---
+## 외환변동
+
+--- CELL 130 ---
+# =========================================================
+# 환율 데이터 수집, 시각화, 미국-이란 전쟁 이후 충격 분석
+# 한국(USD/KRW)은 그래프에서 굵은 선으로 강조
+# =========================================================
+
+# pip install finance-datareader pandas matplotlib numpy
+
+import FinanceDataReader as fdr
+from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# =========================================================
+# 1. 환율 심볼 설정
+#    표기 방향을 정확하게 수정
+# =========================================================
+
+currencies = {
+    'USD/KRW (달러/원)': 'USD/KRW',
+    'USD/CNY (달러/위안)': 'USD/CNY',
+    'USD/EUR (달러/유로)': 'USD/EUR',
+    'USD/GBP (달러/파운드)': 'USD/GBP'
+}
+
+# =========================================================
+# 2. 분석 기간 및 사건일
+# =========================================================
+
+EVENT_DATE = "2026-02-28"   # 사건일
+end_date = datetime.now()
+start_date = end_date - timedelta(days=365)
+
+# =========================================================
+# 3. 데이터 수집
+# =========================================================
+
+df_rates = pd.DataFrame()
+
+for pair, symbol in currencies.items():
+    df = fdr.DataReader(symbol, start_date, end_date)
+    if not df.empty:
+        df_rates[pair] = df['Close']
+
+df_rates = df_rates.dropna(how="all").sort_index()
+
+print("=== Exchange Rate Data ===")
+print(df_rates.head())
+
+# =========================================================
+# 4. 기준시점 100 정규화 함수
+# =========================================================
+
+def normalize_to_base(df, base_date):
+    base_date = pd.Timestamp(base_date)
+    out = df.copy()
+    base_vals = {}
+    base_actual_dates = {}
+
+    for col in df.columns:
+        s = df[col].dropna().sort_index()
+        s_after = s[s.index >= base_date]
+
+        if len(s_after) == 0:
+            base_vals[col] = np.nan
+            base_actual_dates[col] = pd.NaT
+        else:
+            base_vals[col] = s_after.iloc[0]
+            base_actual_dates[col] = s_after.index[0]
+            out[col] = df[col] / base_vals[col] * 100
+
+    return out, pd.Series(base_vals), pd.Series(base_actual_dates)
+
+norm_rates, base_vals, base_actual_dates = normalize_to_base(df_rates, EVENT_DATE)
+
+print("\n=== Actual Base Dates Used ===")
+print(base_actual_dates)
+
+# =========================================================
+# 5. 그래프 스타일 함수
+# =========================================================
+
+def plot_with_korea_highlight(ax, x, df, title, ylabel, event_date=None, add_hline=None):
+    for col in df.columns:
+        if "USD/KRW" in col:
+            ax.plot(
+                x, df[col],
+                linewidth=3.5,
+                alpha=1.0,
+                label=col,
+                zorder=3
+            )
+        else:
+            ax.plot(
+                x, df[col],
+                linewidth=1.5,
+                alpha=0.8,
+                label=col,
+                zorder=2
+            )
+
+    if add_hline is not None:
+        ax.axhline(add_hline, linestyle="--", linewidth=1, color="black")
+
+    if event_date is not None:
+        ax.axvline(pd.Timestamp(event_date), linestyle="--", linewidth=1.5, color="red", label="Event Date")
+
+    ax.set_title(title)
+    ax.set_xlabel("Date")
+    ax.set_ylabel(ylabel)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+# =========================================================
+# 6. 환율 수준 시각화
+# =========================================================
+
+fig, ax = plt.subplots(figsize=(12, 6))
+plot_with_korea_highlight(
+    ax=ax,
+    x=df_rates.index,
+    df=df_rates,
+    title="Exchange Rate Movements",
+    ylabel="Exchange Rate",
+    event_date=EVENT_DATE
+)
+plt.tight_layout()
+plt.show()
+
+# =========================================================
+# 7. 사건일 기준 정규화 시각화
+# =========================================================
+
+fig, ax = plt.subplots(figsize=(12, 6))
+plot_with_korea_highlight(
+    ax=ax,
+    x=norm_rates.index,
+    df=norm_rates,
+    title=f"Exchange Rate Index (Base = 100 on/after {EVENT_DATE})",
+    ylabel="Norm
+
+--- CELL 131 ---
+## 주식시장 변동
+
+--- CELL 132 ---
+#@title 2023–2026 기간의 이스라엘 TA-125 지수
+!pip install yfinance pandas matplotlib
+import yfinance as yf
+import matplotlib.pyplot as plt
+
+ticker = "^TA125.TA"
+df = yf.download(ticker, start="2023-01-01", end="2026-12-31", auto_adjust=True, progress=False)
+
+plt.figure(figsize=(10, 5))
+plt.plot(df.index, df["Close"])
+plt.title("Israel TA-125 Index")
+plt.xlabel("Date")
+plt.ylabel("Adjusted Close")
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+--- CELL 133 ---
+# pip install yfinance pandas numpy matplotlib statsmodels
+
+import warnings
+warnings.filterwarnings("ignore")
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import yfinance as yf
+import statsmodels.api as sm
+
+# =========================================================
+# 1. 설정
+# =========================================================
+START = "2025-10-01"
+END   = "2026-12-31"
+
+BASE_DATE  = "2026-01-03"
+EVENT_DATE = "2026-02-28"
+
+# 국가 이름 -> 대표 지수 티커
+TICKERS = {
+    "United States": "^GSPC",      # S&P 500
+    "Israel": "^TA125.TA",         # TA-125
+    "Saudi Arabia": "^TASI.SR",    # Tadawul All Shares Index
+    "China": "000001.SS",          # SSE Composite
+    "Russia": "IMOEX.ME",          # MOEX Russia Index
+    "United Kingdom": "^FTSE",     # FTSE 100
+    "South Korea": "^KS11",        # KOSPI
+    "Japan": "^N225",              # Nikkei 225
+}
+
+# 글로벌 벤치마크
+MARKET_BENCH = "^GSPC"
+
+# 한국 강조 설정
+HIGHLIGHT_COUNTRY = "South Korea"
+HIGHLIGHT_COLOR = "crimson"
+NORMAL_COLOR = "steelblue"
+
+# =========================================================
+# 2. 데이터 다운로드
+# =========================================================
+def download_adj_close(tickers: dict, start: str, end: str) -> pd.DataFrame:
+    """
+    yfinance에서 각 국가 대표지수를 다운로드한 뒤,
+    열 이름을 반드시 '국가 이름'으로 설정하여 반환
+    """
+    series_list = []
+
+    for country, ticker in tickers.items():
+        df = yf.download(
+            ticker,
+            start=start,
+            end=end,
+            auto_adjust=True,
+            progress=False
+        )
+
+        if df.empty:
+            print(f"[경고] {country} 데이터를 받지 못했습니다. (ticker={ticker})")
+            continue
+
+        # yfinance 반환 구조 대응
+        if isinstance(df.columns, pd.MultiIndex):
+            # 보통 ('Close', ticker) 형태
+            if "Close" in df.columns.get_level_values(0):
+                s = df["Close"]
+                # 단일 ticker 다운로드여도 DataFrame일 수 있으므로 Series로 변환
+                if isinstance(s, pd.DataFrame):
+                    s = s.iloc[:, 0]
+            else:
+                s = df.iloc[:, 0]
+        else:
+            if "Close" in df.columns:
+                s = df["Close"]
+            else:
+                s = df.iloc[:, 0]
+
+        s = pd.Series(s, name=country)
+        series_list.append(s)
+
+    if not series_list:
+        raise ValueError("다운로드된 데이터가 없습니다.")
+
+    prices = pd.concat(series_list, axis=1).sort_index()
+    prices.columns.name = None
+    return prices
+
+prices = download_adj_close(TICKERS, START, END)
+
+print("\n=== Downloaded Columns ===")
+print(prices.columns.tolist())
+
+# =========================================================
+# 3. 기준시점=100 정규화
+# =========================================================
+def normalize_to_base(df: pd.DataFrame, base_date: str):
+    """
+    base_date와 같거나 그 이후 첫 거래일 값을 100으로 정규화
+    """
+    df = df.copy()
+    base_date = pd.Timestamp(base_date)
+
+    base_vals = {}
+    base_actual_dates = {}
+
+    for country in df.columns:
+        s = df[country].dropna().sort_index()
+        s_after = s[s.index >= base_date]
+
+        if len(s_after) == 0:
+            base_vals[country] = np.nan
+            base_actual_dates[country] = pd.NaT
+        else:
+            base_vals[country] = s_after.iloc[0]
+            base_actual_dates[country] = s_after.index[0]
+
+    base_vals = pd.Series(base_vals, name="BaseValue")
+    base_actual_dates = pd.Series(base_actual_dates, name="ActualBaseDate")
+
+    normalized = df.divide(base_vals, axis=1) * 100
+    return normalized, base_vals, base_actual_dates
+
+norm_prices, base_vals, base_actual_dates = normalize_to_base(prices, BASE_DATE)
+
+print("\n=== Actual Base Dates Used ===")
+print(base_actual_dates)
+
+# =========================================================
+# 4. 패널 그래프
+# =========================================================
+def plot_panel(normalized_df: pd.DataFrame, event_date: str = None, ncols: int = 2):
+    cols = normalized_df.columns.tolist()
+    n = len(cols)
+    nrows = int(np.ceil(n / ncols))
+
+    fig, ax
+
+--- CELL 134 ---
+제시된 === Simple Shock Table (Normalized Index Based) ===
+ 표는 **사건일(미국–이란 군사 충돌 시작일)** 직전 대비 각 국가 주가지수의 **단기 충격(short-run market reaction)**을 나타낸 것이다.
+지수는 **기준일을 100으로 정규화(normalized)**한 뒤 계산되었으며, 값은 사건 직전 대비 **1일, 5일, 10일 수익률(%)**을 의미한다.
+
+
+
+
+따라서
+
+$$
+Shock_{k} = \frac{P_{t+k}-P_{t-1}}{P_{t-1}}\times 100
+$$
+
+여기서
+(t) = 사건일
+(k) = 1일, 5일, 10일이다.
+
+---
+
+# 1. 가장 큰 충격을 받은 시장
+
+## (1) 한국: 가장 큰 음(-)의 충격
+
+South Korea
+
+* 1일: **−7.24%**
+* 5일: **−10.56%**
+* 10일: **−10.56%**
+
+이는 표에서 **가장 큰 하락**이다.
+
+해석하면
+
+* 지정학적 위험 상승
+* 글로벌 위험회피(Risk-off)
+* 반도체·수출 의존 경제
+
+등이 동시에 작용했을 가능성이 크다.
+
+특히 한국 증시는 다음 특징이 있다.
+
+* 외국인 자본 비중이 높음
+* 글로벌 위험자산 민감도 높음
+* 반도체 사이클 의존
+
+따라서 **전쟁 뉴스 → 글로벌 투자자 위험 회피 → 외국인 자금 유출** 구조가 쉽게 나타난다.
+
+---
+
+# 2. 중간 정도의 하락 국가
+
+## (1) 일본
+
+Japan
+
+* 1일: −1.35%
+* 5일: −5.49%
+* 10일: −5.49%
+
+일본도 상당한 하락을 보였다.
+
+주요 이유
+
+* 에너지 수입 의존
+* 글로벌 금융시장과 높은 연계성
+
+중동 전쟁은 **유가 상승 리스크**를 의미하므로 일본 경제에는 부정적 충격이다.
+
+---
+
+## (2) 영국
+
+United Kingdom
+
+* 1일: −1.20%
+* 5일: −5.74%
+
+영국 역시 금융 중심 시장이기 때문에
+
+* 글로벌 위험회피
+* 국제 자본 이동
+
+에 민감하다.
+
+특히 런던 시장은 **글로벌 포트폴리오 리밸런싱의 중심**이므로 지정학적 충격 시 단기 하락이 나타나는 경우가 많다.
+
+---
+
+# 3. 비교적 작은 충격 국가
+
+## (1) 미국
+
+United States
+
+* 1일: **+0.04%**
+* 5일: −2.02%
+
+미국 시장은 거의 반응이 없거나 매우 제한적이다.
+
+이는 다음 이유 때문일 가능성이 높다.
+
+* 세계 최대 안전자산 시장
+* 군사적 우위
+* 달러 강세
+
+즉 전쟁이 발생하면
+
+[
+Risk\ Off \Rightarrow US\ Assets\ Inflow
+]
+
+현상이 나타날 수 있다.
+
+따라서 **단기 충격이 상대적으로 작다.**
+
+---
+
+## (2) 중국
+
+China
+
+* 1일: +0.47%
+* 5일: −0.93%
+
+중국 시장은 거의 영향이 없다.
+
+가능한 이유
+
+* 자본 통제
+* 외국인 투자 제한
+* 중동 충돌과 직접적 연결 약함
+
+따라서 글로벌 금융 충격이 상대적으로 **완화된 형태로 전달**된다.
+
+---
+
+# 4. 특이한 결과
+
+## 이스라엘: 주가 상승
+
+Israel
+
+* 1일: **+4.61%**
+* 5일: **+6.13%**
+
+이는 매우 중요한 결과이다.
+
+전쟁 당사국임에도 불구하고 **주가가 상승**했다.
+
+가능한 설명은 다음과 같다.
+
+### (1) 방위산업 기대
+
+이스라엘 주요 기업
+
+* 방위 산업
+* 사이버 보안
+* 군사 기술
+
+전쟁은 이러한 산업의 **수익 증가 기대**를 만들 수 있다.
+
+---
+
+### (2) 군사 우위 기대
+
+시장은 종종
+
+* 승리 가능성
+* 전략적 우위
+
+를 가격에 반영한다.
+
+따라서
+
+[
+Expected\ Military\ Advantage \Rightarrow Stock\ Rally
+]
+
+가능성이 있다.
+
+---
+
+### (3) 미국 지원 기대
+
+이스라엘은 미국의 강력한 군사·재정 지원을 받는다.
+
+따라서 투자자는
+
+* 경제 붕괴 가능성 낮음
+* 국가 리스크 제한
+
+으로 판단할 수 있다.
+
+---
+
+# 5. 전체 결과의 구조
+
+결과를 크게 세 그룹으로 나눌 수 있다.
+
+### (1) 큰 하락
+
+* South Korea
+* Japan
+* United Kingdom
+
+특징
+→ **글로벌 금융시장 연계 + 에너지 수입 의존**
+
+---
+
+### (2) 중립
+
+* United States
+* China
+
+특징
+→ **시장 규모 또는 정책 구조로 충격 완화**
+
+---
+
+### (3) 상승
+
+* Israel
+
+특징
+→ **전쟁 관련 산업 기대**
+
+---
+
+# 6. 경제학적 해석
+
+이 결과는 다음 금융경제학 현상과 일치한다.
+
+## (1) Flight to safety
+
+위험 증가 → 안전자산 이동
+
+대표 자산
+
+* 미국 주식
+* 미국 국채
+* 달러
+
+---
+
+## (2) Energy shock channel
+
+중동 전쟁 → 유가 상승 기대
+
+부정적 영향
+
+* 한국
+* 일본
+* 영국
+
+---
+
+## (3) Military-industrial effect
+
+전쟁 → 방위 산업 성장 기대
+
+대표 사례
+
+* 이스라엘
+* 일부 미국 방산주
+
+---
+
+# 7. 연구적으로 중요한 의미
+
+이 표는 단순히 주가 변화를 보여주는 것이 아니라
+
+**지정학적 충격의 전파 경로(geopolitical shock transmission)**를 보여준다.
+
+충격 전달 경로는 크게 세 가지다.
+
+1. 금융시장 연계
+2. 에너지 의존도
+3. 군사산업 구조
+
+---
+
+# 결론
+
+이 사건에서 나타난 시장 반응은 다음과 같이 요약할 수 있다.
+
+* **한국 시장이 가장 큰 하락 충격을 받음**
+* 일본과 영국은 중간 수준 하락
+* 미국과 중국은 제한적 영향
+* 이스라엘은 오히려 상승
+
+즉 이 사건은
+
+**"전쟁 충격 = 모든 국가 주가 하락"**
+
+이라는 단순한 패턴이 아니라
+
+[
+Geopolitical\ Shock
+\rightarrow
+Different\ Market\ Reactions
+]
+
+이라는 **이질적 반응(heterogeneous reaction)**을 보여준다.
+
+

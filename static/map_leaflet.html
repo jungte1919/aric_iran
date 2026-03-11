@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>미사일 공격 상황 - 데이터로 바라본 외교</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Noto Sans KR", sans-serif; background: #f8fafc; color: #1e293b; }
+    header { padding: 12px 20px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1rem; font-weight: 700; margin: 0; white-space: nowrap; }
+    .nav { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+    .nav a { color: #1d4ed8; text-decoration: none; font-size: 12px; font-weight: 500; padding: 5px 11px; border: 1px solid #cbd5e1; border-radius: 7px; background: #f8fafc; transition: background .18s, border-color .18s; white-space: nowrap; }
+    .nav a:hover { background: #e0f2fe; border-color: #93c5fd; }
+    .nav a.current { background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; font-weight: 700; pointer-events: none; }
+    .nav a.why { background: #fef3c7; border-color: #f59e0b; color: #d97706; }
+    #map { width: 100%; height: calc(100vh - 52px); }
+    .legend { position: absolute; bottom: 24px; right: 24px; z-index: 1000; background: #fff; padding: 14px 18px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; line-height: 1.6; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 320px; }
+    .legend h3 { margin: 0 0 10px; font-size: 13px; border-bottom: 2px solid #ff6b6b; padding-bottom: 6px; }
+    .legend-row { margin-bottom: 8px; padding: 6px 8px; border-radius: 4px; }
+    .legend-row.us { background: #fff5f5; border-left: 4px solid #ff6b6b; }
+    .legend-row.iran-israel { background: #fff0f0; border-left: 4px solid #ff5c5c; }
+    .legend-row.mideast { background: #e5f7f5; border-left: 4px solid #4ecdc4; }
+    .legend-footer { font-size: 11px; color: #64748b; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0; }
+    .leaflet-popup-content { margin: 10px 14px; font-size: 12px; min-width: 200px; }
+    .leaflet-popup-content h4 { margin: 0 0 8px; padding-bottom: 6px; border-bottom: 2px solid #1d4ed8; }
+    .leaflet-popup-content table { width: 100%; border-collapse: collapse; }
+    .leaflet-popup-content td { padding: 4px 6px; vertical-align: top; }
+    .leaflet-popup-content td:first-child { font-weight: 600; width: 38%; color: #475569; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>2026년 미국-이란 전쟁 · 미사일 공격 상황</h1>
+    <nav class="nav">
+      <a href="/why" class="why">왜 데이터인가</a>
+      <a href="/">🏦 국가자원/국방력</a>
+      <a href="/crisis">⚡ 위기 진단</a>
+      <a href="/governance">🏛 거버넌스/민주주의</a>
+      <a href="/news">📰 뉴스 스크랩</a>
+      <a href="/map" class="current">🗺 미사일 공격상황</a>
+    </nav>
+  </header>
+  <div id="map"></div>
+  <div class="legend">
+    <h3>🔴 미사일 공격 현황</h3>
+    <div class="legend-row us">🟥 미국/이스라엘 → 이란 (군사시설·정부청사 등)</div>
+    <div class="legend-row iran-israel">🟥 이란 → 이스라엘 (보복 공격)</div>
+    <div class="legend-row mideast">🟦 이란 → 중동 미군기지 등</div>
+    <div class="legend-footer">● 원 크기 = 피해규모 (매우 심각/심각/중대)<br>자료: 서울대 고길곤 교수 연구실</div>
+  </div>
+  <script>
+    var attackData = [
+      { 도시명: '테헤란', 영문명: 'Tehran', 위도: 35.6892, 경도: 51.3890, 공격유형: '정부 청사, 지도부 암살', 공격국: '미국/이스라엘', 피해규모: '매우 심각', 지역분류: '이란' },
+      { 도시명: '이스파한', 영문명: 'Isfahan', 위도: 32.6546, 경도: 51.6243, 공격유형: '군사 시설', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
+      { 도시명: '곰', 영문명: 'Gom', 위도: 34.2996, 경도: 50.9676, 공격유형: '군사 기지', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
+      { 도시명: '카라지', 영문명: 'Karaj', 위도: 35.8172, 경도: 50.9808, 공격유형: '군사 시설', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
+      { 도시명: '케르만샤', 영문명: 'Kermanshah', 위도: 34.3141, 경도: 46.0981, 공격유형: '미사일 기지', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
+      { 도시명: '타브리즈', 영문명: 'Tabriz', 위도: 38.0808, 경도: 46.2919, 공격유형: '미사일 발사대', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
+      { 도시명: '카즈빈', 영문명: 'Qazvin', 위도: 36.2765, 경도: 50.0068, 공격유형: '공군 기지', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
+      { 도시명: '텔아비브', 영문명: 'Tel Aviv', 위도: 32.0853, 경도: 34.7818, 공격유형: '민간 지역, 공항', 공격국: '이란', 피해규모: '심각', 지역분류: '이스라엘' },
+      { 도시명: '예루살렘', 영문명: 'Jerusalem', 위도: 31.7683, 경도: 35.2137, 공격유형: '구도심 지역', 공격국: '이란', 피해규모: '심각', 지역분류: '이스라엘' },
+      { 도시명: '하이파', 영문명: 'Haifa', 위도: 32.8193, 경도: 34.9526, 공격유형: '항구도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
+      { 도시명: '베르셰바', 영문명: 'Beer Sheva', 위도: 31.2461, 경도: 34.7913, 공격유형: '남부 도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
+      { 도시명: '아슈돗', 영문명: 'Ashdod', 위도: 31.8041, 경도: 34.6479, 공격유형: '항구도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
+      { 도시명: '네타냐', 영문명: 'Netanya', 위도: 32.3384, 경도: 34.8683, 공격유형: '해안 도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
+      { 도시명: '골란고원', 영문명: 'Golan Heights', 위도: 33.1835, 경도: 35.7924, 공격유형: '전략적 고지', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
+      { 도시명: '에일랏', 영문명: 'Eilat', 위도: 29.5581, 경도: 34.9521, 공격유형: '공항, 전략 시설', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
+      { 도시명: '마나마(바레인)', 영문명: 'Manama', 위도: 26.1551, 경도: 50.4367, 공격유형: '미 해군 5함대 사령부', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '도하(카타르)', 영문명: 'Doha', 위도: 25.2854, 경도: 51.5310, 공격유형: '미군 공군기지', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '아부다비(UAE)', 영문명: 'Abu Dhabi', 위도: 24.4539, 경도: 54.3773, 공격유형: 'UAE 전략 시설', 공격국: '이란', 피해규모: '심각', 지역분류: '중동' },
+      { 도시명: '두바이(UAE)', 영문명: 'Dubai', 위도: 25.2048, 경도: 55.2708, 공격유형: 'UAE 에너지 시설, 공항', 공격국: '이란', 피해규모: '심각', 지역분류: '중동' },
+      { 도시명: '쿠웨이트시', 영문명: 'Kuwait City', 위도: 29.3759, 경도: 47.9774, 공격유형: '미군 기지', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '바그다드(이라크)', 영문명: 'Baghdad', 위도: 33.3128, 경도: 44.3615, 공격유형: '미군 공군기지', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '암만(요르단)', 영문명: 'Amman', 위도: 31.9454, 경도: 35.9284, 공격유형: '미군 기지', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '리야드(사우디)', 영문명: 'Riyadh', 위도: 24.7136, 경도: 46.6753, 공격유형: '미군 기지, 왕궁', 공격국: '이란', 피해규모: '심각', 지역분류: '중동' },
+      { 도시명: '제다(사우디)', 영문명: 'Jeddah', 위도: 21.5433, 경도: 39.1721, 공격유형: '미군 함대 기지', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '무스카트(오만)', 영문명: 'Muscat', 위도: 23.6100, 경도: 58.5400, 공격유형: '협상 장소, 미군 기지', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '살랄라(오만)', 영문명: 'Salalah', 위도: 17.0832, 경도: 54.0924, 공격유형: '전략 석유 시설', 공격국: '이란', 피해규모: '중대', 지역분류: '중동' },
+      { 도시명: '니코시아(키프로스)', 영문명: 'Nicosia', 위도: 35.1264, 경도: 33.3823, 공격유형: '영국 군사 기지', 공격국: '이란', 피해규모: '중대', 지역분류: '키프로스' }
+    ];
+
+    var m = L.map('map').setView([30, 40], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(m);
+
+    var radiusByDamage = { '매우 심각': 45000, '심각': 28000, '중대': 16000 };
+    var colorByType = { '미국/이스라엘': '#ff6b6b', '이란': '#4ecdc4' };
+    var fillByRegion = { '이란': '#ff6b6b', '이스라엘': '#ff5c5c', '중동': '#4ecdc4', '키프로스': '#4ecdc4' };
+
+    attackData.forEach(function(d) {
+      var r = radiusByDamage[d.피해규모] || 16000;
+      var fill = fillByRegion[d.지역분류] || '#4ecdc4';
+      var pop = '<h4>' + d.도시명 + '</h4><table><tr><td>영문명</td><td>' + d.영문명 + '</td></tr><tr><td>공격 유형</td><td>' + d.공격유형 + '</td></tr><tr><td>공격국</td><td>' + d.공격국 + '</td></tr><tr><td>피해규모</td><td>' + d.피해규모 + '</td></tr><tr><td>지역</td><td>' + d.지역분류 + '</td></tr></table>';
+      L.circle([d.위도, d.경도], { radius: r, color: fill, fillColor: fill, fillOpacity: 0.55, weight: 2 }).addTo(m).bindPopup(pop);
+      L.marker([d.위도, d.경도], { icon: L.divIcon({ className: 'marker-dot', html: '<div style="width:10px;height:10px;background:' + fill + ';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>', iconSize: [14, 14] }) }).addTo(m).bindPopup(pop);
+    });
+  </script>
+</body>
+</html>

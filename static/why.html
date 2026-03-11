@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>왜 데이터인가 — 데이터로 이해하는 이란 전쟁</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a; --bg2: #1e293b; --border: #334155;
+      --text: #f1f5f9; --muted: #94a3b8; --muted2: #64748b;
+      --accent: #38bdf8; --accent-h: #7dd3fc; --accent-s: rgba(56,189,248,.12);
+      --gold: #f59e0b; --green: #34d399; --red: #f87171; --purple: #a78bfa;
+      --orange: #fb923c;
+      --r: 14px; --sh: 0 4px 32px rgba(0,0,0,.3);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Noto Sans KR", -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.8; font-size: 15px; }
+
+    /* ─ header ─ */
+    header { padding: 22px 32px; background: linear-gradient(135deg,#1e293b 0%,#0f172a 100%); border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,.4); }
+    header h1 { font-size: 1.2rem; font-weight: 700; margin: 0; letter-spacing: -.03em; }
+    header .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .nav a { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500; padding: 7px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--accent-s); margin-left: 6px; transition: background .2s; }
+    .nav a:hover { background: rgba(56,189,248,.22); border-color: var(--accent); }
+
+    /* ─ hero ─ */
+    .hero { background: linear-gradient(160deg, #0c1628 0%, #0f172a 40%, #0c1a2e 100%); padding: 80px 32px 72px; text-align: center; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(56,189,248,.07) 0%, transparent 65%); pointer-events: none; }
+    .hero-label { display: inline-block; background: var(--accent-s); border: 1px solid rgba(56,189,248,.3); color: var(--accent); font-size: 12px; font-weight: 600; padding: 4px 14px; border-radius: 20px; letter-spacing: .05em; margin-bottom: 20px; }
+    .hero h2 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 700; margin: 0 0 20px; line-height: 1.3; letter-spacing: -.04em; }
+    .hero h2 em { font-style: normal; color: var(--accent); }
+    .hero p { font-size: 1.05rem; color: var(--muted); max-width: 680px; margin: 0 auto 32px; }
+    .hero-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn-primary { padding: 12px 24px; border-radius: 10px; border: none; background: var(--accent); color: #0f172a; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: background .2s, transform .1s; }
+    .btn-primary:hover { background: var(--accent-h); transform: translateY(-2px); }
+    .btn-outline { padding: 12px 24px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: background .2s; }
+    .btn-outline:hover { background: rgba(255,255,255,.06); border-color: var(--muted); }
+
+    /* ─ container ─ */
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+    /* ─ section ─ */
+    section { padding: 64px 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+    .sec-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    .sec-title { font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 700; margin: 0 0 14px; letter-spacing: -.03em; line-height: 1.35; }
+    .sec-lead { font-size: 1.05rem; color: var(--muted); max-width: 720px; margin-bottom: 36px; line-height: 1.8; }
+
+    /* ─ quote ─ */
+    .quote { background: var(--bg2); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; padding: 20px 24px; margin: 28px 0; font-size: 1rem; color: var(--muted); font-style: italic; line-height: 1.8; }
+    .quote strong { color: var(--text); font-style: normal; }
+
+    /* ─ data cards grid ─ */
+    .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; margin-top: 8px; }
+    .data-card { background: var(--bg2); border-radius: var(--r); border: 1px solid var(--border); padding: 22px 22px 20px; transition: border-color .2s, box-shadow .2s; }
+    .data-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(56,189,248,.08); }
+    .dc-icon { font-size: 1.6rem; margin-bottom: 12px; }
+    .dc-source { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted2); margin-bottom: 4px; }
+    .dc-title { font-size: 1rem; font-weight: 600; margin: 0 0 8px; }
+    .dc-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .dc-vars { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .tag { font-size: 11px; padding: 3px 9px; border-radius: 20px; background: rgba(56,189,248,.1); color: var(--accent); border: 1px solid rgba(56,189,248,.2); font-weight: 500; }
+    .tag.gold  { background: rgba(245,158,11,.1);  color: var(--gold);   border-color: rgba(245,158,11,.25); }
+    .tag.green { background: rgba(52,211,153,.1);  color: var(--green);  border-color: rgba(52,211,153,.25); }
+    .tag.red   { background: rgba(248,113,113,.1); color: var(--red);    border-color: rgba(248,113,113,.25); }
+    .tag.purple{ background: rgba(167,139,250,.1); color: var(--purple); border-color: rgba(167,139,250,.25); }
+    .tag.orange{ background: rgba(251,146,60,.1);  color: var(--orange); border-color: rgba(251,146,60,.25); }
+
+    /* ─ insight blocks ─ */
+    .insight-list { display: flex; flex-direction: column; gap: 16px; }
+    .insight { display: flex; gap: 18px; align-items: flex-start; padding: 20px 22px; background: var(--bg2); border-radius: var(--r); border: 1px solid var(--border); }
+    .insight-num { font-size: 1.6rem; font-weight: 700; color: var(--accent); min-width: 36px; line-height: 1; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .insight-body h4 { font-size: 14px; font-weight: 700; margin: 0 0 6px; }
+    .insight-body p  { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.75; }
+
+    /* ─ 2-column layout ─ */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+    @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+    .prose { font-size: 14px; color: var(--muted); line-height: 1.85; }
+    .prose strong { color: var(--text); }
+    .prose p { margin: 0 0 14px; }
+
+    /* ─ CTA ─ */
+    .cta-band { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--border); border-radius: var(--r); padding: 40px 36px; text-align: center; margin: 0; }
+    .cta-band h3 { font-size: 1.4rem; font-weight: 700; margin: 0 0 10px; }
+    .cta-band p  { font-size: 14px; color: var(--muted); margin: 0 0 24px; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+    /* ─ about / credits ─ */
+    .credits { background: var(--bg2); border-radius: var(--r); border: 1px solid var(--border); padding: 32px 36px; }
+    .credits-row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+    .cred-logo { display: flex; flex-direction: column; gap: 4px; }
+    .cred-logo .org { font-size: 13px; font-weight: 700; color: var(--text); }
+    .cred-logo .sub { font-size: 12px; color: var(--muted); }
+    .cred-logo .badge { display: inline-block; margin-top: 6px; font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--accent-s); border: 1px solid rgba(56,189,248,.3); color: var(--accent); font-weight: 600; }
+    .divider { width: 1px; background: var(--border); align-self: stretch; }
+    @media(max-width:600px){ .divider{display:none;} }
+    .cred-desc { font-size: 13px; color: var(--muted); line-height: 1.75; flex: 1; }
+
+    /* ─ data freshness badge ─ */
+    .dc-freshness { display: flex; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted2); line-height: 1.5; }
+    .fresh-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+    .dot-live   { background: #34d399; box-shadow: 0 0 7px rgba(52,211,153,.7); animation: blink-dot 2s ease-in-out infinite; }
+    .dot-daily  { background: #38bdf8; }
+    .dot-annual { background: #f59e0b; }
+    .dot-static { background: #64748b; }
+    @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ─ caution section ─ */
+    .caution-box { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.25); border-radius: var(--r); padding: 28px 32px; }
+    .caution-box h3 { font-size: 14px; font-weight: 700; color: var(--gold); margin: 0 0 18px; display: flex; align-items: center; gap: 8px; }
+    .caution-list { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .caution-list li { display: flex; gap: 12px; align-items: flex-start; font-size: 13px; color: var(--muted); line-height: 1.75; }
+    .caution-list li .ci { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .caution-list li strong { color: var(--text); }
+
+    /* ─ footer ─ */
+    footer { padding: 20px 32px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted2); text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>데이터로 이해하는 이란 전쟁</h1>
+    <div class="sub">서울대 행정대학원 고길곤 교수 연구실 · 아시아 지역정보센터</div>
+  </div>
+  <nav class="nav">
+    <a href="/why" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">왜 데이터인가</a>
+    <a href="/">🏦 국가자원/국방력</a>
+    <a href="/crisis">⚡ 위기 진단</a>
+    <a href="/governance">🏛 거버넌스/민주주의</a>
+    <a href="/news">📰 뉴스 스크랩</a>
+    <a href="/map">🗺 미사일 공격상황</a>
+  </nav>
+</header>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-label">Why Data?</div>
+  <h2>우리는 왜 이란 전쟁을<br><em>데이터로</em> 봐야 하는가</h2>
+  <p>감정과 이념이 아닌 수치와 근거로 전쟁을 이해할 때,<br>
+     더 정확한 현실 인식과 올바른 판단이 가능해집니다.</p>
+  <div class="hero-btns">
+    <a href="/" class="btn-primary">📊 대시보드 시작하기</a>
+    <a href="#why" class="btn-outline">↓ 자세히 읽기</a>
+  </div>
+</div>
+
+<!-- ── WHY DATA ── -->
+<section id="why">
+<div class="container">
+  <div class="sec-label">Problem</div>
+  <h2 class="sec-title">전쟁은 극단적 자극이다</h2>
+  <p class="sec-lead">이란·이스라엘 충돌은 국제 정치·에너지·금융·인권이 교차하는 복합 위기입니다. 그러나 전쟁이 주는 극단적 자극은 합리적 판단을 가로막습니다. 이념, 종교, 애국심은 작은 승리는 과대평가하고 전략적 오류는 과소평가하게 만듭니다.</p>
+
+  <div class="quote">
+    <strong>"이란을 악마화하는 순간, 우리는 이스라엘의 전략적 취약성을 보지 못하게 됩니다.
+    이스라엘을 피해자로만 보는 순간, 이란의 군사·경제적 복원력을 놓치게 됩니다."</strong><br>
+    데이터는 이 편향에서 벗어날 수 있는 가장 강력한 도구입니다.
+  </div>
+
+  <div class="two-col" style="margin-top:32px;">
+    <div class="prose">
+      <p>전쟁 보도는 흔히 <strong>어느 쪽이 옳은가</strong>라는 도덕적 프레임에 갇힙니다. 그러나 전쟁의 궤적을 결정하는 것은 도덕이 아니라 <strong>군사력·경제력·정치 안정성·국제 연대</strong>입니다. 이 요소들은 모두 측정 가능한 지표로 존재합니다.</p>
+      <p>데이터를 통해 우리는 <strong>"이란은 전쟁을 얼마나 지속할 수 있는가?"</strong>, <strong>"국제 금융시장은 이 갈등을 어떻게 받아들이는가?"</strong>, <strong>"중동 지역의 민주주의·거버넌스 수준은 분쟁 해결에 어떤 영향을 주는가?"</strong>와 같은 질문에 근거 있는 답을 구할 수 있습니다.</p>
+    </div>
+    <div class="prose">
+      <p>이 플랫폼은 <strong>이란 전쟁을 둘러싼 복합적 맥락</strong>을 세 가지 데이터 차원에서 제공합니다.</p>
+      <p>① <strong>국가 역량(World Bank)</strong>: GDP·군사비·병력·무기수입 등 실물 역량</p>
+      <p>② <strong>금융시장 신호(Yahoo Finance)</strong>: 유가·공포지수·환율·주가가 보내는 위기 경보</p>
+      <p>③ <strong>거버넌스·민주주의(WGI·Freedom House·V-Dem)</strong>: 전쟁 배후의 정치 구조와 제도 역량</p>
+      <p>이 세 가지를 함께 읽을 때 비로소 전쟁의 입체적 실상이 드러납니다.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── DATA CATALOG ── -->
+<section id="data">
+<div class="container">
+  <div class="sec-label">Data Sources</div>
+  <h2 class="sec-title">어떤 데이터를 활용하는가</h2>
+  <p class="sec-lead">이 플랫폼은 세계 최고 권위 기관의 공개 데이터를 실시간·연도별로 수집·시각화합니다. 아래 각 데이터셋은 해당 분석 페이지와 직결됩니다.</p>
+
+  <div class="data-grid">
+
+    <!-- 1. World Bank 국가 역량 -->
+    <div class="data-card">
+      <div class="dc-icon">🏦</div>
+      <div class="dc-source">World Bank — 대시보드(index)</div>
+      <div class="dc-title">국가 역량 지표</div>
+      <div class="dc-desc">GDP·1인당 GDP·군사비·병력·무기 수입·외환보유고·인구 등 전쟁 수행 능력을 가늠하는 핵심 실물 지표. 이란·이스라엘의 경제·군사 역량 격차를 수치로 확인합니다.</div>
+      <div class="dc-vars">
+        <span class="tag gold">GDP</span>
+        <span class="tag gold">군사비 (GDP%)</span>
+        <span class="tag gold">무기 수입</span>
+        <span class="tag gold">병력 규모</span>
+        <span class="tag gold">외환보유고</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-annual"></span>
+        <span><strong>연 1회 갱신</strong> — 페이지 접속 시 World Bank API에서 실시간 수집. 최신 공개 연도 기준 (통상 1~2년 지연). 일부 지표(무기수입 등)는 최신년도 미공개일 수 있음.</span>
+      </div>
+    </div>
+
+    <!-- 2. 원자재 -->
+    <div class="data-card">
+      <div class="dc-icon">🛢️</div>
+      <div class="dc-source">Yahoo Finance — 위기 진단(crisis)</div>
+      <div class="dc-title">원자재 가격 (유가·귀금속)</div>
+      <div class="dc-desc">WTI·Brent·천연가스·구리·금·은 실시간 시세. 중동 긴장이 고조될 때 호르무즈 해협 봉쇄 우려가 유가에 미치는 충격을 실시간으로 포착합니다.</div>
+      <div class="dc-vars">
+        <span class="tag red">WTI</span>
+        <span class="tag red">Brent</span>
+        <span class="tag red">Natural Gas</span>
+        <span class="tag orange">Gold</span>
+        <span class="tag orange">Copper</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-daily"></span>
+        <span><strong>일별 종가 갱신</strong> — 페이지 접속 시 Yahoo Finance에서 직접 수집. 해당 거래일 종가 기준. 주말·공휴일은 직전 거래일 종가. 최대 2년치 조회 가능.</span>
+      </div>
+    </div>
+
+    <!-- 3. 공포지수 -->
+    <div class="data-card">
+      <div class="dc-icon">📉</div>
+      <div class="dc-source">Yahoo Finance — 위기 진단(crisis)</div>
+      <div class="dc-title">금융시장 공포지수</div>
+      <div class="dc-desc">VIX(미국 주식 변동성)·MOVE(채권)·SKEW(꼬리 위험)·VVIX. 시장이 이란 위기를 얼마나 심각하게 받아들이는지를 수치로 확인할 수 있습니다. VIX 30 이상은 위험 신호입니다.</div>
+      <div class="dc-vars">
+        <span class="tag red">VIX &gt; 30 위험</span>
+        <span class="tag red">MOVE &gt; 120</span>
+        <span class="tag red">SKEW &gt; 140</span>
+        <span class="tag orange">VVIX</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-daily"></span>
+        <span><strong>일별 종가 갱신</strong> — 미국 증시 거래일 기준. VIX·SKEW는 CBOE 공표치로 당일 종가가 약 15~30분 지연 반영될 수 있음. MOVE 지수는 ICE BofA 산출.</span>
+      </div>
+    </div>
+
+    <!-- 4. 외환·주식 -->
+    <div class="data-card">
+      <div class="dc-icon">💱</div>
+      <div class="dc-source">Yahoo Finance — 위기 진단(crisis)</div>
+      <div class="dc-title">외환 변동 & 주식시장</div>
+      <div class="dc-desc">USD/KRW·위안·유로·파운드 환율과 S&amp;P 500·KOSPI·Nikkei·TA-125(이스라엘) 주가지수. 이스라엘 TA-125 지수는 분쟁 격화에 가장 민감하게 반응하는 선행 지표입니다.</div>
+      <div class="dc-vars">
+        <span class="tag">USD/KRW</span>
+        <span class="tag">USD/CNY</span>
+        <span class="tag green">TA-125 (이스라엘)</span>
+        <span class="tag">KOSPI</span>
+        <span class="tag">S&amp;P 500</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-daily"></span>
+        <span><strong>일별 종가 갱신</strong> — 각국 주요 거래소 종가 기준. 환율은 외환시장 마감 기준치. 이스라엘 TA-125는 현지 거래일(일~목) 기준으로 금·토 휴장.</span>
+      </div>
+    </div>
+
+    <!-- 5. WGI -->
+    <div class="data-card">
+      <div class="dc-icon">🏛️</div>
+      <div class="dc-source">World Bank WGI — 정부/정치 역량</div>
+      <div class="dc-title">세계 거버넌스 지표 (WGI)</div>
+      <div class="dc-desc">발언권·정치 안정성·정부 효과성·규제 품질·법치주의·부패 통제 6개 지표(−2.5~+2.5). 이란의 낮은 거버넌스 점수는 국제 고립과 내부 불안정의 구조적 원인을 보여줍니다.</div>
+      <div class="dc-vars">
+        <span class="tag purple">정치 안정성</span>
+        <span class="tag purple">법치주의</span>
+        <span class="tag purple">부패 통제</span>
+        <span class="tag purple">정부 효과성</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-annual"></span>
+        <span><strong>연 1회 갱신</strong> — World Bank API 실시간 수집. 매년 9~10월경 전년도 수치 공표. 현재 제공 최신 연도: 2023년. 200여 개국 전문가 설문·문헌 종합 산출.</span>
+      </div>
+    </div>
+
+    <!-- 6. Freedom House -->
+    <div class="data-card">
+      <div class="dc-icon">🗽</div>
+      <div class="dc-source">Freedom House — 정부/정치 역량</div>
+      <div class="dc-title">자유 지수 (Freedom in the World)</div>
+      <div class="dc-desc">종합 자유 점수(0~100)·정치적 권리(1~7)·시민 자유(1~7). 이란은 "Not Free(비자유)" 국가로 분류됩니다. 자유의 제약이 어떻게 전쟁 동원과 국민 저항에 영향을 주는지 확인합니다.</div>
+      <div class="dc-vars">
+        <span class="tag red">이란: Not Free</span>
+        <span class="tag gold">이스라엘: Free</span>
+        <span class="tag">Total 0–100</span>
+        <span class="tag">PR / CL 등급</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-annual"></span>
+        <span><strong>연 1회 갱신</strong> — 매년 2~3월 공표, 전년도 평가 기준. 현재 제공 범위: 2013–2024년. Freedom House 공식 Excel 파일에서 서버 기동 시 자동 수집·캐시(30분 유효).</span>
+      </div>
+    </div>
+
+    <!-- 7. V-Dem -->
+    <div class="data-card">
+      <div class="dc-icon">📊</div>
+      <div class="dc-source">V-Dem / OWID — 정부/정치 역량</div>
+      <div class="dc-title">민주주의 지수 (V-Dem)</div>
+      <div class="dc-desc">선거·자유·참여·인권 민주주의 지수(0~1). 1789년부터 최신까지 장기 추세. 민주주의 수준이 낮은 국가일수록 전쟁 개시 결정이 소수 엘리트에 집중되는 경향을 데이터로 확인합니다.</div>
+      <div class="dc-vars">
+        <span class="tag purple">선거 민주주의</span>
+        <span class="tag purple">자유 민주주의</span>
+        <span class="tag purple">인권 지수</span>
+        <span class="tag purple">참여 민주주의</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-annual"></span>
+        <span><strong>연 1회 갱신</strong> — Our World in Data(OWID) CSV에서 서버 기동 시 자동 수집·캐시. V-Dem 연구소(스웨덴 예테보리大) 산출. 최신 공표 연도: 통상 전년도.</span>
+      </div>
+    </div>
+
+    <!-- 8. 뉴스 -->
+    <div class="data-card">
+      <div class="dc-icon">📰</div>
+      <div class="dc-source">Google News · Reuters · BBC · Al Jazeera — 뉴스 스크랩</div>
+      <div class="dc-title">이란 전쟁 뉴스 스크랩</div>
+      <div class="dc-desc">Google News(한국어·영어)·Reuters·BBC·Al Jazeera RSS 피드에서 이란 관련 최신 뉴스를 자동 수집·분류합니다. 군사/외교/경제/인도주의 카테고리로 구분해 제공합니다.</div>
+      <div class="dc-vars">
+        <span class="tag green">한국어</span>
+        <span class="tag">영어</span>
+        <span class="tag red">군사/전투</span>
+        <span class="tag purple">외교/정치</span>
+        <span class="tag gold">경제/에너지</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-live"></span>
+        <span><strong>30분마다 자동 갱신</strong> — 페이지 접속 시 RSS 피드 즉시 수집, 이후 30분 캐시 유지. "지금 새로고침" 버튼으로 즉시 수동 갱신 가능. 기사 수: 최대 소스당 15건.</span>
+      </div>
+    </div>
+
+    <!-- 9. 미사일 맵 -->
+    <div class="data-card">
+      <div class="dc-icon">🗺️</div>
+      <div class="dc-source">공개 정보 종합 — 미사일 공격상황</div>
+      <div class="dc-title">미사일 공격 지도</div>
+      <div class="dc-desc">이란·이스라엘·헤즈볼라 등 중동 주요 행위자의 미사일 공격 현황 지도. 군사적 충돌의 지리적 패턴과 에스컬레이션 경로를 직관적으로 파악합니다.</div>
+      <div class="dc-vars">
+        <span class="tag red">이란 → 이스라엘</span>
+        <span class="tag orange">헤즈볼라</span>
+        <span class="tag">공격 경로</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-static"></span>
+        <span><strong>수동 업데이트</strong> — 공개 보도 및 공식 발표에 기반해 연구팀이 직접 입력·갱신. 실시간 전황이 아닌 주요 공격 이벤트 기록으로 활용하십시오.</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ── INSIGHTS ── -->
+<section id="insights">
+<div class="container">
+  <div class="sec-label">Analytical Insights</div>
+  <h2 class="sec-title">데이터가 주는 7가지 통찰</h2>
+  <p class="sec-lead">이 플랫폼의 데이터를 종합하면 다음과 같은 질문에 근거 있는 답을 얻을 수 있습니다.</p>
+
+  <div class="insight-list">
+    <div class="insight">
+      <div class="insight-num">01</div>
+      <div class="insight-body">
+        <h4>이란의 전쟁 지속 능력 — 외환보유고 & 군사비</h4>
+        <p>국제 제재 아래에서도 이란의 외환보유고(FI.RES.TOTL.CD)와 군사비 지출(MS.MIL.XPND.CD) 추세를 보면 전쟁 장기화 가능성을 가늠할 수 있습니다. 제재로 외환보유고가 감소할수록 장기전 능력은 약화됩니다.</p>
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">02</div>
+      <div class="insight-body">
+        <h4>유가 충격의 실제 크기 — WTI & Brent 가격</h4>
+        <p>호르무즈 해협은 전 세계 원유의 약 20%가 통과합니다. 긴장 고조 시 WTI와 Brent 가격이 실제로 얼마나 급등하는지, 그 충격이 얼마나 지속되는지를 실시간 차트에서 확인하십시오. 최근 데이터는 "전쟁 = 유가 급등"이라는 통념에 의문을 제기합니다.</p>
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">03</div>
+      <div class="insight-body">
+        <h4>시장이 느끼는 공포의 수준 — VIX & MOVE</h4>
+        <p>금융시장은 지정학적 위험을 VIX(주식)·MOVE(채권) 지수로 가격화합니다. VIX가 30을 넘으면 시장은 이 갈등을 심각한 위험으로 인식하는 것입니다. 뉴스 헤드라인보다 시장 공포지수가 먼저 위기의 심도를 알려줍니다.</p>
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">04</div>
+      <div class="insight-body">
+        <h4>이스라엘 경제의 취약성 — TA-125 & 외환</h4>
+        <p>이스라엘 증시 TA-125와 셰켈화 환율은 분쟁 격화에 가장 민감하게 반응하는 지표입니다. 이스라엘 경제가 장기전을 감당할 수 있는가를 시장 데이터로 평가하십시오.</p>
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">05</div>
+      <div class="insight-body">
+        <h4>이란의 내부 불안정 — WGI 정치 안정성 & 부패 통제</h4>
+        <p>WGI 정치 안정성(PV.EST)과 부패 통제(CC.EST) 지표는 이란 정권이 국내 반발 없이 전쟁을 지속할 수 있는 내부 역량을 반영합니다. 두 지표 모두 −1.5 이하로 매우 낮습니다. 내부 균열이 전쟁 종료 시점에 영향을 미칩니다.</p>
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">06</div>
+      <div class="insight-body">
+        <h4>민주주의 격차와 전쟁 개시 결정 — V-Dem</h4>
+        <p>V-Dem 선거 민주주의 지수를 보면 이란은 0.1 미만, 이스라엘은 0.7 이상입니다. 민주주의 수준이 낮을수록 전쟁 결정은 소수 엘리트에 집중됩니다. 이 구조적 차이가 협상·종전 경로에 어떤 영향을 주는지 분석합니다.</p>
+      </div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">07</div>
+      <div class="insight-body">
+        <h4>무기 수입 네트워크 — 누가 이란·이스라엘에 무기를 공급하는가</h4>
+        <p>무기 수입 규모(MS.MIL.MPRT.KD)는 외부 지원의 크기를 보여줍니다. 이란에 대한 국제 무기 공급망 분석은 러시아·중국의 역할을, 이스라엘에 대한 분석은 미국 지원의 규모를 수치로 확인하는 단서를 제공합니다.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── HOW TO USE ── -->
+<section id="howto">
+<div class="container">
+  <div class="sec-label">How to Use</div>
+  <h2 class="sec-title">이 플랫폼을 활용하는 방법</h2>
+  <p class="sec-lead">각 페이지는 독립적으로도, 함께 교차 분석해도 의미 있는 통찰을 제공합니다.</p>
+
+  <div class="data-grid">
+    <div class="data-card" style="border-color: rgba(56,189,248,.3);">
+      <div class="dc-icon">📋</div>
+      <div class="dc-title" style="color:var(--accent);">Step 1 — 국가 역량 비교</div>
+      <div class="dc-desc">대시보드(index)에서 <strong>이란(IRN)과 이스라엘(ISR)</strong>을 선택하고 군사비·GDP·무기수입 등을 비교하세요. 두 나라의 실물 역량 격차를 연도별로 확인할 수 있습니다.</div>
+      <div class="dc-vars"><a href="/" class="tag" style="text-decoration:none;">→ 대시보드</a></div>
+    </div>
+    <div class="data-card" style="border-color: rgba(251,146,60,.3);">
+      <div class="dc-icon">📡</div>
+      <div class="dc-title" style="color:var(--orange);">Step 2 — 위기 신호 모니터링</div>
+      <div class="dc-desc">위기 진단 페이지에서 <strong>유가·VIX·TA-125</strong>를 실시간으로 확인하세요. 긴장이 고조되는 순간 시장이 먼저 반응합니다. 데이터가 뉴스보다 빠릅니다.</div>
+      <div class="dc-vars"><a href="/crisis" class="tag orange" style="text-decoration:none;">→ 위기 진단</a></div>
+    </div>
+    <div class="data-card" style="border-color: rgba(167,139,250,.3);">
+      <div class="dc-icon">🔍</div>
+      <div class="dc-title" style="color:var(--purple);">Step 3 — 구조적 원인 탐색</div>
+      <div class="dc-desc">정부/정치 역량 페이지에서 <strong>WGI·Freedom House·V-Dem</strong>으로 이란·이스라엘의 거버넌스와 민주주의 수준을 비교하세요. 전쟁의 배후에 있는 제도적 맥락을 파악합니다.</div>
+      <div class="dc-vars"><a href="/governance" class="tag purple" style="text-decoration:none;">→ 거버넌스</a></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── CTA ── -->
+<section style="padding:48px 0; border-bottom:none;">
+<div class="container">
+  <div class="cta-band">
+    <h3>지금 바로 데이터로 이란 전쟁을 분석하세요</h3>
+    <p>이란(IRN)·이스라엘(ISR)이 기본 선택된 상태로 시작합니다. 국가를 바꿔가며 주변국의 역학도 함께 살펴보세요.</p>
+    <div class="cta-row">
+      <a href="/" class="btn-primary">📊 국가 역량 대시보드</a>
+      <a href="/crisis" class="btn-outline">📉 위기 진단 (실시간)</a>
+      <a href="/governance" class="btn-outline">🏛 거버넌스 & 민주주의</a>
+      <a href="/map" class="btn-outline">🗺 미사일 공격상황</a>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── CAVEATS ── -->
+<section id="caveats" style="padding:56px 0;">
+<div class="container">
+  <div class="sec-label">Data Caveats</div>
+  <h2 class="sec-title">데이터의 해석상 주의점</h2>
+  <p class="sec-lead" style="margin-bottom:24px;">이 플랫폼의 공신력을 위해 아래 한계점을 분명히 밝힙니다. 데이터는 현실의 단면일 뿐이며, 해석에는 항상 맥락과 비판적 사고가 필요합니다.</p>
+  <div class="caution-box">
+    <h3>⚠️ 데이터 해석 시 유의 사항</h3>
+    <ul class="caution-list">
+      <li>
+        <span class="ci">📌</span>
+        <span><strong>상관관계는 인과관계가 아닙니다.</strong> 예를 들어 유가 상승과 분쟁 격화가 동시에 나타나더라도, 유가 상승이 분쟁을 유발했다거나 분쟁만이 유가를 올렸다고 단정할 수 없습니다. 복합적인 글로벌 요인이 항상 작동하고 있습니다.</span>
+      </li>
+      <li>
+        <span class="ci">⏱️</span>
+        <span><strong>일부 데이터에는 시간 지연이 있습니다.</strong> World Bank·WGI·Freedom House·V-Dem은 통상 1~2년의 발표 지연이 있습니다. 이는 데이터 수집·검증 과정에서 불가피한 한계로, 현재 진행 중인 전쟁의 최신 상황을 완전히 반영하지 못할 수 있습니다.</span>
+      </li>
+      <li>
+        <span class="ci">🔒</span>
+        <span><strong>이란 등 권위주의 국가의 공식 통계는 신뢰성 한계가 있습니다.</strong> GDP·군사비·사망자 등의 공식 통계는 국가가 직접 보고하는 경우가 많아 과소·과대 보고 가능성이 있습니다. World Bank도 이를 명시적으로 경고합니다.</span>
+      </li>
+      <li>
+        <span class="ci">📉</span>
+        <span><strong>금융 데이터는 이란 전쟁만을 반영하지 않습니다.</strong> VIX·유가·환율 등의 단기 변동에는 미국 연준 금리 결정, 중국 경기 침체, 유럽 에너지 위기 등 수많은 글로벌 변수가 복합적으로 작용합니다. 특정 수치 변화를 이란 갈등만의 결과로 해석하는 것은 과도한 단순화입니다.</span>
+      </li>
+      <li>
+        <span class="ci">🗳️</span>
+        <span><strong>거버넌스·민주주의 지수에는 주관적 평가가 포함됩니다.</strong> WGI는 전문가 설문과 문헌에 기반하고, Freedom House는 미국 기반 비영리 단체의 평가입니다. V-Dem은 학술적 엄밀성이 높으나 전문가 코딩 과정의 편향 가능성이 있습니다. 이 지수들은 단독 근거보다 보완적 참고 자료로 활용하십시오.</span>
+      </li>
+      <li>
+        <span class="ci">📰</span>
+        <span><strong>뉴스 스크랩은 알고리즘 자동 분류이며 오류가 있을 수 있습니다.</strong> 키워드 기반 분류이므로 군사/외교/경제 카테고리 배정이 부정확할 수 있습니다. 기사 원문을 직접 확인하시고, 특정 매체의 보도 관점(편향)을 고려하여 다양한 소스를 교차 검토하십시오.</span>
+      </li>
+      <li>
+        <span class="ci">⚖️</span>
+        <span><strong>본 플랫폼은 정치적으로 중립적 입장을 취합니다.</strong> 서울대학교 행정대학원 고길곤 교수 연구실과 아시아 지역정보센터는 이란·이스라엘 어느 쪽의 입장도 지지하지 않습니다. 모든 분석은 교육·연구 목적이며, 공개 데이터에 근거한 객관적 현황 제시를 목표로 합니다.</span>
+      </li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ── ABOUT / CREDITS ── -->
+<section style="padding:48px 0 64px; border-bottom: none;">
+<div class="container">
+  <div class="sec-label">About</div>
+  <h2 class="sec-title">이 플랫폼에 대하여</h2>
+  <div class="credits">
+    <div class="credits-row">
+      <div class="cred-logo">
+        <div class="org">서울대학교 행정대학원</div>
+        <div class="sub">고길곤 교수 연구실</div>
+        <div class="badge">행정·정책 데이터 분석</div>
+        <div style="margin-top:14px;">
+          <div class="org">아시아 지역정보센터</div>
+          <div class="sub">Asia Regional Information Center</div>
+          <div class="badge" style="background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:var(--gold);">중동·아시아 지역 연구</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="cred-desc">
+        <p>이 플랫폼은 <strong>서울대학교 행정대학원 고길곤 교수 연구실</strong>과 <strong>아시아 지역정보센터</strong>가 공동 구축한 데이터 기반 지역 분석 도구입니다.</p>
+        <p>이란·이스라엘 갈등을 포함한 중동 지역의 정치·경제·안보 역학을 객관적 데이터로 이해하고, 감정과 이념이 아닌 수치와 근거에 기반한 정책 분석·교육을 지원하기 위해 제작되었습니다.</p>
+        <p>활용 데이터: <strong>World Bank Open Data</strong> · <strong>Yahoo Finance (yfinance)</strong> · <strong>Freedom House Freedom in the World</strong> · <strong>V-Dem (Our World in Data)</strong> · <strong>World Bank WGI</strong></p>
+        <p style="margin:0; color:var(--muted2); font-size:12px;">※ 본 자료는 교육·연구 목적으로 제작되었으며, 특정 정치적 입장을 지지하지 않습니다.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+  © 서울대학교 행정대학원 고길곤 교수 연구실 · 아시아 지역정보센터 &nbsp;|&nbsp;
+  자료: World Bank · Yahoo Finance · Freedom House · V-Dem · OWID &nbsp;|&nbsp;
+  교육·연구 목적
+</footer>
+
+</body>
+</html>

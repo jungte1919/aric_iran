@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>정부/정치 역량 — 거버넌스 & 민주주의 지표</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a; --card: #1e293b; --border: #334155;
+      --text: #f1f5f9; --muted: #94a3b8;
+      --accent: #38bdf8; --accent-h: #7dd3fc; --accent-s: rgba(56,189,248,.15);
+      --green: #34d399; --red: #f87171; --orange: #fb923c; --purple: #a78bfa;
+      --r: 12px; --sh: 0 4px 24px rgba(0,0,0,.25);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: "Noto Sans KR", -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+    header { padding: 20px 28px; background: linear-gradient(135deg,#1e293b 0%,#0f172a 100%); border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; box-shadow: var(--sh); }
+    header h1 { font-size: 1.3rem; font-weight: 700; margin: 0; }
+    header .sub { font-size: 12px; color: var(--muted); }
+    .nav a { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500; padding: 7px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--accent-s); margin-left: 6px; transition: background .2s; }
+    .nav a:hover { background: rgba(56,189,248,.25); border-color: var(--accent); }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+    .card { background: var(--card); border-radius: var(--r); border: 1px solid var(--border); padding: 22px 24px; margin-bottom: 20px; box-shadow: var(--sh); }
+    .card h2 { font-size: 1rem; font-weight: 600; margin: 0 0 4px; border-left: 3px solid var(--accent); padding-left: 11px; }
+    .subtext { font-size: 12px; color: var(--muted); margin: 3px 0 12px 14px; }
+    /* controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+    .ctrl-col { display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    select[multiple] { min-height: 148px; min-width: 195px; }
+    select, input[type=number] { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: var(--text); font-size: 13px; font-family: inherit; }
+    input[type=number] { width: 96px; }
+    /* tabs */
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+    .tab-btn { padding: 10px 20px; background: none; border: none; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color .2s, border-color .2s; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    /* buttons */
+    button.run { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: #0f172a; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; transition: background .2s, transform .1s; }
+    button.run:hover { background: var(--accent-h); transform: translateY(-1px); }
+    button.run:disabled { opacity: .5; cursor: default; transform: none; }
+    button.csv { padding: 5px 11px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
+    button.csv:hover { background: rgba(56,189,248,.12); color: var(--accent); border-color: var(--accent); }
+    .status { font-size: 12px; color: var(--muted); margin-left: 8px; }
+    .status.err { color: var(--red); }
+    /* section header */
+    .sec-hdr { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    /* panels grid */
+    .panels { display: grid; grid-template-columns: repeat(auto-fill, minmax(500px, 1fr)); gap: 18px; margin-top: 8px; }
+    .panel { background: #0f172a; border-radius: 10px; border: 1px solid var(--border); padding: 14px; }
+    .panel-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .panel-title { font-size: 13px; font-weight: 600; }
+    .panel-desc { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .ch-wrap { position: relative; height: 250px; }
+    /* table */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { background: #0f172a; color: var(--muted); font-weight: 500; }
+    td:first-child, th:first-child { text-align: left; }
+    .num { font-variant-numeric: tabular-nums; }
+    .pos { color: var(--green); } .neg { color: var(--red); }
+    /* FH status badges */
+    .fh-F   { color: #4ade80; font-weight: 600; }
+    .fh-PF  { color: #facc15; font-weight: 600; }
+    .fh-NF  { color: var(--red);  font-weight: 600; }
+    /* legend */
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-size: 11px; color: var(--muted); }
+    .legend span { display: flex; align-items: center; gap: 4px; }
+    .ldot { width: 10px; height: 10px; border-radius: 50%; }
+    footer { padding: 16px 0; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); text-align: center; margin-top: 28px; }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>정부/정치 역량</h1>
+    <div class="sub">WGI · Freedom House · V-Dem (Varieties of Democracy)</div>
+  </div>
+  <nav class="nav">
+    <a href="/why" style="background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fbbf24;">왜 데이터인가</a>
+    <a href="/">🏦 국가자원/국방력</a>
+    <a href="/crisis">⚡ 위기 진단</a>
+    <a href="/governance" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">🏛 거버넌스/민주주의</a>
+    <a href="/news">📰 뉴스 스크랩</a>
+    <a href="/map">🗺 미사일 공격상황</a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- ── 공통 조건 ── -->
+  <section class="card" id="condCard">
+    <h2>분석 조건</h2>
+    <div class="subtext">국가·연도 범위를 설정하고 아래 탭에서 원하는 데이터셋을 선택 후 「분석 실행」을 누르세요.</div>
+    <div class="controls">
+      <div class="ctrl-col">
+        <label>국가 선택 (Ctrl/Shift: 복수)</label>
+        <select id="countrySelect" multiple size="7"></select>
+      </div>
+      <div class="ctrl-col" style="gap:10px;">
+        <div style="display:flex;gap:10px;">
+          <div class="ctrl-col">
+            <label>시작 연도</label>
+            <input type="number" id="yearStart" value="2000" min="1800" max="2024" />
+          </div>
+          <div class="ctrl-col">
+            <label>끝 연도</label>
+            <input type="number" id="yearEnd" value="2024" min="1800" max="2024" />
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <button id="runBtn" class="run"><span>▶</span><span>분석 실행</span></button>
+          <span id="statusEl" class="status"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 탭 ── -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="wgi">🏛 World Bank WGI</button>
+    <button class="tab-btn" data-tab="fh">🗽 Freedom House</button>
+    <button class="tab-btn" data-tab="vdem">📊 V-Dem</button>
+  </div>
+
+  <!-- ══ WGI 탭 ══ -->
+  <div class="tab-pane active" id="tab-wgi">
+    <section class="card" id="wgiChartSec" style="display:none;">
+      <div class="sec-hdr">
+        <h2 style="margin:0;">거버넌스 지표 추세 <span style="font-size:11px;color:var(--muted);font-weight:400;">(−2.5 ~ +2.5, 높을수록 좋음)</span></h2>
+        <button class="csv" id="wgiCsvAll">↓ 전체 CSV</button>
+      </div>
+      <div class="subtext">World Bank WGI 6개 지표. 점선: 0 기준선.</div>
+      <div class="panels" id="wgiPanels"></div>
+    </section>
+    <section class="card" id="wgiRadarSec" style="display:none;">
+      <h2>최신 연도 종합 비교 (레이더)</h2>
+      <div class="subtext" id="wgiRadarSub"></div>
+      <div style="max-width:520px;margin:0 auto;position:relative;height:360px;">
+        <canvas id="wgiRadarCanvas"></canvas>
+      </div>
+    </section>
+    <section class="card" id="wgiTableSec" style="display:none;">
+      <div class="sec-hdr"><h2 style="margin:0;">원자료 (WGI)</h2><button class="csv" id="wgiCsvTable">↓ CSV</button></div>
+      <div class="tbl-wrap"><table id="wgiTable"><thead></thead><tbody></tbody></table></div>
+    </section>
+  </div>
+
+  <!-- ══ Freedom House 탭 ══ -->
+  <div class="tab-pane" id="tab-fh">
+    <section class="card" id="fhInfoCard" style="display:none;">
+      <div class="sec-hdr">
+        <h2 style="margin:0;">Freedom House — Freedom in the World <span style="font-size:11px;color:var(--muted);font-weight:400;">(2013–2024)</span></h2>
+        <button class="csv" id="fhCsvAll">↓ 전체 CSV</button>
+      </div>
+      <div class="subtext">Total: 0–100 (높을수록 자유). PR/CL 등급: 1–7 (낮을수록 자유). 상태: F=자유, PF=부분자유, NF=비자유.</div>
+    </section>
+    <section class="card" id="fhChartSec" style="display:none;">
+      <div class="panels" id="fhPanels"></div>
+    </section>
+    <section class="card" id="fhStatusSec" style="display:none;">
+      <h2>자유 상태 분류 (연도별)</h2>
+      <div class="tbl-wrap"><table id="fhStatusTable"><thead></thead><tbody></tbody></table></div>
+    </section>
+  </div>
+
+  <!-- ══ V-Dem 탭 ══ -->
+  <div class="tab-pane" id="tab-vdem">
+    <section class="card" id="vdemInfoCard" style="display:none;">
+      <div class="sec-hdr">
+        <h2 style="margin:0;">V-Dem — Varieties of Democracy <span style="font-size:11px;color:var(--muted);font-weight:400;">(0 ~ 1, 높을수록 민주적)</span></h2>
+        <button class="csv" id="vdemCsvAll">↓ 전체 CSV</button>
+      </div>
+      <div class="subtext">V-Dem 4개 지수 (Our World in Data 기반). 1789년~최신까지 장기 추세 확인 가능.</div>
+    </section>
+    <section class="card" id="vdemChartSec" style="display:none;">
+      <div class="panels" id="vdemPanels"></div>
+    </section>
+    <section class="card" id="vdemRadarSec" style="display:none;">
+      <h2>최신 연도 민주주의 종합 비교 (레이더)</h2>
+      <div class="subtext" id="vdemRadarSub"></div>
+      <div style="max-width:500px;margin:0 auto;position:relative;height:340px;">
+        <canvas id="vdemRadarCanvas"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <footer>자료: World Bank WGI · Freedom House FIW · V-Dem / Our World in Data. 서울대학교 고길곤 교수 연구실.</footer>
+</main>
+
+<script>
+/* ── 공통 상수 ── */
+const COLORS = ['#38bdf8','#34d399','#fb923c','#a78bfa','#f472b6','#facc15','#60a5fa','#4ade80','#f87171','#e879f9'];
+const FOOTNOTE = '자료: World Bank / Freedom House / V-Dem (OWID). 서울대 고길곤 교수 연구실.';
+
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.borderColor = '#334155';
+}
+
+/* ── 국가 목록 ── */
+const FALLBACK = [
+  {id:'KOR',name:'Korea, Rep.'},{id:'USA',name:'United States'},
+  {id:'JPN',name:'Japan'},{id:'CHN',name:'China'},
+  {id:'RUS',name:'Russian Federation'},{id:'UKR',name:'Ukraine'},
+  {id:'IRN',name:'Iran, Islamic Rep.'},{id:'ISR',name:'Israel'},
+  {id:'SAU',name:'Saudi Arabia'},{id:'DEU',name:'Germany'},
+  {id:'GBR',name:'United Kingdom'},{id:'FRA',name:'France'},
+  {id:'PRK',name:"Korea, Dem. People's Rep."},
+];
+(function(){
+  const sel = document.getElementById('countrySelect');
+  function fill(list){
+    sel.innerHTML='';
+    list.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name+' ('+c.id+')';sel.appendChild(o);});
+  }
+  fill(FALLBACK);
+  fetch('/api/countries').then(r=>r.json()).then(d=>{if(Array.isArray(d)&&d.length)fill(d);}).catch(()=>{});
+})();
+
+/* ── 탭 전환 ── */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+function activeTab(){ return document.querySelector('.tab-btn.active').dataset.tab; }
+
+/* ── 유틸 ── */
+function setStatus(msg,err){
+  const el=document.getElementById('statusEl');
+  el.textContent=msg||''; el.className='status'+(err?' err':'');
+}
+function getCountries(){
+  const sel=document.getElementById('countrySelect');
+  return Array.from(sel.selectedOptions).map(o=>o.value);
+}
+function getYears(){ return {s:+document.getElementById('yearStart').value, e:+document.getElementById('yearEnd').value}; }
+
+/* ── CSV 다운로드 ── */
+function dlCSV(filename, rows){
+  const blob=new Blob(['\uFEFF'+rows.join('\r\n'),],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},200);
+}
+
+/* ── 차트 destroy 헬퍼 ── */
+const _charts = {};
+function mkChart(id, cfg){
+  if(_charts[id]) try{_charts[id].destroy();}catch(e){}
+  const canvas=document.getElementById(id);
+  if(!canvas) return;
+  _charts[id]=new Chart(canvas.getContext('2d'),cfg);
+  return _charts[id];
+}
+
+/* ── 공통 패널 생성 ── */
+function makePanel(containerId, canvasId, title, desc){
+  const container=document.getElementById(containerId);
+  const div=document.createElement('div'); div.className='panel';
+  div.innerHTML=`<div class="panel-hdr"><span class="panel-title">${title}</span><button class="csv panel-csv">↓ CSV</button></div>`
+    +(desc?`<div class="panel-desc">${desc}</div>`:'')
+    +`<div class="ch-wrap"><canvas id="${canvasId}"></canvas></div>`;
+  container.appendChild(div);
+  return div;
+}
+
+/* ══════════════════════════════
+   WGI
+══════════════════════════════ */
+const WGI_DESC={
+  'VA.EST':'시민의 정치 참여·언론 자유',
+  'PV.EST':'폭력·테러에 의한 정권 불안정 가능성',
+  'GE.EST':'공공서비스·정책의 질과 신뢰도',
+  'RQ.EST':'민간 발전을 위한 정부 규제 역량',
+  'RL.EST':'법·계약·재산권 준수 수준',
+  'CC.EST':'공권력을 이용한 사적 이익 획득 억제',
+};
+let wgiData=null;
+
+function drawWGI(res){
+  wgiData=res;
+  const {indicators,data,countries}=res;
+  document.getElementById('wgiPanels').innerHTML='';
+
+  Object.entries(indicators).forEach(([id,name],pi)=>{
+    const canvasId='wgiC_'+id.replace(/\./g,'_');
+    const panel=makePanel('wgiPanels',canvasId,name,WGI_DESC[id]||'');
+
+    // 데이터 구성
+    const allYears=new Set();
+    countries.forEach(c=>(data[id]&&data[id][c]||[]).forEach(r=>allYears.add(r.year)));
+    const years=[...allYears].sort((a,b)=>a-b);
+
+    const datasets=countries.map((c,i)=>{
+      const byY={}; (data[id]&&data[id][c]||[]).forEach(r=>byY[r.year]=r.value);
+      return{label:c,data:years.map(y=>byY[y]??null),borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'22',tension:.3,spanGaps:true,pointRadius:2,borderWidth:2};
+    });
+    const zero={label:'기준(0)',data:years.map(()=>0),borderColor:'#475569',borderDash:[5,4],borderWidth:1,pointRadius:0,fill:false,tension:0};
+
+    mkChart(canvasId,{type:'line',data:{labels:years,datasets:[...datasets,zero]},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8,font:{size:10},filter:i=>i.text!=='기준(0)'}},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>ctx.dataset.label==='기준(0)'?null:ctx.dataset.label+': '+(ctx.raw!=null?ctx.raw.toFixed(3):'—')}}},
+      scales:{x:{ticks:{maxTicksLimit:10}},y:{suggestedMin:-2.5,suggestedMax:2.5,title:{display:true,text:'WGI 점수',font:{size:10}}}}}});
+
+    // 패널 CSV
+    panel.querySelector('.panel-csv').addEventListener('click',()=>{
+      const rows=[['연도',...countries].join(',')];
+      years.forEach(y=>{const row=[y];countries.forEach(c=>{const f=(data[id]&&data[id][c]||[]).find(r=>r.year===y);row.push(f&&f.value!=null?f.value:'');});rows.push(row.join(','));});
+      dlCSV(name.replace(/[\/\\:*?"<>| ()]/g,'_')+'.csv',rows);
+    });
+  });
+
+  // 레이더
+  const indIds=Object.keys(indicators);
+  const latestVals={};
+  let latestY=null;
+  countries.forEach(c=>{
+    latestVals[c]=indIds.map(id=>{
+      const rows=(data[id]&&data[id][c])||[];
+      const last=rows.filter(r=>r.value!=null).sort((a,b)=>b.year-a.year)[0];
+      if(last&&(!latestY||last.year>latestY)) latestY=last.year;
+      return last?last.value:null;
+    });
+  });
+  document.getElementById('wgiRadarSub').textContent=(latestY||'최신')+' 기준 6개 지표 종합 비교';
+  mkChart('wgiRadarCanvas',{type:'radar',data:{
+    labels:indIds.map(id=>{const n=indicators[id];const p=n.indexOf('(');return p>0?n.slice(p+1,n.indexOf(')','(')): n;}),
+    datasets:countries.map((c,i)=>({label:c,data:latestVals[c],borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'33',borderWidth:2}))},
+    options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:-2.5,max:2.5,ticks:{stepSize:1,font:{size:10}}}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8}}}}});
+
+  // 테이블
+  const allYrs=new Set();
+  countries.forEach(c=>indIds.forEach(id=>(data[id]&&data[id][c]||[]).forEach(r=>allYrs.add(r.year))));
+  const sortedYrs=[...allYrs].sort((a,b)=>a-b);
+  let th='<tr><th>연도</th>';
+  countries.forEach(c=>indIds.forEach(id=>{ th+=`<th>${c}<br><span style="font-weight:400;font-size:10px;">${indicators[id].replace(/\(.+\)/,'').trim()}</span></th>`; }));
+  th+='</tr>';
+  document.querySelector('#wgiTable thead').innerHTML=th;
+  let tb='';
+  sortedYrs.forEach(y=>{
+    tb+=`<tr><td>${y}</td>`;
+    countries.forEach(c=>indIds.forEach(id=>{
+      const f=(data[id]&&data[id][c]||[]).find(r=>r.year===y);
+      const v=f&&f.value!=null?f.value:null;
+      tb+=v==null?'<td>—</td>':`<td class="num ${v>=0?'pos':'neg'}">${v.toFixed(3)}</td>`;
+    }));
+    tb+='</tr>';
+  });
+  document.querySelector('#wgiTable tbody').innerHTML=tb;
+
+  ['wgiChartSec','wgiRadarSec','wgiTableSec'].forEach(id=>document.getElementById(id).style.display='block');
+
+  // 전체 CSV
+  document.getElementById('wgiCsvAll').onclick=()=>{
+    const rows=[['연도','국가',...indIds.map(id=>'"'+indicators[id].replace(/"/g,'""')+'"')].join(',')];
+    sortedYrs.forEach(y=>countries.forEach(c=>{
+      const row=[y,c];
+      indIds.forEach(id=>{const f=(data[id]&&data[id][c]||[]).find(r=>r.year===y);row.push(f&&f.value!=null?f.value:'');});
+      rows.push(row.join(','));
+    }));
+    dlCSV('WGI_전체.csv',rows);
+  };
+  document.getElementById('wgiCsvTable').onclick=()=>document.getElementById('wgiCsvAll').onclick();
+}
+
+/* ══════════════════════════════
+   Freedom House
+══════════════════════════════ */
+const FH_PANELS=[
+  {key:'total', label:'종합 자유 점수 (Total)', desc:'0(최저) ~ 100(최고). 높을수록 자유로운 국가.'},
+  {key:'pr',    label:'정치적 권리 (PR rating)', desc:'1(최고) ~ 7(최저). 선거의 자유·공정성·정치 참여.'},
+  {key:'cl',    label:'시민 자유 (CL rating)',   desc:'1(최고) ~ 7(최저). 표현·신념·결사·개인 자율성.'},
+];
+let fhData=null;
+
+function drawFH(res){
+  fhData=res;
+  const {data,countries}=res;
+
+  document.getElementById('fhPanels').innerHTML='';
+
+  FH_PANELS.forEach((cfg,pi)=>{
+    const canvasId='fhC_'+cfg.key;
+    const panel=makePanel('fhPanels',canvasId,cfg.label,cfg.desc);
+
+    const allYears=new Set();
+    countries.forEach(c=>(data[c]||[]).forEach(r=>allYears.add(r.year)));
+    const years=[...allYears].sort((a,b)=>a-b);
+
+    const inverted=cfg.key!=='total'; // PR/CL: 낮을수록 좋음 → 반전 표시 안내
+    const datasets=countries.map((c,i)=>{
+      const byY={}; (data[c]||[]).forEach(r=>byY[r.year]=r[cfg.key]);
+      return{label:c,data:years.map(y=>byY[y]??null),borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'22',tension:.3,spanGaps:true,pointRadius:3,borderWidth:2};
+    });
+
+    const yAxis=cfg.key==='total'
+      ?{suggestedMin:0,suggestedMax:100,title:{display:true,text:'점수 (0-100)',font:{size:10}}}
+      :{reverse:true,min:1,max:7,ticks:{stepSize:1},title:{display:true,text:'등급 (1=최고, 7=최저)',font:{size:10}}};
+
+    mkChart(canvasId,{type:'line',data:{labels:years,datasets},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8,font:{size:10}}},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{maxTicksLimit:8}},y:yAxis}}});
+
+    panel.querySelector('.panel-csv').addEventListener('click',()=>{
+      const rows=[['연도',...countries].join(',')];
+      years.forEach(y=>{const row=[y];countries.forEach(c=>{const f=(data[c]||[]).find(r=>r.year===y);row.push(f&&f[cfg.key]!=null?f[cfg.key]:'');});rows.push(row.join(','));});
+      dlCSV('FH_'+cfg.key+'.csv',rows);
+    });
+  });
+
+  // 상태 테이블
+  const allYears=new Set();
+  countries.forEach(c=>(data[c]||[]).forEach(r=>allYears.add(r.year)));
+  const years=[...allYears].sort((a,b)=>a-b);
+  let th='<tr><th>국가 / 연도</th>'+years.map(y=>'<th>'+y+'</th>').join('')+'</tr>';
+  let tb='';
+  countries.forEach(c=>{
+    tb+=`<tr><td>${c}</td>`;
+    years.forEach(y=>{
+      const f=(data[c]||[]).find(r=>r.year===y);
+      const st=f?f.status:'—';
+      tb+=`<td class="fh-${st||''}">${st||'—'}</td>`;
+    });
+    tb+='</tr>';
+  });
+  document.querySelector('#fhStatusTable thead').innerHTML=th;
+  document.querySelector('#fhStatusTable tbody').innerHTML=tb;
+
+  ['fhInfoCard','fhChartSec','fhStatusSec'].forEach(id=>document.getElementById(id).style.display='block');
+
+  // 전체 CSV
+  document.getElementById('fhCsvAll').onclick=()=>{
+    const rows=[['연도','국가','Total(0-100)','PR(1-7)','CL(1-7)','Status'].join(',')];
+    countries.forEach(c=>(data[c]||[]).sort((a,b)=>a.year-b.year).forEach(r=>{rows.push([r.year,c,r.total??'',r.pr??'',r.cl??'',r.status??''].join(','));}));
+    dlCSV('FH_Freedom_전체.csv',rows);
+  };
+}
+
+/* ══════════════════════════════
+   V-Dem
+══════════════════════════════ */
+const VDEM_DESC={
+  electoral:'선거 경쟁성·투표권·공정한 선거 수준',
+  liberal:'개인 자유·법치주의·수평적 견제 수준',
+  participatory:'시민 사회·직접 민주주의·지역 자치 수준',
+  human_rights:'표현·결사·개인 자율성·법 앞의 평등',
+};
+let vdemData=null;
+
+function drawVdem(res){
+  vdemData=res;
+  const {indicators,data,countries}=res;
+
+  document.getElementById('vdemPanels').innerHTML='';
+
+  Object.entries(indicators).forEach(([key,label],pi)=>{
+    const canvasId='vdemC_'+key;
+    const panel=makePanel('vdemPanels',canvasId,label,VDEM_DESC[key]||'');
+
+    const allYears=new Set();
+    countries.forEach(c=>(data[c]&&data[c][key]||[]).forEach(r=>allYears.add(r.year)));
+    const years=[...allYears].sort((a,b)=>a-b);
+
+    const datasets=countries.map((c,i)=>{
+      const byY={}; (data[c]&&data[c][key]||[]).forEach(r=>byY[r.year]=r.value);
+      return{label:c,data:years.map(y=>byY[y]??null),borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'22',tension:.3,spanGaps:true,pointRadius:years.length>80?0:2,borderWidth:2};
+    });
+
+    mkChart(canvasId,{type:'line',data:{labels:years,datasets},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8,font:{size:10}}},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.raw!=null?ctx.raw.toFixed(3):'—')}}},
+      scales:{x:{ticks:{maxTicksLimit:12}},y:{min:0,max:1,title:{display:true,text:'지수 (0~1)',font:{size:10}}}}}});
+
+    panel.querySelector('.panel-csv').addEventListener('click',()=>{
+      const rows=[['연도',...countries].join(',')];
+      years.forEach(y=>{const row=[y];countries.forEach(c=>{const f=(data[c]&&data[c][key]||[]).find(r=>r.year===y);row.push(f&&f.value!=null?f.value:'');});rows.push(row.join(','));});
+      dlCSV('VDem_'+key+'.csv',rows);
+    });
+  });
+
+  // 레이더 (최신 연도)
+  const keys=Object.keys(indicators);
+  let latestY=null;
+  const latestVals={};
+  countries.forEach(c=>{
+    latestVals[c]=keys.map(key=>{
+      const rows=(data[c]&&data[c][key])||[];
+      const last=rows.filter(r=>r.value!=null).sort((a,b)=>b.year-a.year)[0];
+      if(last&&(!latestY||last.year>latestY)) latestY=last.year;
+      return last?last.value:null;
+    });
+  });
+  document.getElementById('vdemRadarSub').textContent=(latestY||'최신')+' 기준 4개 V-Dem 지수 종합 비교';
+  mkChart('vdemRadarCanvas',{type:'radar',data:{
+    labels:keys.map(k=>indicators[k]),
+    datasets:countries.map((c,i)=>({label:c,data:latestVals[c],borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'33',borderWidth:2}))},
+    options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:1,ticks:{stepSize:.2,font:{size:10}}}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8}}}}});
+
+  ['vdemInfoCard','vdemChartSec','vdemRadarSec'].forEach(id=>document.getElementById(id).style.display='block');
+
+  // 전체 CSV
+  document.getElementById('vdemCsvAll').onclick=()=>{
+    const allYears=new Set();
+    countries.forEach(c=>keys.forEach(key=>(data[c]&&data[c][key]||[]).forEach(r=>allYears.add(r.year))));
+    const sortedYrs=[...allYears].sort((a,b)=>a-b);
+    const rows=[['연도','국가',...keys.map(k=>'"'+indicators[k].replace(/"/g,'""')+'"')].join(',')];
+    sortedYrs.forEach(y=>countries.forEach(c=>{
+      const row=[y,c];
+      keys.forEach(key=>{const f=(data[c]&&data[c][key]||[]).find(r=>r.year===y);row.push(f&&f.value!=null?f.value:'');});
+      rows.push(row.join(','));
+    }));
+    dlCSV('VDem_전체.csv',rows);
+  };
+}
+
+/* ══════════════════════════════
+   분석 실행
+══════════════════════════════ */
+document.getElementById('runBtn').addEventListener('click', async ()=>{
+  const countries=getCountries();
+  if(!countries.length){setStatus('국가를 하나 이상 선택하세요.',true);return;}
+  const {s,e}=getYears();
+  if(s>=e){setStatus('연도 범위가 올바르지 않습니다.',true);return;}
+
+  const tab=activeTab();
+  document.getElementById('runBtn').disabled=true;
+  setStatus('불러오는 중…');
+
+  const q=`countries=${encodeURIComponent(countries.join(','))}&year_start=${s}&year_end=${e}`;
+
+  try{
+    if(tab==='wgi'){
+      const r=await fetch('/api/governance?'+q);
+      const res=await r.json();
+      if(res.error){setStatus(res.error,true);return;}
+      drawWGI(res);
+      setStatus('완료 — WGI ('+countries.join(', ')+')');
+    } else if(tab==='fh'){
+      // FH는 2013-2024만 존재
+      const ys=Math.max(s,2013), ye=Math.min(e,2024);
+      const r=await fetch(`/api/freedom_house?${q}&year_start=${ys}&year_end=${ye}`);
+      const res=await r.json();
+      if(res.error){setStatus(res.error,true);return;}
+      drawFH(res);
+      setStatus('완료 — Freedom House 2013–2024 ('+countries.join(', ')+')');
+    } else if(tab==='vdem'){
+      const r=await fetch('/api/vdem?'+q);
+      const res=await r.json();
+      if(res.error){setStatus(res.error,true);return;}
+      drawVdem(res);
+      setStatus('완료 — V-Dem ('+countries.join(', ')+')');
+    }
+  } catch(err){
+    setStatus('오류: '+(err.message||err),true);
+  } finally{
+    document.getElementById('runBtn').disabled=false;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Google App Engine 설정 — 데이터로 이해하는 이란 전쟁
+runtime: python312
+
+# F1: 무료 티어 (256MB), 메모리 부족 시 F2(512MB)로 변경
+instance_class: F1
+
+env_variables:
+  FLASK_ENV: production
+
+# 정적 파일은 App Engine이 직접 서빙 (효율적)
+handlers:
+  - url: /static
+    static_dir: static/
+  - url: /.*
+    script: auto
+
+# Gunicorn으로 실행 (App Engine 기본 포트 8080)
+entrypoint: gunicorn -b 0.0.0.0:8080 --workers 1 --threads 8 app:app

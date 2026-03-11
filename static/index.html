@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>데이터로 이해하는 이란 전쟁</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-page: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --gradient-header: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    }
+    body { font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; background: var(--bg-page); color: var(--text); font-size: 14px; line-height: 1.6; }
+    header { padding: 20px 28px; background: var(--gradient-header); border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
+    header h1 { font-size: 1.35rem; font-weight: 700; margin: 0; color: var(--text); letter-spacing: -0.03em; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+    .card { background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px 26px 26px; margin-bottom: 24px; box-shadow: var(--shadow); transition: border-color 0.2s; }
+    .card:hover { border-color: #475569; }
+    .card h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 4px; color: var(--text); border-left: 3px solid var(--accent); padding-left: 12px; }
+    .subtext { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; margin-left: 15px; }
+    label { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    select, input[type="number"] { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: var(--text); font-size: 13px; outline: none; box-sizing: border-box; font-family: inherit; }
+    select:focus, input[type="number"]:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+    select[multiple] { min-height: 140px; }
+    select option { background: var(--bg-card); color: var(--text); padding: 6px 8px; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .col { flex: 1 1 160px; min-width: 0; }
+    button.primary { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: #0f172a; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; transition: background 0.2s, transform 0.1s; }
+    button.primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    button.primary:disabled { opacity: 0.5; cursor: default; transform: none; }
+    #status { font-size: 12px; color: var(--text-muted); margin-left: 8px; }
+    #status.error { color: #f87171; }
+    .chart-wrap { min-height: 280px; position: relative; border-radius: 10px; background: #0f172a; padding: 16px; margin-bottom: 6px; border: 1px solid var(--border); }
+    .chart-wrap canvas { max-width: 100%; }
+    .chart-footnote { font-size: 11px; color: var(--text-muted); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+    #chartTrend, #chartBar, #chartIndex { width: 100% !important; height: 280px !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+    th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); color: var(--text); }
+    th { background: #0f172a; color: var(--text-muted); position: sticky; top: 0; z-index: 1; font-weight: 500; }
+    td:first-child, th:first-child { text-align: left; position: sticky; left: 0; background: var(--bg-card); }
+    .table-wrapper { max-height: 220px; overflow: auto; border-radius: 10px; border: 1px solid var(--border); background: #0f172a; }
+    .nav-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .nav-links a { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--accent-soft); transition: background 0.2s, border-color 0.2s; }
+    .nav-links a:hover { background: rgba(56, 189, 248, 0.25); border-color: var(--accent); }
+    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); color: var(--text-muted); background: #0f172a; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #38bdf8; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>데이터로 이해하는 이란 전쟁</h1>
+      <div class="subtext">🏦 국가자원 · 국방력 — World Bank 지표로 이란·이스라엘 등 국가별 역량을 비교합니다.</div>
+    </div>
+    <div class="nav-links">
+      <a href="/why" style="background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.4); color: #fbbf24;">왜 데이터인가</a>
+      <a href="/" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">🏦 국가자원/국방력</a>
+      <a href="/crisis">⚡ 위기 진단</a>
+      <a href="/governance">🏛 거버넌스/민주주의</a>
+      <a href="/news">📰 뉴스 스크랩</a>
+      <a href="/map">🗺 미사일 공격상황</a>
+      <div class="badge"><span class="badge-dot"></span> World Bank API</div>
+    </div>
+  </header>
+  <main class="container">
+    <section class="card">
+      <h2>분석 조건</h2>
+      <div class="subtext">국가(복수 선택: Ctrl/Shift)와 지표, 연도 범위를 선택 후 분석 실행.</div>
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label for="countrySelect">국가 선택 (여러 개 선택: Ctrl/Shift 클릭)</label>
+          <select id="countrySelect" multiple size="8"></select>
+        </div>
+        <div class="col">
+          <label for="indicatorSelect">지표 선택</label>
+          <select id="indicatorSelect"></select>
+        </div>
+      </div>
+      <div class="row" style="align-items: flex-end; margin-bottom: 4px;">
+        <div class="col" style="max-width: 120px;">
+          <label for="yearStart">시작 연도</label>
+          <input type="number" id="yearStart" value="2010" />
+        </div>
+        <div class="col" style="max-width: 120px;">
+          <label for="yearEnd">끝 연도</label>
+          <input type="number" id="yearEnd" value="2025" />
+        </div>
+        <div class="col" style="flex: 0 0 auto; display: flex; align-items: center; gap: 8px;">
+          <button id="runBtn" class="primary"><span>▶</span><span>분석 실행</span></button>
+          <span id="status"></span>
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>시각화</h2>
+      <div class="subtext">선택 지표의 연도별 추세, 국가별 최근 3년 평균, 기준연도=100 지수.</div>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">연도별 추세 (실제값·추세선)</h3>
+      <div id="wrapTrend"><div class="chart-wrap"><div id="chartTrendPlace" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">조건 선택 후 「분석 실행」을 눌러주세요.</div></div><p class="chart-footnote" id="footnoteTrend" style="display:none;">자료: World Bank. 서울대학교 고길곤 교수 연구실.</p></div>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">국가별 최근 3년 평균</h3>
+      <div id="wrapBar"><div class="chart-wrap"><div id="chartBarPlace" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">—</div></div><p class="chart-footnote" id="footnoteBar" style="display:none;">자료: World Bank. 서울대학교 고길곤 교수 연구실.</p></div>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">기준연도=100 지수</h3>
+      <div id="wrapIndex"><div class="chart-wrap"><div id="chartIndexPlace" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">—</div></div><p class="chart-footnote" id="footnoteIndex" style="display:none;">자료: World Bank. 서울대학교 고길곤 교수 연구실.</p></div>
+    </section>
+    <section class="card">
+      <h2>원자료</h2>
+      <div class="subtext">그래프에 사용된 연도·국가별 수치.</div>
+      <div class="table-wrapper">
+        <table id="dataTable"><thead></thead><tbody></tbody></table>
+      </div>
+    </section>
+    <section class="card" style="border-color: #1d4ed8; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 style="color: #93c5fd; border-left-color: #3b82f6;">정부/정치 역량 분석</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0 0;">
+            World Bank Worldwide Governance Indicators(WGI) — 발언권·정치안정·정부효과성·규제품질·법치주의·부패통제 6개 지표를 국가별로 비교합니다.
+          </p>
+        </div>
+        <a href="/governance" style="padding: 10px 20px; border-radius: 8px; border: none; background: #3b82f6; color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">바로가기 →</a>
+      </div>
+    </section>
+    <footer style="margin-top: 32px; padding: 16px 0; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); text-align: center;">
+      자료: World Bank. 서울대학교 고길곤 교수 연구실.
+    </footer>
+  </main>
+  <script>
+    if (typeof Chart !== 'undefined') {
+      Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
+      Chart.defaults.color = '#94a3b8';
+      Chart.defaults.borderColor = '#334155';
+    }
+    const countrySelect = document.getElementById('countrySelect');
+    const indicatorSelect = document.getElementById('indicatorSelect');
+    const runBtn = document.getElementById('runBtn');
+    const statusEl = document.getElementById('status');
+    const tableHead = document.querySelector('#dataTable thead');
+    const tableBody = document.querySelector('#dataTable tbody');
+    const chartTrendPlace = document.getElementById('chartTrendPlace');
+    const chartBarPlace = document.getElementById('chartBarPlace');
+    const chartIndexPlace = document.getElementById('chartIndexPlace');
+
+    let chartTrend = null, chartBar = null, chartIndex = null;
+
+    function setStatus(msg, isError) {
+      statusEl.textContent = msg || '';
+      statusEl.className = isError ? 'error' : '';
+    }
+
+    const FALLBACK_COUNTRIES = [
+      { id: 'IRN', name: 'Iran, Islamic Rep.' }, { id: 'ISR', name: 'Israel' }, { id: 'SAU', name: 'Saudi Arabia' },
+      { id: 'RUS', name: 'Russian Federation' }, { id: 'UKR', name: 'Ukraine' },
+      { id: 'KOR', name: 'Korea, Rep.' }, { id: 'PRK', name: 'Korea, Dem. People\'s Rep.' },
+      { id: 'USA', name: 'United States' }, { id: 'CHN', name: 'China' }, { id: 'JPN', name: 'Japan' },
+      { id: 'DEU', name: 'Germany' }, { id: 'FRA', name: 'France' }, { id: 'GBR', name: 'United Kingdom' },
+    ];
+
+    function fillCountrySelect(list) {
+      countrySelect.innerHTML = '';
+      var arr = Array.isArray(list) ? list : FALLBACK_COUNTRIES;
+      arr.sort(function(a, b) { return (a.name || a.id || '').localeCompare(b.name || b.id || ''); });
+      arr.forEach(function(c) {
+        const opt = document.createElement('option');
+        opt.value = c.id || c;
+        opt.textContent = (c.name || c.id || c) + ' (' + (c.id || c) + ')';
+        countrySelect.appendChild(opt);
+      });
+      ['IRN', 'ISR'].forEach(function(code) {
+        const opt = Array.from(countrySelect.options).find(function(o) { return o.value === code; });
+        if (opt) opt.selected = true;
+      });
+    }
+
+    async function loadCountries() {
+      try {
+        const res = await fetch('/api/countries');
+        const data = await res.json();
+        if (data && data.error) throw new Error(data.error);
+        var list = Array.isArray(data) ? data : [];
+        if (list.length === 0) list = FALLBACK_COUNTRIES;
+        fillCountrySelect(list);
+      } catch (e) {
+        console.error(e);
+        fillCountrySelect(FALLBACK_COUNTRIES);
+        setStatus('국가 목록은 기본 목록으로 표시됩니다.', false);
+      }
+    }
+
+    const FALLBACK_INDICATORS = [
+      { id: 'SP.POP.TOTL',       name: '총 인구 (Population, total)' },
+      { id: 'NY.GDP.MKTP.CD',    name: 'GDP (현재 USD)' },
+      { id: 'MS.MIL.XPND.GD.ZS', name: '군사비 지출 (GDP 대비 %)' },
+      { id: 'MS.MIL.XPND.CD',    name: '군사비 지출 (현재 USD)' },
+      { id: 'MS.MIL.TOTL.P1',    name: '총 병력 수 (현역+예비군)' },
+      { id: 'MS.MIL.TOTL.TF.ZS', name: '병력 (총 노동력 대비 %)' },
+      { id: 'MS.MIL.MPRT.KD',    name: '무기 수입 규모 (SIPRI TIV, 2023년 불변 USD)' },
+      { id: 'FI.RES.TOTL.CD',    name: '총 외환보유고 (금 포함, 현재 US$)' },
+    ];
+
+    function fillIndicatorSelect(list) {
+      indicatorSelect.innerHTML = '';
+      var arr = Array.isArray(list) ? list : FALLBACK_INDICATORS;
+      arr.forEach(function(ind) {
+        const opt = document.createElement('option');
+        opt.value = ind.id || ind;
+        opt.textContent = (ind.name || ind.id || ind) + ' [' + (ind.id || ind) + ']';
+        indicatorSelect.appendChild(opt);
+      });
+    }
+
+    async function loadIndicators() {
+      try {
+        const res = await fetch('/api/indicators');
+        const data = await res.json();
+        if (data && data.error) throw new Error(data.error);
+        fillIndicatorSelect(Array.isArray(data) ? data : FALLBACK_INDICATORS);
+      } catch (e) {
+        console.error(e);
+        fillIndicatorSelect(FALLBACK_INDICATORS);
+        setStatus('지표 목록은 기본 목록으로 표시됩니다.', false);
+      }
+    }
+
+    runBtn.addEventListener('click', async function() {
+      setStatus('');
+      const selectedOptions = Array.from(countrySelect.selectedOptions);
+      const countries = selectedOptions.map(function(o) { return o.value; });
+      if (countries.length === 0) {
+        setStatus('국가를 하나 이상 선택하세요.', true);
+        return;
+      }
+      const seriesId = indicatorSelect.value;
+      if (!seriesId) {
+        setStatus('지표를 선택하세요.', true);
+        return;
+      }
+      const yearStart = parseInt(document.getElementById('yearStart').value || '2010', 10);
+      const yearEnd = parseInt(document.getElementById('yearEnd').value || '2025', 10);
+      if (isNaN(yearStart) || isNaN(yearEnd) || yearStart >= yearEnd) {
+        setStatus('연도 범위를 올바르게 입력하세요.', true);
+        return;
+      }
+
+      runBtn.disabled = true;
+      setStatus('분석 중...', false);
+      chartTrendPlace.innerHTML = '<span style="font-size:13px;color:#9ca3af;">데이터를 가져오는 중...</span>';
+      chartBarPlace.innerHTML = '<span style="font-size:13px;color:#9ca3af;">—</span>';
+      chartIndexPlace.innerHTML = '<span style="font-size:13px;color:#9ca3af;">—</span>';
+      tableHead.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ countries: countries, series_id: seriesId, year_start: yearStart, year_end: yearEnd })
+        });
+        const payload = await res.json();
+        if (!res.ok) throw new Error(payload.error || '요청에 실패했습니다.');
+
+        const rowsRaw = payload.data || [];
+        const timeKey = payload.time_key || 'Time';
+        const seriesName = payload.series_name || payload.series_id || '';
+
+        // 연도 기준으로 오름차순 정렬 (X축이 작은 연도 → 큰 연도 순서)
+        const rows = rowsRaw
+          .slice()
+          .sort(function(a, b) {
+            return Number(a[timeKey]) - Number(b[timeKey]);
+          });
+
+        // 테이블 렌더링
+        if (Array.isArray(rows) && rows.length > 0) {
+          const columns = Object.keys(rows[0]);
+          tableHead.innerHTML = '<tr>' + columns.map(function(c) { return '<th>' + c + '</th>'; }).join('') + '</tr>';
+          tableBody.innerHTML = rows.map(function(row) {
+            return '<tr>' + columns.map(function(c) { return '<td>' + (row[c] !== undefined && row[c] !== null ? row[c] : '') + '</td>'; }).join('') + '</tr>';
+          }).join('');
+        } else {
+          tableHead.innerHTML = '';
+          tableBody.innerHTML = '<tr><td style="padding:6px;font-size:12px;color:#6b7280;">데이터가 없습니다.</td></tr>';
+        }
+
+        const labels = rows.map(function(r) { return r[timeKey]; });
+        const countryKeys = Object.keys(rows[0] || {}).filter(function(k) { return k !== timeKey; });
+        const colors = ['#1d4ed8','#0d9488','#b45309','#7c3aed','#be123c','#0369a1','#15803d','#a21caf'];
+
+        // 선형 추세선: y = a*x + b (x는 0,1,2,... 인덱스)
+        function linearTrend(yArr) {
+          var n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+          for (var i = 0; i < yArr.length; i++) {
+            if (yArr[i] == null || !Number.isFinite(yArr[i])) continue;
+            sx += i; sy += yArr[i]; sxx += i * i; sxy += i * yArr[i]; n++;
+          }
+          if (n < 2) return yArr.map(function() { return null; });
+          var a = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+          var b = (sy - a * sx) / n;
+          return yArr.map(function(_, i) { return a * i + b; });
+        }
+
+        // 1) 추세선 차트: 원자료 + 추세선(점선)
+        chartTrendPlace.innerHTML = '<canvas id="trendChart"></canvas>';
+        document.getElementById('footnoteTrend').style.display = 'block';
+        if (chartTrend) chartTrend.destroy();
+        var trendDatasets = [];
+        countryKeys.forEach(function(code, idx) {
+          var values = rows.map(function(r) { return r[code]; });
+          var trendY = linearTrend(values);
+          trendDatasets.push({
+            label: code + ' (실제)',
+            data: values,
+            borderColor: colors[idx % colors.length],
+            backgroundColor: colors[idx % colors.length] + '22',
+            tension: 0.25,
+            spanGaps: true,
+          });
+          trendDatasets.push({
+            label: code + ' (추세)',
+            data: trendY,
+            borderColor: colors[idx % colors.length],
+            borderDash: [5, 5],
+            fill: false,
+            pointRadius: 0,
+            tension: 0,
+            spanGaps: true,
+          });
+        });
+        chartTrend = new Chart(document.getElementById('trendChart').getContext('2d'), {
+          type: 'line',
+          data: { labels: labels, datasets: trendDatasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1.4,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: seriesName },
+              tooltip: { mode: 'index', intersect: false },
+            },
+            scales: {
+              x: { title: { display: true, text: '연도' }, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+              y: { title: { display: true, text: seriesName }, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            },
+          },
+        });
+
+        // 2) 최근 3년 평균 막대 그래프 — 국가별로 자료가 있는 마지막 3개 연도만 사용
+        chartBarPlace.innerHTML = '<canvas id="barChart"></canvas>';
+        document.getElementById('footnoteBar').style.display = 'block';
+        if (chartBar) chartBar.destroy();
+        var avgByCountry = countryKeys.map(function(code) {
+          var withData = rows.filter(function(r) {
+            return r[code] != null && Number.isFinite(r[code]);
+          });
+          var last3ForCountry = withData.slice(-3);
+          var sum = 0, cnt = 0;
+          last3ForCountry.forEach(function(r) {
+            sum += r[code];
+            cnt++;
+          });
+          return cnt ? sum / cnt : null;
+        });
+        var barLabels = countryKeys.slice();
+        var barValues = avgByCountry.slice();
+        chartBar = new Chart(document.getElementById('barChart').getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: barLabels,
+            datasets: [{
+              label: '최근 3년 평균',
+              data: barValues,
+              backgroundColor: colors.slice(0, barLabels.length).map(function(c, i) { return colors[i % colors.length] + '99'; }),
+              borderColor: colors.slice(0, barLabels.length).map(function(c, i) { return colors[i % colors.length]; }),
+              borderWidth: 1,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1.2,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: seriesName },
+              tooltip: { mode: 'index', intersect: true },
+            },
+            scales: {
+              x: { title: { display: true, text: '국가' }, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+              y: { title: { display: true, text: '평균값' }, beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            },
+          },
+        });
+
+        // 3) 기준연도=100 지수
+        chartIndexPlace.innerHTML = '<canvas id="indexChart"></canvas>';
+        document.getElementById('footnoteIndex').style.display = 'block';
+        if (chartIndex) chartIndex.destroy();
+        var baseYear = 2010;
+        var baseRow = rows.find(function(r) { return r[timeKey] === baseYear; });
+        var indexDatasets = countryKeys.map(function(code, idx) {
+          var baseVal = baseRow && baseRow[code] != null && Number.isFinite(baseRow[code]) ? baseRow[code] : null;
+          if (baseVal == null) {
+            var firstRow = rows.find(function(r) { return r[code] != null && Number.isFinite(r[code]); });
+            baseVal = firstRow ? firstRow[code] : null;
+          }
+          var indexValues = rows.map(function(r) {
+            if (baseVal == null || baseVal === 0) return null;
+            var v = r[code];
+            return (v != null && Number.isFinite(v)) ? (v / baseVal) * 100 : null;
+          });
+          return {
+            label: code,
+            data: indexValues,
+            borderColor: colors[idx % colors.length],
+            backgroundColor: colors[idx % colors.length] + '33',
+            tension: 0.25,
+            spanGaps: true,
+          };
+        });
+        chartIndex = new Chart(document.getElementById('indexChart').getContext('2d'), {
+          type: 'line',
+          data: { labels: labels, datasets: indexDatasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1.4,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: seriesName },
+              tooltip: { mode: 'index', intersect: false },
+            },
+            scales: {
+              x: { title: { display: true, text: '연도' }, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+              y: { title: { display: true, text: '지수 (기준=100)' }, beginAtZero: false, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            },
+          },
+        });
+
+        setStatus('완료');
+      } catch (e) {
+        console.error(e);
+        chartTrendPlace.innerHTML = '<span style="font-size:13px;color:#b91c1c;">오류가 발생했습니다. 콘솔을 확인하세요.</span>';
+        chartBarPlace.innerHTML = '—';
+        chartIndexPlace.innerHTML = '—';
+        document.getElementById('footnoteTrend').style.display = 'none';
+        document.getElementById('footnoteBar').style.display = 'none';
+        document.getElementById('footnoteIndex').style.display = 'none';
+        setStatus(e.message, true);
+      } finally {
+        runBtn.disabled = false;
+      }
+    });
+
+    fillCountrySelect(FALLBACK_COUNTRIES);
+    loadCountries();
+    loadIndicators();
+  </script>
+</body>
+</html>

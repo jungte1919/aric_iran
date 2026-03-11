@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>위기 분석 - 데이터로 바라본 외교</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #0f172a;
+      --bg-card: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --gradient-header: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    }
+    body { font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; background: var(--bg-page); color: var(--text); font-size: 14px; line-height: 1.6; }
+    header { padding: 20px 28px; background: var(--gradient-header); border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
+    header h1 { font-size: 1.35rem; font-weight: 700; margin: 0; color: var(--text); letter-spacing: -0.03em; }
+    .nav a { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--accent-soft); transition: background 0.2s, border-color 0.2s; }
+    .nav a:hover { background: rgba(56, 189, 248, 0.25); border-color: var(--accent); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+    .card { background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px 26px 26px; margin-bottom: 24px; box-shadow: var(--shadow); transition: border-color 0.2s; }
+    .card:hover { border-color: #475569; }
+    .card h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 4px; color: var(--text); border-left: 3px solid var(--accent); padding-left: 12px; }
+    .subtext { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; margin-left: 15px; }
+    .chart-wrap { min-height: 520px; position: relative; border-radius: 10px; background: #0f172a; padding: 16px; margin-bottom: 6px; border: 1px solid var(--border); }
+    .chart-wrap canvas { max-width: 100%; width: 100% !important; height: 520px !important; }
+    .chart-inner { height: 520px; position: relative; min-width: 0; }
+    .chart-footnote { font-size: 11px; color: var(--text-muted); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .stats-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+    .stats-table th, .stats-table td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); color: var(--text); }
+    .stats-table th { background: #0f172a; color: var(--text-muted); text-align: left; font-weight: 500; }
+    .stats-table td:first-child { text-align: left; }
+    .stats-table .num { font-variant-numeric: tabular-nums; }
+    .table-section { margin-bottom: 20px; }
+    .table-section h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 0 0 8px; }
+    .panel-row { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 12px; }
+    .panel-col { flex: 1 1 280px; min-width: 0; }
+    .panel-col .chart-inner { height: 320px; }
+    .panel-col .chart-wrap { min-height: 320px; background: #0f172a; border: 1px solid var(--border); border-radius: 10px; }
+    .panel-col canvas { height: 320px !important; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+    select { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: var(--text); font-size: 13px; font-family: inherit; }
+    button.primary { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: #0f172a; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s, transform 0.1s; }
+    button.primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    button.primary:disabled { opacity: 0.5; cursor: default; transform: none; }
+    button.csv-btn { padding: 5px 11px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s, border-color 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+    button.csv-btn:hover { background: rgba(56,189,248,0.12); color: var(--accent); border-color: var(--accent); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; min-height: 24px; }
+    .panel-title { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .status { font-size: 12px; color: var(--text-muted); margin-left: 8px; }
+    .status.error { color: #f87171; }
+    #yfinanceAlert { border-color: #7f1d1d; background: rgba(127, 29, 29, 0.3); }
+    #yfinanceAlert h2 { color: #fca5a5; }
+    #yfinanceAlert .subtext { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>위기 진단</h1>
+      <div class="subtext">원자재·공포지수(VIX)·외환·주식 지수.</div>
+    </div>
+    <nav class="nav">
+      <a href="/why" style="background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fbbf24;">왜 데이터인가</a>
+      <a href="/">🏦 국가자원/국방력</a>
+      <a href="/crisis" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">⚡ 위기 진단</a>
+      <a href="/governance">🏛 거버넌스/민주주의</a>
+      <a href="/news">📰 뉴스 스크랩</a>
+      <a href="/map">🗺 미사일 공격상황</a>
+    </nav>
+  </header>
+  <main class="container">
+    <div id="sampleDataAlert" class="card" style="display:none; border-color: #f59e0b; background: rgba(245,158,11,0.1);">
+      <h2 style="color: #fbbf24;">참고: 샘플 데이터</h2>
+      <p class="subtext">실제 시세를 가져오지 못해 시각화용 샘플 데이터를 표시합니다. 실제 데이터를 보려면 <code>pip install yfinance</code> 후 서버를 재시작하세요.</p>
+    </div>
+    <div id="yfinanceAlert" class="card" style="display:none;">
+      <h2>yfinance 미설치</h2>
+      <p class="subtext">위기 진단 데이터를 보려면 가상환경에 yfinance를 설치한 뒤 서버를 재시작하세요.</p>
+      <p style="font-family: monospace; font-size: 13px; padding: 10px; background: #0f172a; border-radius: 8px; margin: 8px 0;">
+        .\.venv\Scripts\python.exe -m pip install yfinance
+      </p>
+      <p class="subtext">또는 <a href="/install_yfinance.bat" style="color: #93c5fd;">install_yfinance.bat</a>을 받아 프로젝트 폴더에 저장한 뒤 더블클릭해 설치할 수 있습니다.</p>
+    </div>
+
+    <div class="row" style="margin-bottom: 16px;">
+      <label style="color: var(--text-muted);">기간</label>
+      <select id="period">
+        <option value="3mo">최근 3개월</option>
+        <option value="6mo">최근 6개월</option>
+        <option value="1y" selected>최근 1년</option>
+      </select>
+      <label style="color: var(--text-muted); margin-left: 16px;">국가 (외환·주식)</label>
+      <select id="countrySelect" multiple size="4" style="min-width: 180px;">
+        <option value="">로딩 중</option>
+      </select>
+      <span class="subtext" style="margin-left: 4px;">Ctrl+클릭 복수 선택. 비우면 전체.</span>
+      <button id="btnLoad" class="primary">새로고침</button>
+      <span id="globalStatus" class="status"></span>
+    </div>
+
+    <section class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+        <h2 style="margin:0;">원자재 가격 (유가·귀금속)</h2>
+        <button class="csv-btn" id="csvCommodities" title="원자재 전체 CSV 다운로드">&#8595; 전체 CSV</button>
+      </div>
+      <div class="subtext">노트북 유가변동과 동일: WTI, Brent Crude, Natural Gas, Copper, Gold, Silver.</div>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">가격 추세</h3>
+      <div id="placeCommoditiesPanels" class="panel-row"></div>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">12개월 전 대비 지수 (100=기준)</h3>
+      <div id="placeCommoditiesRelativePanels" class="panel-row"></div>
+    </section>
+    <section class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+        <h2 style="margin:0;">금융시장의 공포지수</h2>
+        <button class="csv-btn" id="csvFear" title="공포지수 전체 CSV 다운로드">&#8595; 전체 CSV</button>
+      </div>
+      <div class="subtext">노트북 금융시장의 공포와 동일: VIX(미국), MOVE(채권), SKEW, VVIX. 빨간 점선: 위험 기준.</div>
+      <div id="placeFearPanels" class="panel-row"></div>
+    </section>
+    <section class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+        <h2 style="margin:0;">외환 변동</h2>
+        <button class="csv-btn" id="csvFx" title="외환 전체 CSV 다운로드">&#8595; 전체 CSV</button>
+      </div>
+      <div class="subtext">노트북 외환변동과 동일: USD/KRW(달러/원), USD/CNY(달러/위안), USD/EUR(달러/유로), USD/GBP(달러/파운드).</div>
+      <div id="placeFxPanels" class="panel-row"></div>
+    </section>
+    <section class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+        <h2 style="margin:0;">주식시장 변동</h2>
+        <button class="csv-btn" id="csvStocks" title="주식 전체 CSV 다운로드">&#8595; 전체 CSV</button>
+      </div>
+      <div class="subtext">노트북 주식시장 변동과 동일: S&P 500, TA-125(이스라엘), KOSPI, Nikkei 225 등 국가별 대표 지수.</div>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">지수 추세</h3>
+      <div id="placeStocksPanels" class="panel-row"></div>
+      <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">12개월 전 대비 지수 (100=기준)</h3>
+      <div id="placeStocksRelativePanels" class="panel-row"></div>
+    </section>
+    <section class="card">
+      <h2>최근 7거래일</h2>
+      <div class="subtext">종가·지수값.</div>
+      <div id="placeLastWeekStats"></div>
+    </section>
+    <footer style="margin-top: 32px; padding: 16px 0; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); text-align: center;">
+      자료: Yahoo Finance. 서울대학교 고길곤 교수 연구실.
+    </footer>
+  </main>
+  <script>
+    if (typeof Chart !== 'undefined') {
+      Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
+      Chart.defaults.color = '#94a3b8';
+      Chart.defaults.borderColor = '#334155';
+    }
+    var chartRefs = { commodities: [], commoditiesRelative: [], fear: [], fx: [], stocks: [], stocksRelative: [] };
+    var colors = ['#1d4ed8','#0d9488','#b45309','#7c3aed','#be123c','#0369a1'];
+    var FOOTNOTE_CRISIS = '자료: Yahoo Finance (via yfinance). 서울대 고길곤 교수 연구실.';
+
+    function getMonthTickIndices(labels) {
+      var monthLabels = labels.map(function(l) { return (l || '').substring(0, 7); });
+      var firstOfMonth = {};
+      for (var i = 0; i < monthLabels.length; i++) {
+        if (monthLabels[i] && !firstOfMonth[monthLabels[i]]) firstOfMonth[monthLabels[i]] = i;
+      }
+      return firstOfMonth;
+    }
+
+    function monthTickCallback(labels, monthLabels, firstOfMonth) {
+      return function(value, index) {
+        try {
+          var idx = index;
+          if (idx == null || idx < 0 || idx >= monthLabels.length) return '';
+          var lbl = firstOfMonth[monthLabels[idx]] === idx ? monthLabels[idx] : '';
+          return typeof lbl === 'string' ? lbl : '';
+        } catch (e) { return ''; }
+      };
+    }
+
+    function setGlobalStatus(msg, isErr) {
+      var el = document.getElementById('globalStatus');
+      el.textContent = msg || '';
+      el.className = 'status' + (isErr ? ' error' : '');
+    }
+
+    function buildDatasets(series, noMarkers) {
+      var names = Object.keys(series);
+      return names.map(function(name, i) {
+        var vals = series[name];
+        if (!Array.isArray(vals)) vals = [];
+        var safeVals = vals.map(function(v) { return v != null && Number.isFinite(Number(v)) ? Number(v) : null; });
+        return {
+          label: String(name),
+          data: safeVals,
+          borderColor: colors[i % colors.length],
+          backgroundColor: colors[i % colors.length] + '33',
+          tension: 0.25,
+          spanGaps: true,
+          pointRadius: noMarkers ? 0 : 2,
+          pointHoverRadius: noMarkers ? 0 : 4
+        };
+      });
+    }
+
+    function buildDatasetsWithDanger(name, vals, dangerLevels, labels) {
+      var safeVals = Array.isArray(vals) ? vals.map(function(v) { return v != null && Number.isFinite(Number(v)) ? Number(v) : null; }) : [];
+      var arr = [{
+        label: String(name),
+        data: safeVals,
+        borderColor: '#3b82f6',
+        backgroundColor: '#3b82f633',
+        tension: 0.25,
+        spanGaps: true,
+        pointRadius: 0,
+        pointHoverRadius: 4
+      }];
+      (dangerLevels || []).forEach(function(level, i) {
+        arr.push({
+          label: '위험기준 ' + level,
+          data: labels.map(function() { return Number(level); }),
+          borderColor: '#ef4444',
+          borderDash: [8, 4],
+          borderWidth: 1.5,
+          fill: false,
+          pointRadius: 0,
+          tension: 0
+        });
+      });
+      return arr;
+    }
+
+    function formatLabelToMonth(label) {
+      if (!label || label.length < 7) return label;
+      return label.substring(0, 7);
+    }
+
+    function drawChart(placeholderId, refKey, title, labels, series, heightPx) {
+      heightPx = heightPx || 520;
+      var place = document.getElementById(placeholderId);
+      if (!place) return;
+      if (series && Object.keys(series).length > 0) {
+        var monthLabels = labels.map(function(l) { return formatLabelToMonth(l); });
+        place.innerHTML = '<div class="chart-wrap"><div class="chart-inner" style="position:relative; width:100%; height:' + heightPx + 'px;"><canvas id="' + placeholderId + 'Canvas"></canvas></div><p class="chart-footnote">' + FOOTNOTE_CRISIS + '</p></div>';
+        var canvas = document.getElementById(placeholderId + 'Canvas');
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d');
+        if (chartRefs[refKey]) chartRefs[refKey].destroy();
+        chartRefs[refKey] = new Chart(ctx, {
+          type: 'line',
+          data: { labels: labels, datasets: buildDatasets(series, true) },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: title },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                  title: function(items) {
+                    var lbl = items[0] ? items[0].label : '';
+                    if (lbl && lbl.length >= 10) {
+                      var p = lbl.substring(0, 10).split('-');
+                      if (p.length === 3) return p[0] + '년 ' + p[1] + '월 ' + p[2] + '일';
+                    }
+                    return lbl;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                display: true,
+                title: { display: true, text: '날짜' },
+                ticks: {
+                  maxTicksLimit: 12,
+                  maxRotation: 45,
+                  callback: function(value, index) {
+                    var lbl = labels[index] || '';
+                    return lbl.length >= 7 ? lbl.substring(0, 7) : lbl;
+                  }
+                }
+              },
+              y: { display: true, title: { display: true, text: '값' }, beginAtZero: false }
+            }
+          }
+        });
+      } else {
+        place.innerHTML = '<span style="color:var(--text-muted);">데이터가 없거나 오류가 발생했습니다.</span>';
+        if (chartRefs[refKey]) { chartRefs[refKey].destroy(); chartRefs[refKey] = null; }
+      }
+    }
+
+    function getCountriesParam() {
+      var sel = document.getElementById('countrySelect');
+      if (!sel || !sel.selectedOptions || sel.selectedOptions.length === 0) return '';
+      var ids = [];
+      for (var i = 0; i < sel.selectedOptions.length; i++) ids.push(sel.selectedOptions[i].value);
+      return ids.filter(Boolean).join(',');
+    }
+
+    var lastCrisisData = { commodities: null, fear: null, fx: null, stocks: null };
+
+    /* ── CSV 다운로드 헬퍼 ── */
+    function downloadCSV(filename, labels, datasets) {
+      if (!labels || !labels.length || !datasets || !datasets.length) return;
+      // 위험 기준선(borderDash) 데이터는 제외
+      var dataCols = datasets.filter(function(d) { return !d.borderDash; });
+      var headers = ['날짜'].concat(dataCols.map(function(d) { return '"' + String(d.label).replace(/"/g, '""') + '"'; }));
+      var rows = [headers.join(',')];
+      for (var i = 0; i < labels.length; i++) {
+        var row = [labels[i]];
+        dataCols.forEach(function(d) {
+          var v = Array.isArray(d.data) ? d.data[i] : null;
+          row.push(v == null ? '' : v);
+        });
+        rows.push(row.join(','));
+      }
+      var bom = '\uFEFF'; // Excel UTF-8 인식용 BOM
+      var blob = new Blob([bom + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+    }
+
+    function drawSinglePanel(containerId, refsArray, chartId, title, labels, datasets, heightPx) {
+      heightPx = heightPx || 320;
+      var container = document.getElementById(containerId);
+      if (!container) return;
+      if (!Array.isArray(labels)) labels = [];
+      if (!Array.isArray(datasets) || datasets.length === 0) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'panel-col';
+      var chartLabels = labels.map(function(l) { return l ? String(l) : ''; });
+      var n = chartLabels.length;
+      var fixedDatasets = datasets.map(function(d) {
+        var arr = Array.isArray(d.data) ? d.data : [];
+        var out = arr.slice(0, n);
+        while (out.length < n) out.push(null);
+        var o = { label: d.label, data: out, borderColor: d.borderColor, backgroundColor: d.backgroundColor, tension: 0.25, spanGaps: true, pointRadius: 0, pointHoverRadius: 4 };
+        if (d.borderDash) o.borderDash = d.borderDash;
+        if (d.borderWidth) o.borderWidth = d.borderWidth;
+        if (d.fill === false) o.fill = false;
+        return o;
+      });
+      // CSV 파일명: 제목에서 특수문자 제거
+      var safeTitle = title.replace(/[\/\\:*?"<>|]/g, '_');
+      var csvFilename = safeTitle + '.csv';
+      wrap.innerHTML =
+        '<div class="panel-header">' +
+          '<span class="panel-title"></span>' +
+          '<button class="csv-btn" title="CSV 다운로드" onclick="(function(){})()">&#8595; CSV</button>' +
+        '</div>' +
+        '<div class="chart-wrap"><div class="chart-inner" style="position:relative;width:100%;height:' + heightPx + 'px;"><canvas id="' + chartId + '"></canvas></div>' +
+        '<p class="chart-footnote">' + FOOTNOTE_CRISIS + '</p></div>';
+      container.appendChild(wrap);
+      // CSV 버튼 이벤트 — wrap이 DOM에 추가된 뒤 바인딩
+      var csvBtn = wrap.querySelector('.csv-btn');
+      if (csvBtn) {
+        csvBtn.addEventListener('click', function() {
+          downloadCSV(csvFilename, labels, fixedDatasets);
+        });
+      }
+      var canvas = document.getElementById(chartId);
+      if (!canvas) return;
+      try {
+        var ch = new Chart(canvas.getContext('2d'), {
+          type: 'line',
+          data: { labels: chartLabels, datasets: fixedDatasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: title, font: { size: 13, weight: '600' } },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                  title: function(items) {
+                    var lbl = items[0] ? items[0].label : '';
+                    if (lbl && lbl.length >= 10) {
+                      var p = lbl.substring(0, 10).split('-');
+                      if (p.length === 3) return p[0] + '년 ' + p[1] + '월 ' + p[2] + '일';
+                    }
+                    return lbl;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                display: true,
+                title: { display: true, text: '날짜' },
+                ticks: {
+                  maxTicksLimit: 12,
+                  maxRotation: 45,
+                  callback: function(value, index) {
+                    var lbl = chartLabels[index] || '';
+                    return lbl.length >= 7 ? lbl.substring(0, 7) : lbl;
+                  }
+                }
+              },
+              y: { display: true, title: { display: true, text: '값' }, beginAtZero: false }
+            }
+          }
+        });
+        refsArray.push(ch);
+      } catch (err) {
+        console.error('Chart error', title, err);
+        wrap.innerHTML = '<div class="chart-wrap"><p style="color:#f87171;padding:12px;">차트 오류: ' + (err.message || String(err)) + '</p></div>';
+      }
+    }
+
+    function drawFearPanels(labels, series, dangerThresholds) {
+      var container = document.getElementById('placeFearPanels');
+      chartRefs.fear.forEach(function(ch) { try { if (ch && typeof ch.destroy === 'function') ch.destroy(); } catch (e) { console.warn('chart destroy', e); } });
+      chartRefs.fear = [];
+      container.innerHTML = '';
+      if (!series || !labels.length) { container.innerHTML = '<span style="color:#9ca3af;">데이터 없음</span>'; return; }
+      var names = Object.keys(series);
+      names.forEach(function(name, idx) {
+        var dangerLevels = (dangerThresholds && dangerThresholds[name]) || [];
+        var datasets = buildDatasetsWithDanger(name, series[name], dangerLevels, labels);
+        drawSinglePanel('placeFearPanels', chartRefs.fear, 'fearCanvas' + idx, name, labels, datasets, 320);
+      });
+    }
+
+    function drawCategoryPanels(containerId, refsArray, labels, series, heightPx) {
+      heightPx = heightPx || 320;
+      var container = document.getElementById(containerId);
+      if (!container) return;
+      refsArray.forEach(function(ch) { try { if (ch && typeof ch.destroy === 'function') ch.destroy(); } catch (e) { console.warn('chart destroy', e); } });
+      refsArray.length = 0;
+      container.innerHTML = '';
+      if (!series || !labels.length) { container.innerHTML = '<span style="color:#9ca3af;">데이터 없음. 국가를 선택하면 표시됩니다.</span>'; return; }
+      var names = Object.keys(series);
+      if (names.length === 0) { container.innerHTML = '<span style="color:#9ca3af;">데이터 없음.</span>'; return; }
+      names.forEach(function(name, idx) {
+        var single = {}; single[name] = series[name];
+        var datasets = buildDatasets(single, true);
+        drawSinglePanel(containerId, refsArray, containerId + 'Canvas' + idx, name, labels, datasets, heightPx);
+      });
+    }
+
+    function compute12MonthBaseline(labels, values) {
+      if (!labels.length || !values.length) return null;
+      var cutoff;
+      try {
+        cutoff = new Date(labels[0]);
+        cutoff.setMonth(cutoff.getMonth() + 12);
+      } catch (e) { return null; }
+      var sum = 0, count = 0;
+      for (var i = 0; i < labels.length; i++) {
+        try {
+          if (new Date(labels[i]) <= cutoff && values[i] != null && Number.isFinite(values[i])) {
+            sum += values[i];
+            count++;
+          }
+        } catch (e2) {}
+      }
+      return count > 0 ? sum / count : null;
+    }
+
+    function drawCommoditiesRelativeChart() {
+      var d = lastCrisisData.commodities;
+      var container = document.getElementById('placeCommoditiesRelativePanels');
+      if (!container) return;
+      chartRefs.commoditiesRelative.forEach(function(ch) { try { if (ch && typeof ch.destroy === 'function') ch.destroy(); } catch (e) {} });
+      chartRefs.commoditiesRelative = [];
+      container.innerHTML = '';
+      if (!d || !d.labels.length || !Object.keys(d.series).length) {
+        container.innerHTML = '<span style="color:#9ca3af;">데이터를 불러온 뒤 12개월 전 평균=100 기준 상대 추세가 표시됩니다.</span>';
+        return;
+      }
+      var labels = d.labels;
+      var series = d.series;
+      var relativeSeries = {};
+      Object.keys(series).forEach(function(name) {
+        var vals = series[name];
+        var base = compute12MonthBaseline(labels, vals);
+        if (base != null && base !== 0) {
+          relativeSeries[name] = vals.map(function(v) {
+            return (v != null && Number.isFinite(v)) ? Math.round((v / base) * 100 * 100) / 100 : null;
+          });
+        }
+      });
+      if (Object.keys(relativeSeries).length === 0) {
+        container.innerHTML = '<span style="color:#9ca3af;">12개월 구간 데이터가 부족합니다.</span>';
+        return;
+      }
+      drawCategoryPanels('placeCommoditiesRelativePanels', chartRefs.commoditiesRelative, labels, relativeSeries, 320);
+    }
+
+    function drawStocksRelativeChart() {
+      var d = lastCrisisData.stocks;
+      var container = document.getElementById('placeStocksRelativePanels');
+      if (!container) return;
+      chartRefs.stocksRelative.forEach(function(ch) { try { if (ch && typeof ch.destroy === 'function') ch.destroy(); } catch (e) {} });
+      chartRefs.stocksRelative = [];
+      container.innerHTML = '';
+      if (!d || !d.labels.length || !Object.keys(d.series).length) {
+        container.innerHTML = '<span style="color:#9ca3af;">국가를 선택한 뒤 새로고침하면 12개월 전 평균=100 기준 상대 추세가 표시됩니다.</span>';
+        return;
+      }
+      var labels = d.labels;
+      var series = d.series;
+      var relativeSeries = {};
+      Object.keys(series).forEach(function(name) {
+        var vals = series[name];
+        var base = compute12MonthBaseline(labels, vals);
+        if (base != null && base !== 0) {
+          relativeSeries[name] = vals.map(function(v) {
+            return (v != null && Number.isFinite(v)) ? Math.round((v / base) * 100 * 100) / 100 : null;
+          });
+        }
+      });
+      if (Object.keys(relativeSeries).length === 0) {
+        container.innerHTML = '<span style="color:#9ca3af;">12개월 구간 데이터가 부족합니다.</span>';
+        return;
+      }
+      drawCategoryPanels('placeStocksRelativePanels', chartRefs.stocksRelative, labels, relativeSeries, 320);
+    }
+
+    function fetchAndDraw(endpoint, placeholderId, refKey, title) {
+      var periodEl = document.getElementById('period');
+      var period = periodEl ? periodEl.value : '1y';
+      var url = '/api/crisis/' + endpoint + '?period=' + encodeURIComponent(period);
+      var countries = getCountriesParam();
+      if (countries && (endpoint === 'fx' || endpoint === 'stocks')) url += '&countries=' + encodeURIComponent(countries);
+      return fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+        .then(function(r) {
+          if (!r.ok) throw new Error('서버 오류 (HTTP ' + r.status + '). Flask 서버가 실행 중인지 확인하세요.');
+          return r.json().then(function(data) { return data; }).catch(function() { throw new Error('응답이 JSON이 아닙니다.'); });
+        })
+        .then(function(res) {
+          if (!res || typeof res !== 'object') throw new Error('잘못된 응답 형식');
+          if (res.error) {
+            var fallback = _sample_series_for_frontend(endpoint, period);
+            if (fallback && fallback.labels && fallback.labels.length) {
+              res = fallback;
+            } else {
+              var errEl = document.getElementById(placeholderId);
+              if (errEl) errEl.innerHTML = '<span style="color:#f97373;">' + res.error + '</span>';
+              lastCrisisData[refKey] = null;
+              return;
+            }
+          }
+          lastCrisisData[refKey] = { labels: res.labels || [], series: res.series || {}, sample_data: res.sample_data };
+          if (endpoint === 'commodities') {
+            drawCategoryPanels('placeCommoditiesPanels', chartRefs.commodities, res.labels || [], res.series || {}, 320);
+          } else if (endpoint === 'fear') {
+            drawFearPanels(res.labels || [], res.series || {}, res.danger_thresholds || {});
+          } else if (endpoint === 'fx') {
+            drawCategoryPanels('placeFxPanels', chartRefs.fx, res.labels || [], res.series || {}, 320);
+          } else if (endpoint === 'stocks') {
+            drawCategoryPanels('placeStocksPanels', chartRefs.stocks, res.labels || [], res.series || {}, 320);
+          } else {
+            drawChart(placeholderId, refKey, title, res.labels || [], res.series || {});
+          }
+        })
+        .catch(function(e) {
+          var errEl = document.getElementById(placeholderId);
+          var msg = e && e.message ? e.message : String(e);
+          if (errEl) errEl.innerHTML = '<span style="color:#f97373;">데이터를 가져올 수 없습니다. ' + msg + ' 서버를 실행한 뒤 <a href="javascript:location.reload()" style="color:#93c5fd;">새로고침</a>하세요.</span>';
+          lastCrisisData[refKey] = null;
+        });
+    }
+
+    function _sample_series_for_frontend(endpoint, period) {
+      var n = period === '1y' ? 252 : (period === '6mo' ? 126 : 63);
+      var labels = [];
+      var d = new Date();
+      for (var i = n - 1; i >= 0; i--) {
+        var x = new Date(d);
+        x.setDate(x.getDate() - i);
+        labels.push(x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'));
+      }
+      var series = {};
+      if (endpoint === 'commodities') {
+        ['WTI', 'Brent Crude', 'Natural Gas', 'Copper', 'Gold', 'Silver'].forEach(function(name, i) {
+          var arr = []; for (var j = 0; j < n; j++) arr.push(80 + i * 15 + (j % 20) - 10 + j * 0.02);
+          series[name] = arr;
+        });
+      } else if (endpoint === 'fear') {
+        ['VIX(미국 주식)', 'MOVE(채권)', 'SKEW(꼬리위험)', 'VVIX(VIX 변동성)'].forEach(function(name, i) {
+          var arr = []; for (var j = 0; j < n; j++) arr.push(15 + i * 5 + (j % 10));
+          series[name] = arr;
+        });
+      } else if (endpoint === 'fx') {
+        ['USD/KRW (한국)', 'USD/CNY (중국)', 'USD/EUR (유로존)', 'USD/GBP (영국)'].forEach(function(name, i) {
+          var arr = []; for (var j = 0; j < n; j++) arr.push(1200 + i * 100 + (j % 50) - 25);
+          series[name] = arr;
+        });
+      } else if (endpoint === 'stocks') {
+        ['S&P 500 (미국)', 'KOSPI (한국)', 'Nikkei 225 (일본)', 'TA-125 (이스라엘)'].forEach(function(name, i) {
+          var arr = []; for (var j = 0; j < n; j++) arr.push(2500 + i * 500 + (j % 100) - 50 + j * 2);
+          series[name] = arr;
+        });
+      }
+      return Object.keys(series).length ? { labels: labels, series: series, sample_data: true } : null;
+    }
+
+    function renderLastWeekTable() {
+      var container = document.getElementById('placeLastWeekStats');
+      var names = [
+        { key: 'commodities', title: '원자재' },
+        { key: 'fear', title: '공포지수' },
+        { key: 'fx', title: '외환' },
+        { key: 'stocks', title: '주식' }
+      ];
+      var html = '';
+      names.forEach(function(n) {
+        var d = lastCrisisData[n.key];
+        if (!d || !d.labels.length) {
+          html += '<div class="table-section"><h3>' + n.title + '</h3><p class="subtext">데이터 없음</p></div>';
+          return;
+        }
+        var lastN = 7;
+        var start = Math.max(0, d.labels.length - lastN);
+        var labels = d.labels.slice(start);
+        var seriesNames = Object.keys(d.series);
+        html += '<div class="table-section"><h3>' + n.title + ' · 최근 ' + labels.length + '거래일</h3>';
+        html += '<table class="stats-table"><thead><tr><th>날짜</th>';
+        seriesNames.forEach(function(s) { html += '<th>' + s + '</th>'; });
+        html += '</tr></thead><tbody>';
+        for (var i = 0; i < labels.length; i++) {
+          html += '<tr><td>' + labels[i] + '</td>';
+          seriesNames.forEach(function(s) {
+            var vals = d.series[s];
+            var v = vals && vals[start + i] != null ? Number(vals[start + i]) : '—';
+            var cell = typeof v === 'number' ? '<span class="num">' + (v % 1 === 0 ? v : v.toFixed(4)) + '</span>' : v;
+            html += '<td>' + cell + '</td>';
+          });
+          html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+      });
+      container.innerHTML = html || '<p class="subtext">데이터를 불러온 뒤 표가 표시됩니다.</p>';
+    }
+
+    /* 섹션 "전체 CSV" 버튼 — 데이터 로드 완료 후 바인딩 */
+    function buildSectionCsv(key, filename) {
+      var d = lastCrisisData[key];
+      if (!d || !d.labels || !d.labels.length || !d.series || !Object.keys(d.series).length) return;
+      var labels = d.labels;
+      var series = d.series;
+      var fakeDatasets = Object.keys(series).map(function(name) {
+        return { label: name, data: series[name] };
+      });
+      downloadCSV(filename, labels, fakeDatasets);
+    }
+
+    function bindSectionCsvButtons() {
+      var map = [
+        { id: 'csvCommodities', key: 'commodities', file: '원자재_가격.csv' },
+        { id: 'csvFear',        key: 'fear',        file: '공포지수.csv' },
+        { id: 'csvFx',          key: 'fx',          file: '외환변동.csv' },
+        { id: 'csvStocks',      key: 'stocks',      file: '주식시장.csv' },
+      ];
+      map.forEach(function(m) {
+        var btn = document.getElementById(m.id);
+        if (!btn) return;
+        btn.onclick = function() { buildSectionCsv(m.key, m.file); };
+      });
+    }
+
+    function loadAll() {
+      setGlobalStatus('불러오는 중...');
+      var placeholders = ['placeCommoditiesPanels', 'placeFearPanels', 'placeFxPanels', 'placeStocksPanels'];
+      placeholders.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.innerHTML = '<span style="color:#94a3b8;">불러오는 중...</span>';
+      });
+      Promise.all([
+        fetchAndDraw('commodities', 'placeCommoditiesPanels', 'commodities', '원자재 가격'),
+        fetchAndDraw('fear', 'placeFearPanels', 'fear', '금융 공포지수'),
+        fetchAndDraw('fx', 'placeFxPanels', 'fx', '외환 변동'),
+        fetchAndDraw('stocks', 'placeStocksPanels', 'stocks', '주식시장 지수')
+      ]).then(function() {
+        drawCommoditiesRelativeChart();
+        drawStocksRelativeChart();
+        renderLastWeekTable();
+        bindSectionCsvButtons();
+        var hasSample = [lastCrisisData.commodities, lastCrisisData.fear, lastCrisisData.fx, lastCrisisData.stocks].some(function(d) { return d && d.sample_data; });
+        setGlobalStatus(hasSample ? '완료 (일부 샘플 데이터)' : '완료');
+        document.getElementById('sampleDataAlert').style.display = hasSample ? 'block' : 'none';
+      }).catch(function(e) {
+        console.error('crisis loadAll error', e);
+        setGlobalStatus('일부 요청 실패', true);
+      });
+    }
+
+    var CRISIS_FALLBACK_COUNTRIES = [
+      { id: 'KOR', name: 'Korea, Rep.' }, { id: 'USA', name: 'United States' }, { id: 'JPN', name: 'Japan' },
+      { id: 'IRN', name: 'Iran, Islamic Rep.' }, { id: 'ISR', name: 'Israel' }, { id: 'CHN', name: 'China' }, { id: 'GBR', name: 'United Kingdom' }
+    ];
+    function fillCrisisCountrySelect(list) {
+      var sel = document.getElementById('countrySelect');
+      if (!sel) return;
+      sel.innerHTML = '';
+      var arr = Array.isArray(list) ? list : CRISIS_FALLBACK_COUNTRIES;
+      arr.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.id || c;
+        opt.textContent = c.name || c.id || c;
+        sel.appendChild(opt);
+      });
+    }
+    function loadCountries() {
+      return fetch('/api/countries')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var list = Array.isArray(data) ? data : [];
+          if (list.length === 0) list = CRISIS_FALLBACK_COUNTRIES;
+          fillCrisisCountrySelect(list);
+        })
+        .catch(function() {
+          fillCrisisCountrySelect(CRISIS_FALLBACK_COUNTRIES);
+        });
+    }
+
+    function checkCrisisStatus() {
+      fetch('/api/crisis/status')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (!res || !res.yfinance_available) {
+            document.getElementById('yfinanceAlert').style.display = 'block';
+          }
+        })
+        .catch(function() {});
+    }
+
+    document.getElementById('btnLoad').addEventListener('click', function() {
+      loadAll();
+    });
+
+    document.getElementById('period').addEventListener('change', function() {
+      loadAll();
+    });
+
+    document.getElementById('countrySelect').addEventListener('change', function() {
+      loadAll();
+    });
+
+    fillCrisisCountrySelect(CRISIS_FALLBACK_COUNTRIES);
+    checkCrisisStatus();
+    loadCountries().then(function() { loadAll(); });
+  </script>
+</body>
+</html>

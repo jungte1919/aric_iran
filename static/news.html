@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>이란 전쟁 뉴스 스크랩 — 데이터로 이해하는 이란 전쟁</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a; --bg2: #1e293b; --bg3: #263347; --border: #334155;
+      --text: #f1f5f9; --muted: #94a3b8; --muted2: #64748b;
+      --accent: #38bdf8; --accent-s: rgba(56,189,248,.12);
+      --gold: #f59e0b; --green: #34d399; --red: #f87171;
+      --purple: #a78bfa; --orange: #fb923c; --pink: #f472b6;
+      --r: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: -apple-system, "Noto Sans KR", sans-serif; margin: 0;
+           background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+    /* header */
+    header { padding: 18px 28px; background: #1e293b; border-bottom: 1px solid var(--border);
+             display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+             justify-content: space-between; position: sticky; top: 0; z-index: 100;
+             box-shadow: 0 2px 16px rgba(0,0,0,.4); }
+    header h1 { font-size: 1.05rem; font-weight: 700; margin: 0; letter-spacing: -.02em; }
+    header .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .nav a { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 500;
+             padding: 6px 12px; border: 1px solid var(--border); border-radius: 7px;
+             background: var(--accent-s); margin-left: 5px; transition: background .2s; }
+    .nav a:hover { background: rgba(56,189,248,.22); }
+
+    /* controls bar */
+    .ctrl { padding: 16px 24px; background: var(--bg2); border-bottom: 1px solid var(--border);
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap input { width: 100%; padding: 9px 12px 9px 36px; border-radius: 9px;
+                         border: 1px solid var(--border); background: var(--bg);
+                         color: var(--text); font-size: 13px; outline: none; transition: border-color .2s; }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap .icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+                         font-size: 14px; pointer-events: none; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+                  background: transparent; color: var(--muted); font-size: 12px; font-weight: 500;
+                  cursor: pointer; transition: all .18s; white-space: nowrap; }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent);
+                         color: #0f172a; font-weight: 700; }
+    .filter-btn[data-cat="군사/전투"].active  { background: var(--red);    border-color: var(--red);    color: #fff; }
+    .filter-btn[data-cat="외교/정치"].active  { background: var(--purple); border-color: var(--purple); color: #fff; }
+    .filter-btn[data-cat="경제/에너지"].active{ background: var(--gold);   border-color: var(--gold);   color: #0f172a; }
+    .filter-btn[data-cat="인도주의"].active   { background: var(--green);  border-color: var(--green);  color: #0f172a; }
+    .filter-btn[data-cat="기타"].active       { background: var(--muted2); border-color: var(--muted2); color: #fff; }
+
+    /* stat bar */
+    .stat-bar { padding: 10px 24px; display: flex; flex-wrap: wrap; gap: 12px;
+                align-items: center; border-bottom: 1px solid var(--border);
+                background: var(--bg); font-size: 12px; color: var(--muted); }
+    .stat-bar strong { color: var(--text); }
+    .stat-bar .sep { color: var(--border); }
+    #refreshBtn { margin-left: auto; padding: 6px 14px; border-radius: 8px;
+                  border: 1px solid var(--border); background: transparent;
+                  color: var(--accent); font-size: 12px; cursor: pointer; transition: background .2s; }
+    #refreshBtn:hover { background: var(--accent-s); }
+    #refreshBtn:disabled { opacity: .5; cursor: not-allowed; }
+    .spin { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* main */
+    .main { padding: 20px 24px; max-width: 1200px; margin: 0 auto; }
+    .lang-section + .lang-section { margin-top: 32px; }
+    .lang-title { font-size: 13px; font-weight: 700; color: var(--muted);
+                  letter-spacing: .06em; text-transform: uppercase;
+                  border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 14px; }
+
+    /* news grid */
+    .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r);
+            padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 8px;
+            transition: border-color .2s, box-shadow .2s; }
+    .card:hover { border-color: var(--accent); box-shadow: 0 0 18px rgba(56,189,248,.07); }
+
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .badges { display: flex; gap: 5px; flex-wrap: wrap; flex-shrink: 0; }
+    .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; letter-spacing: .04em; white-space: nowrap; }
+    .badge-source { background: var(--accent-s); border: 1px solid rgba(56,189,248,.25); color: var(--accent); }
+    .badge-lang-ko { background: rgba(52,211,153,.12); border: 1px solid rgba(52,211,153,.3); color: var(--green); }
+    .badge-lang-en { background: rgba(251,146,60,.12); border: 1px solid rgba(251,146,60,.3); color: var(--orange); }
+    .badge-cat { border: 1px solid; }
+    .badge-cat-군사전투  { background: rgba(248,113,113,.12); border-color: rgba(248,113,113,.3);  color: var(--red);    }
+    .badge-cat-외교정치  { background: rgba(167,139,250,.12); border-color: rgba(167,139,250,.3);  color: var(--purple); }
+    .badge-cat-경제에너지{ background: rgba(245,158,11,.12);  border-color: rgba(245,158,11,.3);   color: var(--gold);   }
+    .badge-cat-인도주의  { background: rgba(52,211,153,.12);  border-color: rgba(52,211,153,.3);   color: var(--green);  }
+    .badge-cat-기타      { background: rgba(100,116,139,.12); border-color: rgba(100,116,139,.3);  color: var(--muted);  }
+
+    .card-title { font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--text);
+                  margin: 0; flex: 1; }
+    .card-title a { color: inherit; text-decoration: none; }
+    .card-title a:hover { color: var(--accent); }
+    .card-summary { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 0;
+                    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
+    .card-date { font-size: 11px; color: var(--muted2); }
+    .card-link { font-size: 11px; color: var(--accent); text-decoration: none;
+                 padding: 4px 10px; border: 1px solid rgba(56,189,248,.3);
+                 border-radius: 6px; transition: background .18s; }
+    .card-link:hover { background: var(--accent-s); }
+
+    /* empty / loading */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty .big { font-size: 2.5rem; margin-bottom: 12px; }
+    .skeleton { background: var(--bg3); border-radius: var(--r); animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+    .skel-card { height: 140px; margin-bottom: 14px; }
+
+    /* toast */
+    #toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2);
+             border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px;
+             font-size: 13px; color: var(--muted); box-shadow: var(--sh); z-index: 999;
+             transform: translateY(20px); opacity: 0; transition: all .3s; pointer-events: none; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* source legend */
+    .legend { padding: 16px 24px; display: flex; flex-wrap: wrap; gap: 8px;
+              border-bottom: 1px solid var(--border); }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    footer { padding: 18px 24px; border-top: 1px solid var(--border);
+             font-size: 11px; color: var(--muted2); text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📰 이란 전쟁 뉴스 스크랩</h1>
+    <div class="sub">Google News · Reuters · BBC · Al Jazeera — 이란·이스라엘 관련 뉴스 실시간 수집</div>
+  </div>
+  <nav class="nav">
+    <a href="/why" style="background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fbbf24;">왜 데이터인가</a>
+    <a href="/">🏦 국가자원/국방력</a>
+    <a href="/crisis">⚡ 위기 진단</a>
+    <a href="/governance">🏛 거버넌스/민주주의</a>
+    <a href="/news" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">📰 뉴스 스크랩</a>
+    <a href="/map">🗺 미사일 공격상황</a>
+  </nav>
+</header>
+
+<!-- controls -->
+<div class="ctrl">
+  <div class="search-wrap">
+    <span class="icon">🔍</span>
+    <input id="searchInput" type="text" placeholder="제목·내용 검색 (한국어/영어)…" />
+  </div>
+  <div class="filter-row" id="langFilters">
+    <span style="font-size:12px;color:var(--muted);font-weight:600;">언어:</span>
+    <button class="filter-btn active" data-lang="all">전체</button>
+    <button class="filter-btn" data-lang="ko">🇰🇷 한국어</button>
+    <button class="filter-btn" data-lang="en">🌐 영어</button>
+  </div>
+  <div class="filter-row" id="catFilters">
+    <span style="font-size:12px;color:var(--muted);font-weight:600;">분류:</span>
+    <button class="filter-btn active" data-cat="all">전체</button>
+    <button class="filter-btn" data-cat="군사/전투">⚔️ 군사</button>
+    <button class="filter-btn" data-cat="외교/정치">🤝 외교</button>
+    <button class="filter-btn" data-cat="경제/에너지">💰 경제</button>
+    <button class="filter-btn" data-cat="인도주의">🏥 인도주의</button>
+    <button class="filter-btn" data-cat="기타">📌 기타</button>
+  </div>
+</div>
+
+<!-- stat bar -->
+<div class="stat-bar">
+  <span>표시: <strong id="shownCount">—</strong> 건</span>
+  <span class="sep">|</span>
+  <span>전체: <strong id="totalCount">—</strong> 건</span>
+  <span class="sep">|</span>
+  <span>수집 시각: <strong id="fetchedAt">—</strong></span>
+  <span class="sep">|</span>
+  <span id="autoLabel" style="color:var(--green);">자동 갱신 30분</span>
+  <button id="refreshBtn" onclick="loadNews(true)">🔄 지금 새로고침</button>
+</div>
+
+<div class="main" id="main">
+  <!-- skeleton -->
+  <div id="skeleton">
+    <div class="news-grid">
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+    </div>
+  </div>
+  <div id="grid" style="display:none;"></div>
+</div>
+
+<div id="toast"></div>
+
+<footer>
+  서울대학교 행정대학원 고길곤 교수 연구실 · 아시아 지역정보센터 &nbsp;|&nbsp;
+  데이터: Google News RSS · Reuters · BBC · Al Jazeera &nbsp;|&nbsp;
+  교육·연구 목적
+</footer>
+
+<script>
+// ── state ──────────────────────────────────────────────────────────────────
+let allArticles = [];
+let activeLang = "all";
+let activeCat  = "all";
+let searchQ    = "";
+
+// ── fetch ──────────────────────────────────────────────────────────────────
+async function loadNews(forceRefresh = false) {
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">⟳</span> 수집 중…';
+
+  try {
+    const url = "/api/news" + (forceRefresh ? "?refresh=1" : "");
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("서버 오류 " + res.status);
+    const data = await res.json();
+    allArticles = data.articles || [];
+    const fa = data.fetched_at ? data.fetched_at.replace("T", " ") : "—";
+    document.getElementById("fetchedAt").textContent = fa;
+    document.getElementById("totalCount").textContent = allArticles.length;
+    if (forceRefresh) showToast("✅ 최신 뉴스를 불러왔습니다.");
+  } catch(e) {
+    showToast("❌ 뉴스 수집 실패: " + e.message);
+  }
+
+  document.getElementById("skeleton").style.display = "none";
+  document.getElementById("grid").style.display = "";
+  btn.disabled = false;
+  btn.innerHTML = "🔄 지금 새로고침";
+  renderGrid();
+}
+
+// ── filter & render ────────────────────────────────────────────────────────
+function renderGrid() {
+  const q = searchQ.toLowerCase();
+  const filtered = allArticles.filter(a => {
+    if (activeLang !== "all" && a.lang !== activeLang) return false;
+    if (activeCat  !== "all" && a.category !== activeCat) return false;
+    if (q && !(a.title.toLowerCase().includes(q) || (a.summary||"").toLowerCase().includes(q))) return false;
+    return true;
+  });
+
+  document.getElementById("shownCount").textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    document.getElementById("grid").innerHTML = `
+      <div class="empty"><div class="big">🔎</div>
+        <div>검색 조건에 맞는 뉴스가 없습니다.</div>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted2);">검색어나 필터를 변경해 보세요.</div>
+      </div>`;
+    return;
+  }
+
+  // group by language
+  const ko = filtered.filter(a => a.lang === "ko");
+  const en = filtered.filter(a => a.lang === "en");
+
+  let html = "";
+  if (activeLang === "all") {
+    if (ko.length) html += langSection("🇰🇷 한국어 뉴스", ko);
+    if (en.length) html += langSection("🌐 English News", en);
+  } else if (activeLang === "ko") {
+    html = langSection("🇰🇷 한국어 뉴스", ko);
+  } else {
+    html = langSection("🌐 English News", en);
+  }
+  document.getElementById("grid").innerHTML = html;
+}
+
+function langSection(label, articles) {
+  const cards = articles.map(cardHTML).join("");
+  return `<div class="lang-section">
+    <div class="lang-title">${label} — ${articles.length}건</div>
+    <div class="news-grid">${cards}</div>
+  </div>`;
+}
+
+function cardHTML(a) {
+  const catKey = (a.category||"기타").replace(/[\/\s]/g,"");
+  const catBadge = `<span class="badge badge-cat badge-cat-${catKey}">${a.category||"기타"}</span>`;
+  const langBadge = a.lang === "ko"
+    ? `<span class="badge badge-lang-ko">KO</span>`
+    : `<span class="badge badge-lang-en">EN</span>`;
+  const src = escHtml(a.source||"");
+  const title = escHtml(a.title||"");
+  const summary = escHtml(a.summary||"");
+  const dateStr = formatDate(a.published);
+  return `<div class="card" data-lang="${a.lang}" data-cat="${escHtml(a.category)}">
+    <div class="card-top">
+      <h3 class="card-title"><a href="${escHtml(a.link)}" target="_blank" rel="noopener">${title}</a></h3>
+      <div class="badges">
+        ${langBadge}
+        ${catBadge}
+      </div>
+    </div>
+    ${summary ? `<p class="card-summary">${summary}</p>` : ""}
+    <div class="card-footer">
+      <div>
+        <span class="badge badge-source">${src}</span>
+        <span class="card-date" style="margin-left:6px;">${dateStr}</span>
+      </div>
+      <a href="${escHtml(a.link)}" target="_blank" rel="noopener" class="card-link">원문 →</a>
+    </div>
+  </div>`;
+}
+
+// ── helpers ────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function formatDate(s) {
+  if (!s) return "";
+  try {
+    const d = new Date(s);
+    if (isNaN(d)) return s.substring(0, 16);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 60000);
+    if (diff < 1)  return "방금 전";
+    if (diff < 60) return `${diff}분 전`;
+    if (diff < 1440) return `${Math.floor(diff/60)}시간 전`;
+    return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  } catch { return s.substring(0,16); }
+}
+
+function showToast(msg, ms = 3000) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), ms);
+}
+
+// ── filter button wiring ───────────────────────────────────────────────────
+document.querySelectorAll("#langFilters .filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#langFilters .filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeLang = btn.dataset.lang;
+    renderGrid();
+  });
+});
+
+document.querySelectorAll("#catFilters .filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#catFilters .filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeCat = btn.dataset.cat;
+    renderGrid();
+  });
+});
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  searchQ = e.target.value.trim();
+  renderGrid();
+});
+
+// ── auto-refresh every 30 min ──────────────────────────────────────────────
+setInterval(() => loadNews(false), 30 * 60 * 1000);
+
+// ── init ──────────────────────────────────────────────────────────────────
+loadNews(false);
+</script>
+</body>
+</html>
