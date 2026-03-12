@@ -7,22 +7,74 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="/static/shared.css">
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 0; background: #0f172a; color: #e5e7eb; }
-    header { padding: 16px 24px; background: linear-gradient(to right, #111827, #1e293b); border-bottom: 1px solid #1f2933; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 0;
+           background: #0f172a; color: #e5e7eb; }
+    header { padding: 16px 24px; background: linear-gradient(to right, #111827, #1e293b);
+             border-bottom: 1px solid #1f2933; display: flex; flex-wrap: wrap;
+             gap: 12px; align-items: center; justify-content: space-between; }
     header h1 { font-size: 18px; margin: 0; }
     .nav a { color: #93c5fd; text-decoration: none; margin-left: 12px; font-size: 14px; }
     .nav a:hover { text-decoration: underline; }
-    .container { max-width: 1120px; margin: 0 auto; padding: 16px; }
-    .card { background: #020617; border-radius: 12px; border: 1px solid #1f2933; padding: 16px 18px 18px; margin-bottom: 16px; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7); }
-    .card h2 { font-size: 16px; margin: 0 0 8px; color: #f9fafb; }
-    .subtext { font-size: 12px; color: #9ca3af; margin-bottom: 12px; }
-    .chart-wrap { min-height: 280px; position: relative; border-radius: 10px; background: rgba(15, 23, 42, 0.5); padding: 12px; margin-bottom: 12px; }
-    .chart-wrap canvas { max-width: 100%; }
-    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 8px; }
-    select { padding: 6px 8px; border-radius: 8px; border: 1px solid #374151; background: #020617; color: #e5e7eb; font-size: 13px; }
-    button.primary { padding: 8px 14px; border-radius: 999px; border: none; background: linear-gradient(to right, #2563eb, #4f46e5); color: white; font-size: 13px; cursor: pointer; }
-    button.primary:disabled { opacity: 0.5; cursor: default; }
-    .status { font-size: 12px; color: #9ca3af; margin-left: 8px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+
+    .card { background: #020617; border-radius: 12px; border: 1px solid #1f2933;
+            padding: 18px 20px 20px; margin-bottom: 20px;
+            box-shadow: 0 18px 40px rgba(15,23,42,.7); }
+    .card h2 { font-size: 15px; margin: 0 0 4px; color: #f9fafb;
+               border-left: 3px solid #3b82f6; padding-left: 10px; }
+    .subtext { font-size: 12px; color: #9ca3af; margin: 0 0 14px 13px; }
+
+    /* 상대 추세 비교 차트 */
+    .index-wrap { margin-bottom: 16px; border-radius: 10px; border: 1px solid #1e293b; overflow: hidden; }
+    .index-header { display: flex; align-items: baseline; justify-content: space-between;
+                    flex-wrap: wrap; gap: 6px; background: rgba(30,41,59,.6); padding: 9px 14px; }
+    .index-title  { font-size: 12px; font-weight: 600; color: #cbd5e1; }
+    .index-base   { font-size: 11px; color: #64748b; }
+    .index-canvas-box { background: rgba(15,23,42,.5); padding: 10px 12px; height: 220px; position: relative; }
+
+    /* 2열 패널 그리드 */
+    .panels-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    @media (max-width: 640px) { .panels-grid { grid-template-columns: 1fr; } }
+
+    .panel-wrap { background: rgba(15,23,42,.55); border: 1px solid #1e293b;
+                  border-radius: 10px; padding: 12px 12px 10px; height: 230px; position: relative; }
+    .panel-name { font-size: 12px; font-weight: 600; color: #cbd5e1;
+                  margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .panel-canvas-wrap { position: relative; height: calc(100% - 24px); }
+
+    .placeholder { display: flex; align-items: center; justify-content: center;
+                   height: 180px; color: #6b7280; font-size: 13px; }
+
+    /* 최근 N거래일 원자료 */
+    .sec-foot { margin-top: 16px; padding-top: 14px; border-top: 1px solid #1e293b; }
+    .sec-foot-hdr { display: flex; align-items: center; justify-content: space-between;
+                    flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .sec-foot-title { font-size: 12px; font-weight: 600; color: #cbd5e1; }
+    .tbl-recent { overflow-x: auto; border-radius: 8px; border: 1px solid #1e293b; }
+    .tbl-recent table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .tbl-recent th, .tbl-recent td { padding: 6px 10px; border-bottom: 1px solid #1e293b;
+                                     text-align: right; white-space: nowrap; }
+    .tbl-recent th { background: #050d1a; color: #64748b; font-weight: 500;
+                     position: sticky; top: 0; z-index: 1; }
+    .tbl-recent td:first-child, .tbl-recent th:first-child { text-align: left; }
+    .tbl-recent tr:last-child td { border-bottom: none; }
+
+    /* CSV 버튼 */
+    button.dl-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid #334155;
+                    background: transparent; color: #94a3b8; font-size: 11px; cursor: pointer;
+                    transition: background .15s, color .15s; }
+    button.dl-btn:hover { background: rgba(56,189,248,.12); color: #38bdf8; border-color: #38bdf8; }
+    button.dl-btn:disabled { opacity: .4; cursor: default; }
+
+    /* 상단 컨트롤 */
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+    select { padding: 6px 10px; border-radius: 8px; border: 1px solid #374151;
+             background: #020617; color: #e5e7eb; font-size: 13px; }
+    button.primary { padding: 8px 16px; border-radius: 999px; border: none;
+                     background: linear-gradient(to right, #2563eb, #4f46e5);
+                     color: white; font-size: 13px; cursor: pointer; }
+    button.primary:disabled { opacity: .5; cursor: default; }
+    .status { font-size: 12px; color: #9ca3af; margin-left: 6px; }
     .status.error { color: #f97373; }
   </style>
 </head>
@@ -30,17 +82,24 @@
   <header>
     <div>
       <h1>위기 분석 · 원자재·금융·외환·주식</h1>
-      <div class="subtext">원자재 가격, 금융 공포지수(VIX), 외환 변동, 주식시장 지수를 한 화면에서 확인합니다.</div>
+      <div class="subtext">원자재 가격, 금융 공포지수(VIX), 외환 변동, 주식시장 지수를 패널별로 확인합니다.</div>
     </div>
     <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기/닫기">☰</button>
     <nav class="nav">
-      <a href="/">← 대시보드</a>
+      <a href="/why">왜 데이터인가</a>
+      <a href="/">🏦 국가자원/국방력</a>
+      <a href="/crisis" style="opacity:.5;pointer-events:none;">⚡ 위기 진단</a>
+      <a href="/governance">🏛 거버넌스/민주주의</a>
+      <a href="/news">📰 뉴스 스크랩</a>
+      <a href="/map">🗺 미사일 공격상황</a>
       <a href="/hormuz">⚓ 호르무즈</a>
+      <a href="/dubai">✈ 두바이 공항</a>
     </nav>
   </header>
+
   <main class="container">
-    <div class="row" style="margin-bottom: 16px;">
-      <label style="color: #94a3b8;">기간:</label>
+    <div class="row">
+      <label style="color:#94a3b8;">기간:</label>
       <select id="period">
         <option value="3mo">최근 3개월</option>
         <option value="6mo">최근 6개월</option>
@@ -50,123 +109,349 @@
       <span id="globalStatus" class="status"></span>
     </div>
 
+    <!-- 1. 원자재 -->
     <section class="card">
       <h2>1. 원자재 가격</h2>
-      <div class="subtext">WTI, Brent, 천연가스, 금, 은, 구리 (선물 종가 기준)</div>
-      <div class="chart-wrap"><div id="placeCommodities" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: #6b7280;">기간 선택 후 새로고침을 누르세요.</div></div>
+      <div class="subtext">WTI · Brent · 천연가스 · 금 · 은 · 구리 (선물 종가 기준)</div>
+      <div class="index-wrap">
+        <div class="index-header">
+          <span class="index-title">📊 항목 간 상대 추세 비교 <span style="font-weight:400;color:#64748b;">(시작월 평균 = 100)</span></span>
+          <span class="index-base" id="idxBaseCommodities">—</span>
+        </div>
+        <div class="index-canvas-box"><canvas id="idxCommodities"></canvas></div>
+      </div>
+      <div class="panels-grid" id="placeCommodities">
+        <div class="placeholder">기간 선택 후 새로고침을 누르세요.</div>
+      </div>
+      <div class="sec-foot">
+        <div class="sec-foot-hdr">
+          <span class="sec-foot-title">최근 7거래일 원자료</span>
+          <button class="dl-btn" id="csvBtnCommodities" disabled
+                  onclick="dlCSVSection('commodities')">⬇ CSV 다운로드</button>
+        </div>
+        <div class="tbl-recent">
+          <table><thead id="thCommodities"></thead><tbody id="tbCommodities"></tbody></table>
+        </div>
+      </div>
     </section>
+
+    <!-- 2. 금융 공포지수 -->
     <section class="card">
       <h2>2. 금융 공포지수</h2>
-      <div class="subtext">VIX(미국), MOVE(채권 변동성)</div>
-      <div class="chart-wrap"><div id="placeFear" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: #6b7280;">—</div></div>
+      <div class="subtext">VIX · MOVE · SKEW · VVIX — 점선은 위험 기준치</div>
+      <div class="index-wrap">
+        <div class="index-header">
+          <span class="index-title">📊 항목 간 상대 추세 비교 <span style="font-weight:400;color:#64748b;">(시작월 평균 = 100)</span></span>
+          <span class="index-base" id="idxBaseFear">—</span>
+        </div>
+        <div class="index-canvas-box"><canvas id="idxFear"></canvas></div>
+      </div>
+      <div class="panels-grid" id="placeFear">
+        <div class="placeholder">—</div>
+      </div>
+      <div class="sec-foot">
+        <div class="sec-foot-hdr">
+          <span class="sec-foot-title">최근 7거래일 원자료</span>
+          <button class="dl-btn" id="csvBtnFear" disabled
+                  onclick="dlCSVSection('fear')">⬇ CSV 다운로드</button>
+        </div>
+        <div class="tbl-recent">
+          <table><thead id="thFear"></thead><tbody id="tbFear"></tbody></table>
+        </div>
+      </div>
     </section>
+
+    <!-- 3. 외환 -->
     <section class="card">
       <h2>3. 외환 변동</h2>
-      <div class="subtext">USD/KRW, EUR/USD, USD/JPY</div>
-      <div class="chart-wrap"><div id="placeFx" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: #6b7280;">—</div></div>
+      <div class="subtext">USD/KRW · USD/JPY · USD/CNY · USD/EUR</div>
+      <div class="index-wrap">
+        <div class="index-header">
+          <span class="index-title">📊 항목 간 상대 추세 비교 <span style="font-weight:400;color:#64748b;">(시작월 평균 = 100)</span></span>
+          <span class="index-base" id="idxBaseFx">—</span>
+        </div>
+        <div class="index-canvas-box"><canvas id="idxFx"></canvas></div>
+      </div>
+      <div class="panels-grid" id="placeFx">
+        <div class="placeholder">—</div>
+      </div>
+      <div class="sec-foot">
+        <div class="sec-foot-hdr">
+          <span class="sec-foot-title">최근 7거래일 원자료</span>
+          <button class="dl-btn" id="csvBtnFx" disabled
+                  onclick="dlCSVSection('fx')">⬇ CSV 다운로드</button>
+        </div>
+        <div class="tbl-recent">
+          <table><thead id="thFx"></thead><tbody id="tbFx"></tbody></table>
+        </div>
+      </div>
     </section>
+
+    <!-- 4. 주식시장 -->
     <section class="card">
       <h2>4. 주식시장</h2>
-      <div class="subtext">S&P500, KOSPI, 니케이225, FTSE100</div>
-      <div class="chart-wrap"><div id="placeStocks" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: #6b7280;">—</div></div>
+      <div class="subtext">S&amp;P500 · KOSPI · 니케이225 · FTSE100 · Tadawul · MOEX</div>
+      <div class="index-wrap">
+        <div class="index-header">
+          <span class="index-title">📊 항목 간 상대 추세 비교 <span style="font-weight:400;color:#64748b;">(시작월 평균 = 100)</span></span>
+          <span class="index-base" id="idxBaseStocks">—</span>
+        </div>
+        <div class="index-canvas-box"><canvas id="idxStocks"></canvas></div>
+      </div>
+      <div class="panels-grid" id="placeStocks">
+        <div class="placeholder">—</div>
+      </div>
+      <div class="sec-foot">
+        <div class="sec-foot-hdr">
+          <span class="sec-foot-title">최근 7거래일 원자료</span>
+          <button class="dl-btn" id="csvBtnStocks" disabled
+                  onclick="dlCSVSection('stocks')">⬇ CSV 다운로드</button>
+        </div>
+        <div class="tbl-recent">
+          <table><thead id="thStocks"></thead><tbody id="tbStocks"></tbody></table>
+        </div>
+      </div>
     </section>
   </main>
-  <script>
-    var chartCommodities = null, chartFear = null, chartFx = null, chartStocks = null;
-    var colors = ['#ef4444','#3b82f6','#22c55e','#eab308','#a855f7','#06b6d4'];
 
-    function setGlobalStatus(msg, isErr) {
-      var el = document.getElementById('globalStatus');
+  <script>
+    const COLORS   = ['#ef4444','#3b82f6','#22c55e','#eab308','#a855f7','#06b6d4',
+                      '#f97316','#ec4899','#14b8a6','#84cc16','#f43f5e','#6366f1'];
+    const GRID_CLR = 'rgba(51,65,85,.45)';
+    const TICK_OPT = { color: '#94a3b8', font: { size: 10 } };
+    const _idxCharts = {};
+    const _data      = {};   // { endpoint: { labels, series } }
+
+    // ── 상태 메시지 ──────────────────────────────────────────────────────────
+    function setStatus(msg, isErr) {
+      const el = document.getElementById('globalStatus');
       el.textContent = msg || '';
-      el.className = 'status' + (isErr ? ' error' : '');
+      el.className   = 'status' + (isErr ? ' error' : '');
     }
 
-    function buildDatasets(series) {
-      var names = Object.keys(series);
-      return names.map(function(name, i) {
-        var vals = series[name];
-        return {
-          label: name,
-          data: vals,
-          borderColor: colors[i % colors.length],
-          backgroundColor: colors[i % colors.length] + '33',
-          tension: 0.25,
-          spanGaps: true
-        };
+    // ── 키 → ID 접미사 (commodities→Commodities) ────────────────────────────
+    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    // ── 정규화 (첫 ~22일 평균 = 100) ─────────────────────────────────────────
+    function normalizeToBase(labels, series) {
+      const N       = Math.min(22, Math.max(5, Math.floor(labels.length * 0.1)));
+      const baseEnd = labels[N - 1] || labels[labels.length - 1];
+      const out     = {};
+      for (const [name, vals] of Object.entries(series)) {
+        const bv  = vals.filter(v => v != null && isFinite(v)).slice(0, N);
+        if (!bv.length) continue;
+        const base = bv.reduce((a, b) => a + b, 0) / bv.length;
+        if (!base) continue;
+        out[name] = vals.map(v => v != null && isFinite(v) ? Math.round(v / base * 1000) / 10 : null);
+      }
+      return { normalized: out, baseDateRange: `${labels[0]} ~ ${baseEnd}` };
+    }
+
+    // ── 상대 추세 비교 차트 ──────────────────────────────────────────────────
+    function drawIndexChart(canvasId, labelElId, labels, series) {
+      if (_idxCharts[canvasId]) { _idxCharts[canvasId].destroy(); delete _idxCharts[canvasId]; }
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const { normalized, baseDateRange } = normalizeToBase(labels, series);
+      const names = Object.keys(normalized);
+      if (!names.length) return;
+
+      // 선택 기간에 따라 "N개월 전 달" 문구 결정
+      const period = document.getElementById('period').value;
+      const agoText = period === '1y' ? '약 12개월 전 달' :
+                      period === '6mo' ? '약 6개월 전 달' : '약 3개월 전 달';
+      const labelEl = document.getElementById(labelElId);
+      if (labelEl) labelEl.innerHTML =
+        `기준 = 100 : <strong style="color:#e2e8f0;">${agoText} 평균</strong>`
+        + `<span style="color:#475569;margin-left:6px;">(${baseDateRange})</span>`;
+      const datasets = names.map((name, i) => ({
+        label: name, data: normalized[name],
+        borderColor: COLORS[i % COLORS.length], backgroundColor: 'transparent',
+        tension: 0.3, pointRadius: 0, borderWidth: 2, spanGaps: true,
+      }));
+      datasets.push({
+        label: '기준선', data: labels.map(() => 100),
+        borderColor: 'rgba(255,255,255,.18)', borderWidth: 1, borderDash: [5, 4],
+        pointRadius: 0, fill: false, spanGaps: true,
+      });
+      _idxCharts[canvasId] = new Chart(canvas.getContext('2d'), {
+        type: 'line', data: { labels, datasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12, padding: 10,
+                        filter: item => item.text !== '기준선' },
+            },
+            tooltip: {
+              callbacks: {
+                label: c => c.dataset.label === '기준선' ? null
+                  : ` ${c.dataset.label}: ${c.raw != null ? c.raw.toFixed(1) : '-'}`,
+              },
+            },
+          },
+          scales: {
+            x: { grid: { color: GRID_CLR }, ticks: { ...TICK_OPT, maxTicksLimit: 8, maxRotation: 0 } },
+            y: { grid: { color: GRID_CLR }, ticks: { ...TICK_OPT, maxTicksLimit: 6, callback: v => v.toFixed(0) } },
+          },
+        },
       });
     }
 
-    function drawChart(placeholderId, chartRef, title, labels, series) {
-      var place = document.getElementById(placeholderId);
-      if (series && Object.keys(series).length > 0) {
-        place.innerHTML = '<canvas id="' + placeholderId + 'Canvas"></canvas>';
-        var ctx = document.getElementById(placeholderId + 'Canvas').getContext('2d');
-        if (chartRef.current) chartRef.current.destroy();
-        chartRef.current = new Chart(ctx, {
-          type: 'line',
-          data: { labels: labels, datasets: buildDatasets(series) },
+    // ── 개별 패널 ─────────────────────────────────────────────────────────────
+    function drawPanels(containerId, labels, series, opts = {}) {
+      const container = document.getElementById(containerId);
+      (container._charts || []).forEach(c => c.destroy());
+      container._charts = [];
+      const names = Object.keys(series);
+      if (!names.length) {
+        container.innerHTML = '<span style="color:#9ca3af;font-size:13px;">데이터 없음</span>';
+        return;
+      }
+      container.innerHTML = '';
+      names.forEach((name, i) => {
+        const wrap = document.createElement('div'); wrap.className = 'panel-wrap';
+        const title = document.createElement('div'); title.className = 'panel-name'; title.textContent = name;
+        const cWrap = document.createElement('div'); cWrap.className = 'panel-canvas-wrap';
+        const canvas = document.createElement('canvas');
+        cWrap.appendChild(canvas); wrap.appendChild(title); wrap.appendChild(cWrap);
+        container.appendChild(wrap);
+        const color = COLORS[i % COLORS.length];
+        const vals  = series[name];
+        const thresholds = opts.danger && opts.danger[name];
+        const datasets = [{
+          label: name, data: vals, borderColor: color, backgroundColor: color + '18',
+          fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2, spanGaps: true,
+        }];
+        if (thresholds) {
+          thresholds.forEach(thr => datasets.push({
+            label: `위험 기준 ${thr}`, data: labels.map(() => thr),
+            borderColor: '#f87171', borderWidth: 1.5, borderDash: [5, 4],
+            pointRadius: 0, fill: false, spanGaps: true,
+          }));
+        }
+        const valid = vals.filter(v => v != null && isFinite(v));
+        const yMin  = valid.length ? Math.min(...valid) : undefined;
+        const yMax  = valid.length ? Math.max(...valid) : undefined;
+        const yPad  = ((yMax - yMin) * 0.08) || 1;
+        const chart = new Chart(canvas.getContext('2d'), {
+          type: 'line', data: { labels, datasets },
           options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 1.4,
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
-              legend: { position: 'top' },
-              title: { display: true, text: title },
-              tooltip: { mode: 'index', intersect: false }
+              legend: { display: !!thresholds,
+                labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10, padding: 8 } },
+              tooltip: { callbacks: {
+                label: c => ` ${c.dataset.label}: ${c.raw != null
+                  ? Number(c.raw).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '-'}`,
+              }},
             },
             scales: {
-              x: { title: { display: true, text: '날짜' } },
-              y: { title: { display: true, text: '값' } }
-            }
-          }
+              x: { grid: { color: GRID_CLR }, ticks: { ...TICK_OPT, maxTicksLimit: 6, maxRotation: 0 } },
+              y: { grid: { color: GRID_CLR }, ticks: { ...TICK_OPT, maxTicksLimit: 5 },
+                   min: yMin != null ? yMin - yPad : undefined,
+                   max: yMax != null ? yMax + yPad : undefined },
+            },
+          },
         });
-      } else {
-        place.innerHTML = '<span style="color:#9ca3af;">데이터가 없거나 오류가 발생했습니다.</span>';
-        if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
-      }
-    }
-
-    function fetchAndDraw(endpoint, placeholderId, chartRef, title) {
-      var period = document.getElementById('period').value;
-      return fetch('/api/crisis/' + endpoint + '?period=' + period)
-        .then(function(r) { return r.json(); })
-        .then(function(res) {
-          if (res.error) {
-            document.getElementById(placeholderId).innerHTML = '<span style="color:#f97373;">' + res.error + '</span>';
-            if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
-            return;
-          }
-          drawChart(placeholderId, chartRef, title, res.labels || [], res.series || {});
-        })
-        .catch(function(e) {
-          document.getElementById(placeholderId).innerHTML = '<span style="color:#f97373;">요청 실패: ' + e.message + '</span>';
-          if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
-        });
-    }
-
-    function loadAll() {
-      setGlobalStatus('불러오는 중...');
-      var period = document.getElementById('period').value;
-      Promise.all([
-        fetchAndDraw('commodities', 'placeCommodities', { current: chartCommodities }, '원자재 가격'),
-        fetchAndDraw('fear', 'placeFear', { current: chartFear }, '금융 공포지수 (VIX, MOVE)'),
-        fetchAndDraw('fx', 'placeFx', { current: chartFx }, '외환 변동'),
-        fetchAndDraw('stocks', 'placeStocks', { current: chartStocks }, '주식시장 지수')
-      ]).then(function() {
-        setGlobalStatus('완료');
-      }).catch(function() {
-        setGlobalStatus('일부 요청 실패', true);
+        container._charts.push(chart);
       });
     }
 
-    document.getElementById('btnLoad').addEventListener('click', function() {
-      loadAll();
-    });
+    // ── 최근 N거래일 테이블 ──────────────────────────────────────────────────
+    function buildRecentTable(thId, tbId, labels, series, n = 7) {
+      const names  = Object.keys(series);
+      const th     = document.getElementById(thId);
+      const tb     = document.getElementById(tbId);
+      if (!th || !tb || !names.length) return;
 
-    document.getElementById('period').addEventListener('change', function() {
-      loadAll();
-    });
+      th.innerHTML = '<tr><th>날짜</th>'
+        + names.map(nm => `<th>${nm}</th>`).join('') + '</tr>';
 
+      const total  = labels.length;
+      const start  = Math.max(0, total - n);
+      const recent = labels.slice(start).map((date, i) => ({ date, i: start + i }));
+
+      tb.innerHTML = recent.reverse().map(({ date, i }) => {
+        let row = `<tr><td>${date}</td>`;
+        names.forEach(nm => {
+          const v = series[nm][i];
+          row += `<td>${v != null ? Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}</td>`;
+        });
+        return row + '</tr>';
+      }).join('');
+    }
+
+    // ── CSV 다운로드 (섹션별) ─────────────────────────────────────────────────
+    function dlCSVSection(key) {
+      const d = _data[key];
+      if (!d) return;
+      const { labels, series } = d;
+      const names = Object.keys(series);
+      const bom   = '\uFEFF';
+      let csv = '날짜,' + names.join(',') + '\n';
+      labels.forEach((date, i) => {
+        csv += date + ',' + names.map(nm => {
+          const v = series[nm][i];
+          return v != null ? v : '';
+        }).join(',') + '\n';
+      });
+      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url;
+      a.download = `crisis_${key}_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    // ── 패치 + 모든 렌더링 ───────────────────────────────────────────────────
+    function fetchSection(endpoint, containerId, idxCanvasId, idxLabelId) {
+      const period = document.getElementById('period').value;
+      return fetch(`/api/crisis/${endpoint}?period=${period}`)
+        .then(r => r.json())
+        .then(res => {
+          if (res.error) {
+            document.getElementById(containerId).innerHTML =
+              `<span style="color:#f97373;">${res.error}</span>`;
+            return;
+          }
+          const labels = res.labels || [];
+          const series = res.series || {};
+          const danger = res.danger_thresholds || null;
+
+          _data[endpoint] = { labels, series };
+
+          drawIndexChart(idxCanvasId, idxLabelId, labels, series);
+          drawPanels(containerId, labels, series, { danger });
+          buildRecentTable('th' + cap(endpoint), 'tb' + cap(endpoint), labels, series);
+
+          const btn = document.getElementById('csvBtn' + cap(endpoint));
+          if (btn) btn.disabled = false;
+        })
+        .catch(e => {
+          document.getElementById(containerId).innerHTML =
+            `<span style="color:#f97373;">요청 실패: ${e.message}</span>`;
+        });
+    }
+
+    // ── 전체 로드 ────────────────────────────────────────────────────────────
+    function loadAll() {
+      setStatus('불러오는 중...');
+      Promise.all([
+        fetchSection('commodities', 'placeCommodities', 'idxCommodities', 'idxBaseCommodities'),
+        fetchSection('fear',        'placeFear',        'idxFear',        'idxBaseFear'),
+        fetchSection('fx',          'placeFx',          'idxFx',          'idxBaseFx'),
+        fetchSection('stocks',      'placeStocks',      'idxStocks',      'idxBaseStocks'),
+      ]).then(() => setStatus('완료'))
+        .catch(() => setStatus('일부 요청 실패', true));
+    }
+
+    document.getElementById('btnLoad').addEventListener('click', loadAll);
+    document.getElementById('period').addEventListener('change', loadAll);
     loadAll();
   </script>
   <script>
@@ -188,4 +473,3 @@
   </script>
 </body>
 </html>
-

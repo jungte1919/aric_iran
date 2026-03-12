@@ -75,13 +75,14 @@
       <a href="/news">📰 뉴스 스크랩</a>
       <a href="/map">🗺 미사일 공격상황</a>
       <a href="/hormuz">⚓ 호르무즈</a>
+      <a href="/dubai">✈ 두바이 공항</a>
       <div class="badge"><span class="badge-dot"></span> World Bank API</div>
     </div>
   </header>
   <main class="container">
     <section class="card">
       <h2>분석 조건</h2>
-      <div class="subtext">국가(복수 선택: Ctrl/Shift)와 지표, 연도 범위를 선택 후 분석 실행.</div>
+      <div class="subtext">국가·지표·연도를 바꾸면 자동으로 업데이트됩니다. 기본값: 이란·이스라엘 / 총 인구.</div>
       <div class="row" style="margin-bottom: 10px;">
         <div class="col">
           <label for="countrySelect">국가 선택 (여러 개 선택: Ctrl/Shift 클릭)</label>
@@ -111,7 +112,7 @@
       <h2>시각화</h2>
       <div class="subtext">선택 지표의 연도별 추세, 국가별 최근 3년 평균, 기준연도=100 지수.</div>
       <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">연도별 추세 (실제값·추세선)</h3>
-      <div id="wrapTrend"><div class="chart-wrap"><div id="chartTrendPlace" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">조건 선택 후 「분석 실행」을 눌러주세요.</div></div><p class="chart-footnote" id="footnoteTrend" style="display:none;">자료: World Bank. 서울대학교 고길곤 교수 연구실.</p></div>
+      <div id="wrapTrend"><div class="chart-wrap"><div id="chartTrendPlace" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">데이터를 가져오는 중...</div></div><p class="chart-footnote" id="footnoteTrend" style="display:none;">자료: World Bank. 서울대학교 고길곤 교수 연구실.</p></div>
       <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">국가별 최근 3년 평균</h3>
       <div id="wrapBar"><div class="chart-wrap"><div id="chartBarPlace" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">—</div></div><p class="chart-footnote" id="footnoteBar" style="display:none;">자료: World Bank. 서울대학교 고길곤 교수 연구실.</p></div>
       <h3 style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 16px 0 8px;">기준연도=100 지수</h3>
@@ -119,10 +120,10 @@
     </section>
     <section class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-        <h2 style="margin:0;">원자료</h2>
+        <h2 style="margin:0;">원자료 <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(최신 연도 먼저 · 최근 7개 연도 강조)</span></h2>
         <button id="csvBtn" class="primary" style="font-size:11px;padding:6px 13px;opacity:.45;cursor:default;" disabled>⬇ CSV 다운로드</button>
       </div>
-      <div class="subtext">그래프에 사용된 연도·국가별 수치. 분석 실행 후 CSV로 내려받을 수 있습니다.</div>
+      <div class="subtext">그래프에 사용된 연도·국가별 수치. 최신 연도가 상단에 표시되며, 최근 7개 연도는 강조됩니다. 분석 실행 후 CSV로 내려받을 수 있습니다.</div>
       <div class="table-wrapper">
         <table id="dataTable"><thead></thead><tbody></tbody></table>
       </div>
@@ -240,7 +241,14 @@
       }
     }
 
-    runBtn.addEventListener('click', async function() {
+    // ── 분석 실행 (버튼 클릭·자동 모두 이 함수 호출) ─────────────────────────
+    var _debounceTimer = null;
+    function scheduleRun(delay) {
+      clearTimeout(_debounceTimer);
+      _debounceTimer = setTimeout(runAnalysis, delay || 0);
+    }
+
+    async function runAnalysis() {
       setStatus('');
       const selectedOptions = Array.from(countrySelect.selectedOptions);
       const countries = selectedOptions.map(function(o) { return o.value; });
@@ -297,12 +305,22 @@
         csvBtn.style.opacity = '1';
         csvBtn.style.cursor = 'pointer';
 
-        // 테이블 렌더링
+        // 테이블 렌더링 — 최신 연도 먼저(내림차순), 최근 7개 연도 강조
         if (Array.isArray(rows) && rows.length > 0) {
           const columns = Object.keys(rows[0]);
           tableHead.innerHTML = '<tr>' + columns.map(function(c) { return '<th>' + c + '</th>'; }).join('') + '</tr>';
-          tableBody.innerHTML = rows.map(function(row) {
-            return '<tr>' + columns.map(function(c) { return '<td>' + (row[c] !== undefined && row[c] !== null ? row[c] : '') + '</td>'; }).join('') + '</tr>';
+          var displayRows = rows.slice().reverse();   // 최신 → 과거 순
+          var recentCutoff = displayRows.length > 7 ? displayRows[6][timeKey] : null; // 7번째 행 연도
+          tableBody.innerHTML = displayRows.map(function(row, idx) {
+            var isRecent = recentCutoff === null || row[timeKey] >= recentCutoff;
+            var rowStyle = isRecent
+              ? 'style="background:rgba(56,189,248,.04);font-weight:500;"'
+              : '';
+            return '<tr ' + rowStyle + '>'
+              + columns.map(function(c) {
+                  return '<td>' + (row[c] !== undefined && row[c] !== null ? row[c] : '') + '</td>';
+                }).join('')
+              + '</tr>';
           }).join('');
         } else {
           tableHead.innerHTML = '';
@@ -476,12 +494,22 @@
       } finally {
         runBtn.disabled = false;
       }
-    });
+    }
+
+    // 버튼 클릭도 runAnalysis() 호출
+    runBtn.addEventListener('click', runAnalysis);
+
+    // 국가·지표 변경 → 즉시 자동 재실행
+    countrySelect.addEventListener('change', function() { scheduleRun(300); });
+    indicatorSelect.addEventListener('change', function() { scheduleRun(0); });
+    // 연도 변경 → 500ms 디바운스 (타이핑 중 과호출 방지)
+    document.getElementById('yearStart').addEventListener('change', function() { scheduleRun(500); });
+    document.getElementById('yearEnd').addEventListener('change',   function() { scheduleRun(500); });
 
     // ── CSV 다운로드 ────────────────────────────────────────────────────────
     function downloadCSV() {
       if (!_csvRows || _csvRows.length === 0) {
-        alert('먼저 「분석 실행」을 눌러 데이터를 불러오세요.');
+        alert('데이터를 불러오는 중입니다. 잠시 후 다시 시도하세요.');
         return;
       }
       const cols = Object.keys(_csvRows[0]);
@@ -514,7 +542,12 @@
 
     document.getElementById('csvBtn').addEventListener('click', downloadCSV);
 
+    // ── 초기화: 폴백으로 먼저 채운 뒤 자동 실행, API 로드 후 갱신 ──────────
     fillCountrySelect(FALLBACK_COUNTRIES);
+    fillIndicatorSelect(FALLBACK_INDICATORS);  // 지표도 동기로 미리 채움
+    runAnalysis();                             // 이란·이스라엘 총인구로 즉시 실행
+
+    // API에서 전체 목록을 받아오면 선택 유지하며 교체
     loadCountries();
     loadIndicators();
   </script>

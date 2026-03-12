@@ -56,8 +56,8 @@
     .row { display:flex; flex-wrap:wrap; gap:16px; }
     .col-half { flex:1 1 460px; min-width:0; }
     .chart-wrap { background:#0f172a; border:1px solid var(--border); border-radius:10px;
-                  padding:14px; min-height:260px; position:relative; }
-    .chart-wrap img { width:100%; border-radius:8px; display:block; }
+                  padding:14px; height:380px; position:relative; transition:height .2s; }
+    .chart-wrap canvas { width:100% !important; height:100% !important; }
     .spinner { width:36px; height:36px; border:3px solid var(--border);
                border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite;
                margin:40px auto; }
@@ -127,6 +127,7 @@
       <a href="/news">📰 뉴스</a>
       <a href="/map">🗺 공격지도</a>
       <a href="/hormuz" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">⚓ 호르무즈</a>
+      <a href="/dubai">✈ 두바이 공항</a>
     </div>
   </header>
 
@@ -142,9 +143,9 @@
 
     <!-- KPI 카드 -->
     <div class="kpi-row" id="kpiRow">
-      <div class="kpi normal"><div class="val" id="kpiNormal">~</div><div class="lbl">평시 평균 (척/일)</div><div class="sub">위기 전 90일 기준</div></div>
-      <div class="kpi crisis"><div class="val" id="kpiCrisis">~</div><div class="lbl">위기 이후 평균 (척/일)</div><div class="sub">2026.02.28 이후</div></div>
-      <div class="kpi warning"><div class="val" id="kpiDrop">~</div><div class="lbl">통과량 감소율</div><div class="sub">평시 대비</div></div>
+      <div class="kpi normal"><div class="val" id="kpiNormal">~</div><div class="lbl">평시 탐지 평균 (척/일)</div><div class="sub">위기 전 기준 · 양방향 합계</div></div>
+      <div class="kpi crisis"><div class="val" id="kpiCrisis">~</div><div class="lbl">위기 이후 탐지 평균 (척/일)</div><div class="sub">2026.02.28 이후</div></div>
+      <div class="kpi warning"><div class="val" id="kpiDrop">~</div><div class="lbl">탐지 선박 감소율</div><div class="sub">평시 대비</div></div>
       <div class="kpi"><div class="val" style="color:var(--accent)" id="kpiTypes">37%</div><div class="lbl">유조선 비율</div><div class="sub">탐지 선박 중</div></div>
       <div class="kpi"><div class="val" style="color:#a78bfa" id="kpiAsia">5:1</div><div class="lbl">아시아 : 유럽 방향</div><div class="sub">유조선 행선지 비율</div></div>
     </div>
@@ -186,9 +187,32 @@
       <div class="chart-wrap" id="chartArea">
         <div class="spinner" id="spinner"></div>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-        * 데모 데이터는 실제 AIS 통계(WorldwideAIS.org, MarineTraffic 공개 보고서)를 기반으로 생성됩니다.
-          AISHub 계정 입력 시 실시간 호르무즈 해협 탐지 선박 데이터로 교체됩니다.
+      <div id="chartNote" style="margin-top:10px;padding:12px 14px;border-radius:8px;
+           background:rgba(148,163,184,.06);border:1px solid var(--border);font-size:12px;line-height:1.7;">
+      </div>
+    </div>
+
+    <!-- 최근 7일 통과 현황 -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:2px;">
+        <h2 style="margin:0;">최근 7일 통과 현황</h2>
+        <button class="primary" id="csvBtn" onclick="downloadCSV()" disabled>⬇ CSV 다운로드</button>
+      </div>
+      <div class="subtext" style="margin-bottom:10px;">가장 최근 7일간의 일별 AIS 탐지 선박 수 · 전일 대비 증감 · 위기 여부 (입항·출항 방향 구분 없이 해협 구역 내 탐지된 전체 선박 기준)</div>
+      <div class="table-wrap">
+        <table id="recentTable">
+          <thead>
+            <tr>
+              <th style="text-align:left">날짜</th>
+              <th>탐지 선박 수 (척) ⓘ</th>
+              <th>전일 대비</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody id="recentTbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);">불러오는 중…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -312,9 +336,21 @@
   </main>
 
   <script>
-    // ── 상태 ─────────────────────────────────────────────────────────────────
-    let currentChart = 'daily_trend';
-    let summaryData  = null;
+    // ── 전역 상태 ────────────────────────────────────────────────────────────
+    let _chartInst   = null;
+    let _dailySeries = [];
+    let _natData     = [];
+    let _shipTypes   = [];
+    let _currentTab  = 'daily_trend';
+    let _metaInfo    = {};
+
+    const CRISIS_DATE = '2026-02-28';
+    const CHART_H     = { daily_trend: 380, nationality: 520, ship_type: 320 };
+    const PALETTE     = ['#38bdf8','#34d399','#fbbf24','#a78bfa','#f472b6','#818cf8',
+                         '#fb923c','#4ade80','#e879f9','#60a5fa','#f87171','#facc15',
+                         '#2dd4bf','#c084fc','#f97316'];
+    const GRID_CLR    = 'rgba(51,65,85,.55)';
+    const TICK_OPT    = { color:'#94a3b8', font:{ family:'Noto Sans KR', size:11 } };
 
     // ── 초기 로드 ──────────────────────────────────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
@@ -328,8 +364,8 @@
         btn.addEventListener('click', () => {
           document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          currentChart = btn.dataset.chart;
-          loadChart(currentChart);
+          _currentTab = btn.dataset.chart;
+          renderChart(_currentTab);
         });
       });
     }
@@ -338,38 +374,47 @@
 
     // ── 데이터 로드 ────────────────────────────────────────────────────────
     async function loadData() {
-      const days    = document.getElementById('daysSelect').value;
-      const aishub  = document.getElementById('aishubUser').value.trim();
-      const btn     = document.getElementById('loadBtn');
+      const days     = document.getElementById('daysSelect').value;
+      const aishub   = document.getElementById('aishubUser').value.trim();
+      const btn      = document.getElementById('loadBtn');
       const statusEl = document.getElementById('statusMsg');
+      const area     = document.getElementById('chartArea');
 
       btn.disabled = true;
       statusEl.className = '';
       statusEl.textContent = '불러오는 중…';
+      area.innerHTML = '<div class="spinner"></div>';
 
       let url = `/api/hormuz/summary?days=${days}`;
       if (aishub) url += `&aishub=${encodeURIComponent(aishub)}`;
 
       try {
-        const res = await fetch(url);
+        const res  = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        summaryData = await res.json();
+        const data = await res.json();
 
-        updateKPIs(summaryData);
-        renderNatTable(summaryData.nationality_top15);
-        loadChart(currentChart);
+        _dailySeries = data.daily_series      || [];
+        _natData     = data.nationality_top15 || [];
+        _shipTypes   = data.ship_types        || [];
+        _metaInfo    = data.meta              || {};
 
-        const src = summaryData.meta.source;
-        statusEl.textContent = `✓ ${src} (${days}일)`;
+        updateKPIs(data);
+        renderNatTable(_natData);
+        renderRecentTable(_dailySeries);
+        renderChart(_currentTab);   // renderChart 내부에서 chartNote도 함께 갱신
+
+        document.getElementById('csvBtn').disabled = false;
+        statusEl.textContent = `✓ ${data.meta.source} (${days}일)`;
       } catch (e) {
         statusEl.className = 'err';
         statusEl.textContent = '로드 실패: ' + e.message;
+        area.innerHTML = `<div style="color:var(--red);padding:30px;text-align:center;">로드 실패: ${e.message}</div>`;
       } finally {
         btn.disabled = false;
       }
     }
 
-    // ── KPI 업데이트 ───────────────────────────────────────────────────────
+    // ── KPI ────────────────────────────────────────────────────────────────
     function updateKPIs(d) {
       const s = d.daily_stats;
       document.getElementById('kpiNormal').textContent =
@@ -385,20 +430,19 @@
       }
     }
 
-    // ── 국적 테이블 ────────────────────────────────────────────────────────
+    // ── 국적 상세 테이블 ────────────────────────────────────────────────────
     function renderNatTable(rows) {
       const total = rows.reduce((s, r) => s + r.count, 0);
       const tbody = document.getElementById('natTbody');
       tbody.innerHTML = rows.map((r, i) => {
-        const pct  = (r.count / total * 100).toFixed(1);
-        const rank = i + 1;
-        const bar  = `<div style="background:rgba(56,189,248,.25);border-radius:4px;height:6px;width:${pct}%;min-width:4px;"></div>`;
-        const isConvenience = ['파나마','마샬군도','라이베리아','바하마','몰타'].includes(r.nation);
-        const tag  = isConvenience
+        const pct = (r.count / total * 100).toFixed(1);
+        const bar = `<div style="background:rgba(56,189,248,.25);border-radius:4px;height:6px;width:${pct}%;min-width:4px;"></div>`;
+        const isConv = ['파나마','마샬군도','라이베리아','바하마','몰타'].includes(r.nation);
+        const tag = isConv
           ? `<span class="tag tag-orange">편의치적</span>`
           : `<span class="tag tag-blue">자국적</span>`;
         return `<tr>
-          <td style="color:var(--muted)">${rank}</td>
+          <td style="color:var(--muted)">${i + 1}</td>
           <td>${r.nation} ${tag}</td>
           <td>${r.count.toLocaleString()}</td>
           <td><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
@@ -408,22 +452,211 @@
       }).join('');
     }
 
-    // ── 차트 로드 (서버 이미지) ───────────────────────────────────────────
-    async function loadChart(chartName) {
-      const area    = document.getElementById('chartArea');
-      const days    = document.getElementById('daysSelect').value;
-      area.innerHTML = '<div class="spinner"></div>';
-      try {
-        const res = await fetch(`/api/hormuz/charts?chart=${chartName}&days=${days}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        area.innerHTML = `<img src="data:image/png;base64,${data.image_base64}" alt="${chartName} 차트" />`;
-      } catch (e) {
-        area.innerHTML = `<div style="color:var(--red);padding:20px;text-align:center;">차트 로드 실패: ${e.message}</div>`;
-      }
+    // ── 최근 7일 테이블 ────────────────────────────────────────────────────
+    function renderRecentTable(series) {
+      const len    = series.length;
+      const recent = series.slice(-7).reverse();   // 최신 → 과거 순
+      const tbody  = document.getElementById('recentTbody');
+      tbody.innerHTML = recent.map((r, i) => {
+        // 전일 값: series 배열에서 바로 앞 항목
+        const prevIdx = len - 7 + (recent.length - 1 - i) - 1;
+        const prev    = prevIdx >= 0 ? series[prevIdx] : null;
+        const diff    = prev != null ? r.count - prev.count : null;
+        const diffStr = diff === null
+          ? `<span style="color:var(--muted)">-</span>`
+          : diff > 0
+            ? `<span style="color:var(--green)">▲${diff}</span>`
+            : diff < 0
+              ? `<span style="color:var(--red)">▼${Math.abs(diff)}</span>`
+              : `<span style="color:var(--muted)">━</span>`;
+        const isCrisis = r.date >= CRISIS_DATE;
+        const stTag    = isCrisis
+          ? `<span class="tag tag-red">위기</span>`
+          : `<span class="tag tag-green">정상</span>`;
+        const valColor = isCrisis ? 'var(--red)' : 'var(--green)';
+        return `<tr>
+          <td>${r.date}</td>
+          <td style="text-align:center;font-weight:600;color:${valColor}">${r.count.toLocaleString()}</td>
+          <td style="text-align:center">${diffStr}</td>
+          <td style="text-align:center">${stTag}</td>
+        </tr>`;
+      }).join('');
     }
 
-    // ── 목적지 Chart.js 차트 ─────────────────────────────────────────────
+    // ── 차트별 해석 주석 ──────────────────────────────────────────────────
+    const CHART_NOTES = {
+      daily_trend: `
+        <strong style="color:var(--text)">📌 수치 해석 안내</strong><br>
+        이 수치는 호르무즈 해협 위경도 구역(위도 25.5–27°N, 경도 55.5–58°E) 안에서
+        하루 동안 AIS 신호가 탐지된 <strong>고유 선박의 총 수</strong>입니다.<br>
+        <span style="color:var(--muted)">
+        ・ <strong>방향 구분 없음</strong> — 아라비아해→페르시아만(입항)과 페르시아만→아라비아해(출항) 양방향 합산.<br>
+        ・ 해협 내 정박·대기 선박도 포함되므로 "하루 완전 통과" 횟수와는 다를 수 있습니다.<br>
+        ・ 방향별 분리 통계는 MarineTraffic 유료 API 또는 EIA 월별 유량 데이터에서 제공됩니다.<br>
+        ・ 데모 데이터는 WorldwideAIS.org · MarineTraffic 공개 보고서 기반으로 생성됩니다.
+        </span>`,
+      nationality: `
+        <strong style="color:var(--text)">📌 국적(기국) 해석 안내</strong><br>
+        여기서 '국적'은 선박이 <strong>등록된 국가(기국, Flag State)</strong>이며, 선박을 실제로 운영하는 회사나 화물의 출발·목적국과 다를 수 있습니다.<br>
+        <span style="color:var(--muted)">
+        ・ <strong>편의치적(FOC)</strong> — 파나마·마샬군도·라이베리아 등은 세금·규제 혜택으로 등록이 집중되는 국가로, 실제 운영국과 무관합니다.<br>
+        ・ 분석 기간 내 해협 구역에서 탐지된 선박의 기국 분포이며, 방향·선종 구분 없이 집계됩니다.
+        </span>`,
+      ship_type: `
+        <strong style="color:var(--text)">📌 선종별 구성 해석 안내</strong><br>
+        탐지된 선박을 AIS 선종 코드(Ship Type)로 분류한 비율입니다.<br>
+        <span style="color:var(--muted)">
+        ・ <strong>유조선(37%)</strong>이 가장 많은 비중을 차지하며, 이는 호르무즈 해협이 세계 원유·LNG 수출의 핵심 경로임을 반영합니다.<br>
+        ・ 세계 원유 해상 수출의 약 20%, LNG 수출의 약 25%가 이 해협을 경유합니다.<br>
+        ・ 위기 상황에서는 유조선 감소 비율이 화물선보다 더 크게 나타나는 경향이 있습니다.
+        </span>`,
+    };
+
+    // ── Chart.js 차트 렌더링 ──────────────────────────────────────────────
+    function renderChart(name) {
+      if (_chartInst) { _chartInst.destroy(); _chartInst = null; }
+      const area = document.getElementById('chartArea');
+      area.style.height = (CHART_H[name] || 380) + 'px';
+      area.innerHTML = `<canvas id="mainChart"></canvas>`;
+      const ctx = document.getElementById('mainChart').getContext('2d');
+      if (name === 'daily_trend') _chartInst = buildDailyTrend(ctx);
+      if (name === 'nationality') _chartInst = buildNationality(ctx);
+      if (name === 'ship_type')   _chartInst = buildShipType(ctx);
+      // 차트별 설명 업데이트
+      const noteEl = document.getElementById('chartNote');
+      if (noteEl) noteEl.innerHTML = CHART_NOTES[name] || '';
+    }
+
+    function buildDailyTrend(ctx) {
+      const labels   = _dailySeries.map(d => d.date);
+      const preData  = _dailySeries.map(d => d.date < CRISIS_DATE ? d.count : null);
+      const postData = _dailySeries.map(d => d.date >= CRISIS_DATE ? d.count : null);
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: '평시 (위기 전)',
+              data: preData,
+              borderColor: '#34d399',
+              backgroundColor: 'rgba(52,211,153,.08)',
+              fill: true, tension: 0.35, pointRadius: 2, spanGaps: false,
+            },
+            {
+              label: '위기 이후 (2026.02.28~)',
+              data: postData,
+              borderColor: '#f87171',
+              backgroundColor: 'rgba(248,113,113,.12)',
+              fill: true, tension: 0.35, pointRadius: 3, spanGaps: false,
+            },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: '#94a3b8', font: { family: 'Noto Sans KR' }, boxWidth: 12 } },
+            tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw != null ? c.raw + '척' : '-'}` } },
+          },
+          scales: {
+            x: {
+              type: 'time',
+              time: { unit: 'day', displayFormats: { day: 'MM/dd' } },
+              grid: { color: GRID_CLR },
+              ticks: { ...TICK_OPT, maxTicksLimit: 12, maxRotation: 0 },
+            },
+            y: {
+              grid: { color: GRID_CLR },
+              ticks: { ...TICK_OPT, callback: v => v + '척' },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+
+    function buildNationality(ctx) {
+      const labels = _natData.map(r => r.nation);
+      const data   = _natData.map(r => r.count);
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: '선박 수 (척)',
+            data,
+            backgroundColor: PALETTE.map(c => c + 'bb'),
+            borderColor:     PALETTE,
+            borderWidth: 1,
+            borderRadius: 5,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => ` ${c.raw.toLocaleString()}척` } },
+          },
+          scales: {
+            x: { grid: { color: GRID_CLR }, ticks: TICK_OPT },
+            y: { grid: { display: false }, ticks: { color: '#f1f5f9', font: { family: 'Noto Sans KR', size: 12 } } },
+          },
+        },
+      });
+    }
+
+    function buildShipType(ctx) {
+      const labels = _shipTypes.map(r => r.type);
+      const data   = _shipTypes.map(r => r.pct);
+      const colors = ['#38bdf8','#34d399','#fbbf24','#8b5cf6','#6b7280','#ec4899'];
+      return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors.map(c => c + 'cc'),
+            borderColor: '#1e293b',
+            borderWidth: 2,
+            hoverOffset: 8,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#94a3b8', font: { family: 'Noto Sans KR', size: 12 }, padding: 14 },
+            },
+            tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw}%` } },
+          },
+        },
+      });
+    }
+
+    // ── CSV 다운로드 ──────────────────────────────────────────────────────
+    function downloadCSV() {
+      if (!_dailySeries.length) return;
+      const bom = '\uFEFF';
+      let csv = '날짜,AIS탐지선박수(척/양방향합계),위기여부\n';
+      for (const r of _dailySeries) {
+        const s = r.date >= CRISIS_DATE ? '위기' : '정상';
+        csv += `${r.date},${r.count},${s}\n`;
+      }
+      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url;
+      a.download = `hormuz_${_metaInfo.start || 'start'}_${_metaInfo.end || 'end'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ── 목적지 Chart.js (기존 유지) ───────────────────────────────────────
     function setupDestChart() {
       const ctx = document.getElementById('destChart').getContext('2d');
       new Chart(ctx, {
@@ -434,44 +667,23 @@
             label: '유조선 수 (척)',
             data: [22, 21, 17, 14, 6, 5],
             backgroundColor: [
-              'rgba(16,185,129,.7)',
-              'rgba(56,189,248,.7)',
-              'rgba(139,92,246,.7)',
-              'rgba(251,191,36,.7)',
-              'rgba(248,113,113,.7)',
-              'rgba(167,139,250,.7)',
+              'rgba(16,185,129,.7)','rgba(56,189,248,.7)','rgba(139,92,246,.7)',
+              'rgba(251,191,36,.7)','rgba(248,113,113,.7)','rgba(167,139,250,.7)',
             ],
-            borderRadius: 6,
-            borderWidth: 0,
+            borderRadius: 6, borderWidth: 0,
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          responsive: true, maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: ctx => ` ${ctx.raw}척 (${(ctx.raw/85*100).toFixed(1)}%)`
-              }
-            }
+            tooltip: { callbacks: { label: c => ` ${c.raw}척 (${(c.raw/85*100).toFixed(1)}%)` } },
           },
           scales: {
-            x: {
-              grid: { color: 'rgba(51,65,85,.6)' },
-              ticks: { color: '#94a3b8', font: { family: 'Noto Sans KR' } }
-            },
-            y: {
-              grid: { color: 'rgba(51,65,85,.6)' },
-              ticks: {
-                color: '#94a3b8',
-                font: { family: 'Noto Sans KR' },
-                callback: v => v + '척'
-              },
-              beginAtZero: true
-            }
-          }
-        }
+            x: { grid: { color: 'rgba(51,65,85,.6)' }, ticks: { color: '#94a3b8', font: { family: 'Noto Sans KR' } } },
+            y: { grid: { color: 'rgba(51,65,85,.6)' }, ticks: { color: '#94a3b8', font: { family: 'Noto Sans KR' }, callback: v => v + '척' }, beginAtZero: true },
+          },
+        },
       });
     }
   </script>

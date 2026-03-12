@@ -86,10 +86,14 @@
   </div>
   <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기/닫기">☰</button>
   <nav class="nav">
-    <a href="/">대시보드</a>
-    <a href="/crisis">위기 진단</a>
-    <a href="/map">미사일 공격상황</a>
+    <a href="/why">왜 데이터인가</a>
+    <a href="/">🏦 국가자원/국방력</a>
+    <a href="/crisis">⚡ 위기 진단</a>
+    <a href="/governance" style="opacity:.5;pointer-events:none;">🏛 거버넌스/민주주의</a>
+    <a href="/news">📰 뉴스 스크랩</a>
+    <a href="/map">🗺 미사일 공격상황</a>
     <a href="/hormuz">⚓ 호르무즈</a>
+    <a href="/dubai">✈ 두바이 공항</a>
   </nav>
 </header>
 
@@ -98,7 +102,7 @@
   <!-- ── 공통 조건 ── -->
   <section class="card" id="condCard">
     <h2>분석 조건</h2>
-    <div class="subtext">국가·연도 범위를 설정하고 아래 탭에서 원하는 데이터셋을 선택 후 「분석 실행」을 누르세요.</div>
+    <div class="subtext">국가·연도를 바꾸거나 탭을 전환하면 자동으로 업데이트됩니다. 기본값: 이란·이스라엘.</div>
     <div class="controls">
       <div class="ctrl-col">
         <label>국가 선택 (Ctrl/Shift: 복수)</label>
@@ -148,7 +152,10 @@
       </div>
     </section>
     <section class="card" id="wgiTableSec" style="display:none;">
-      <div class="sec-hdr"><h2 style="margin:0;">원자료 (WGI)</h2><button class="csv" id="wgiCsvTable">↓ CSV</button></div>
+      <div class="sec-hdr">
+        <h2 style="margin:0;">원자료 (WGI) <span style="font-size:11px;color:var(--muted);font-weight:400;">최신 연도 먼저 · 최근 7개 연도 강조</span></h2>
+        <button class="csv" id="wgiCsvTable">↓ CSV</button>
+      </div>
       <div class="tbl-wrap"><table id="wgiTable"><thead></thead><tbody></tbody></table></div>
     </section>
   </div>
@@ -168,6 +175,14 @@
     <section class="card" id="fhStatusSec" style="display:none;">
       <h2>자유 상태 분류 (연도별)</h2>
       <div class="tbl-wrap"><table id="fhStatusTable"><thead></thead><tbody></tbody></table></div>
+    </section>
+    <section class="card" id="fhDataSec" style="display:none;">
+      <div class="sec-hdr">
+        <h2 style="margin:0;">최근 7개 연도 원자료 (FH 수치)</h2>
+        <button class="csv" id="fhCsvRecent">↓ CSV</button>
+      </div>
+      <div class="subtext">Total(0–100) · PR(1–7) · CL(1–7) — 최신 연도 먼저</div>
+      <div class="tbl-wrap"><table id="fhDataTable"><thead></thead><tbody></tbody></table></div>
     </section>
   </div>
 
@@ -189,6 +204,14 @@
       <div style="max-width:500px;margin:0 auto;position:relative;height:340px;">
         <canvas id="vdemRadarCanvas"></canvas>
       </div>
+    </section>
+    <section class="card" id="vdemDataSec" style="display:none;">
+      <div class="sec-hdr">
+        <h2 style="margin:0;">최근 7개 연도 원자료 (V-Dem 수치)</h2>
+        <button class="csv" id="vdemCsvRecent">↓ CSV</button>
+      </div>
+      <div class="subtext">선거·자유·참여·인권 민주주의 지수 (0~1) — 최신 연도 먼저</div>
+      <div class="tbl-wrap"><table id="vdemDataTable"><thead></thead><tbody></tbody></table></div>
     </section>
   </div>
 
@@ -216,11 +239,16 @@ const FALLBACK = [
   {id:'GBR',name:'United Kingdom'},{id:'FRA',name:'France'},
   {id:'PRK',name:"Korea, Dem. People's Rep."},
 ];
+const DEFAULT_COUNTRIES = ['IRN','ISR'];
 (function(){
   const sel = document.getElementById('countrySelect');
   function fill(list){
+    const prevSelected = Array.from(sel.selectedOptions).map(o=>o.value);
+    const toSelect = prevSelected.length ? prevSelected : DEFAULT_COUNTRIES;
     sel.innerHTML='';
+    list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
     list.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name+' ('+c.id+')';sel.appendChild(o);});
+    toSelect.forEach(code=>{const o=Array.from(sel.options).find(o=>o.value===code);if(o)o.selected=true;});
   }
   fill(FALLBACK);
   fetch('/api/countries').then(r=>r.json()).then(d=>{if(Array.isArray(d)&&d.length)fill(d);}).catch(()=>{});
@@ -233,6 +261,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    scheduleRun(0);  // 탭 전환 시 자동 재실행
   });
 });
 function activeTab(){ return document.querySelector('.tab-btn.active').dataset.tab; }
@@ -341,17 +370,20 @@ function drawWGI(res){
     datasets:countries.map((c,i)=>({label:c,data:latestVals[c],borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'33',borderWidth:2}))},
     options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:-2.5,max:2.5,ticks:{stepSize:1,font:{size:10}}}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8}}}}});
 
-  // 테이블
+  // 테이블 (최신 연도 먼저, 최근 7개 연도 강조)
   const allYrs=new Set();
   countries.forEach(c=>indIds.forEach(id=>(data[id]&&data[id][c]||[]).forEach(r=>allYrs.add(r.year))));
-  const sortedYrs=[...allYrs].sort((a,b)=>a-b);
+  const sortedYrs=[...allYrs].sort((a,b)=>b-a);  // 내림차순
+  const recentCutoff7 = sortedYrs[Math.min(6, sortedYrs.length-1)];
   let th='<tr><th>연도</th>';
   countries.forEach(c=>indIds.forEach(id=>{ th+=`<th>${c}<br><span style="font-weight:400;font-size:10px;">${indicators[id].replace(/\(.+\)/,'').trim()}</span></th>`; }));
   th+='</tr>';
   document.querySelector('#wgiTable thead').innerHTML=th;
   let tb='';
   sortedYrs.forEach(y=>{
-    tb+=`<tr><td>${y}</td>`;
+    const isRecent = y >= recentCutoff7;
+    tb+=`<tr${isRecent?' style="background:rgba(56,189,248,.04);font-weight:500;"':''}>`;
+    tb+=`<td>${y}</td>`;
     countries.forEach(c=>indIds.forEach(id=>{
       const f=(data[id]&&data[id][c]||[]).find(r=>r.year===y);
       const v=f&&f.value!=null?f.value:null;
@@ -439,6 +471,34 @@ function drawFH(res){
   document.querySelector('#fhStatusTable thead').innerHTML=th;
   document.querySelector('#fhStatusTable tbody').innerHTML=tb;
 
+  // FH 수치 테이블 (최근 7개 연도, 최신 먼저)
+  {
+    const fhAllYrs=[...new Set(countries.flatMap(c=>(data[c]||[]).map(r=>r.year)))].sort((a,b)=>b-a);
+    const fhRecent = fhAllYrs.slice(0, 7);
+    let fhTh='<tr><th>연도</th><th>국가</th><th>Total(0-100)</th><th>PR(1-7)</th><th>CL(1-7)</th></tr>';
+    let fhTb='';
+    fhRecent.forEach(y=>{
+      countries.forEach(c=>{
+        const f=(data[c]||[]).find(r=>r.year===y);
+        fhTb+=`<tr><td>${y}</td><td>${c}</td>`;
+        fhTb+=`<td class="num">${f&&f.total!=null?f.total:'—'}</td>`;
+        fhTb+=`<td class="num">${f&&f.pr!=null?f.pr:'—'}</td>`;
+        fhTb+=`<td class="num">${f&&f.cl!=null?f.cl:'—'}</td></tr>`;
+      });
+    });
+    document.querySelector('#fhDataTable thead').innerHTML=fhTh;
+    document.querySelector('#fhDataTable tbody').innerHTML=fhTb;
+    document.getElementById('fhDataSec').style.display='block';
+    document.getElementById('fhCsvRecent').onclick=()=>{
+      const rows=[['연도','국가','Total(0-100)','PR(1-7)','CL(1-7)'].join(',')];
+      fhAllYrs.forEach(y=>countries.forEach(c=>{
+        const f=(data[c]||[]).find(r=>r.year===y);
+        rows.push([y,c,f&&f.total!=null?f.total:'',f&&f.pr!=null?f.pr:'',f&&f.cl!=null?f.cl:''].join(','));
+      }));
+      dlCSV('FH_수치.csv',rows);
+    };
+  }
+
   ['fhInfoCard','fhChartSec','fhStatusSec'].forEach(id=>document.getElementById(id).style.display='block');
 
   // 전체 CSV
@@ -508,6 +568,37 @@ function drawVdem(res){
     datasets:countries.map((c,i)=>({label:c,data:latestVals[c],borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'33',borderWidth:2}))},
     options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:1,ticks:{stepSize:.2,font:{size:10}}}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8}}}}});
 
+  // V-Dem 수치 테이블 (최근 7개 연도, 최신 먼저)
+  {
+    const vAllYrs=[...new Set(countries.flatMap(c=>keys.flatMap(key=>(data[c]&&data[c][key]||[]).map(r=>r.year))))].sort((a,b)=>b-a);
+    const vRecent = vAllYrs.slice(0,7);
+    let vTh=`<tr><th>연도</th><th>국가</th>${keys.map(k=>`<th>${indicators[k]}</th>`).join('')}</tr>`;
+    let vTb='';
+    vRecent.forEach(y=>{
+      countries.forEach(c=>{
+        vTb+=`<tr><td>${y}</td><td>${c}</td>`;
+        keys.forEach(key=>{
+          const f=(data[c]&&data[c][key]||[]).find(r=>r.year===y);
+          const v=f&&f.value!=null?f.value:null;
+          vTb+=v==null?'<td>—</td>':`<td class="num">${v.toFixed(3)}</td>`;
+        });
+        vTb+='</tr>';
+      });
+    });
+    document.querySelector('#vdemDataTable thead').innerHTML=vTh;
+    document.querySelector('#vdemDataTable tbody').innerHTML=vTb;
+    document.getElementById('vdemDataSec').style.display='block';
+    document.getElementById('vdemCsvRecent').onclick=()=>{
+      const rows=[['연도','국가',...keys.map(k=>'"'+indicators[k].replace(/"/g,'""')+'"')].join(',')];
+      vAllYrs.forEach(y=>countries.forEach(c=>{
+        const row=[y,c];
+        keys.forEach(key=>{const f=(data[c]&&data[c][key]||[]).find(r=>r.year===y);row.push(f&&f.value!=null?f.value:'');});
+        rows.push(row.join(','));
+      }));
+      dlCSV('VDem_수치.csv',rows);
+    };
+  }
+
   ['vdemInfoCard','vdemChartSec','vdemRadarSec'].forEach(id=>document.getElementById(id).style.display='block');
 
   // 전체 CSV
@@ -528,7 +619,13 @@ function drawVdem(res){
 /* ══════════════════════════════
    분석 실행
 ══════════════════════════════ */
-document.getElementById('runBtn').addEventListener('click', async ()=>{
+var _debounceTimer = null;
+function scheduleRun(delay){
+  clearTimeout(_debounceTimer);
+  _debounceTimer = setTimeout(runAnalysis, delay == null ? 0 : delay);
+}
+
+async function runAnalysis(){
   const countries=getCountries();
   if(!countries.length){setStatus('국가를 하나 이상 선택하세요.',true);return;}
   const {s,e}=getYears();
@@ -567,7 +664,20 @@ document.getElementById('runBtn').addEventListener('click', async ()=>{
   } finally{
     document.getElementById('runBtn').disabled=false;
   }
-});
+}
+
+// 버튼 클릭
+document.getElementById('runBtn').addEventListener('click', runAnalysis);
+
+// 국가 변경 → 300ms 후 자동 재실행
+document.getElementById('countrySelect').addEventListener('change', ()=>scheduleRun(300));
+
+// 연도 변경 → 500ms 디바운스
+document.getElementById('yearStart').addEventListener('change', ()=>scheduleRun(500));
+document.getElementById('yearEnd').addEventListener('change',   ()=>scheduleRun(500));
+
+// 페이지 로드 시 IRN·ISR 기본값으로 즉시 자동 실행
+runAnalysis();
 </script>
 <script>
 (function(){
