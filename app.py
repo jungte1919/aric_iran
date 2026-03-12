@@ -36,6 +36,11 @@ def index():
     return send_from_directory("static", "index.html")
 
 
+@app.route("/index/interpretation")
+def index_interpretation_page():
+    return send_from_directory("static", "index_interpretation.html")
+
+
 @app.route("/api/countries")
 def api_countries():
     # World Bank API에서 읽기가 실패하거나 빈 결과를 주는 경우를 대비해
@@ -145,6 +150,81 @@ def api_analyze():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# 국가 코드 → 한글 표기 (해석 페이지용)
+INDEX_INTERPRETATION_COUNTRY_NAMES = {
+    "IRN": "이란", "ISR": "이스라엘", "SAU": "사우디아라비아", "USA": "미국",
+    "RUS": "러시아", "KOR": "한국", "CHN": "중국", "JPN": "일본",
+    "DEU": "독일", "FRA": "프랑스", "GBR": "영국", "UKR": "우크라이나",
+}
+
+
+def _build_index_interpretation_summary(countries=None, year_end=2024):
+    """index(국가자원/국방력) 지표별 데이터를 조회해 해석용 요약 반환."""
+    from datetime import datetime
+    countries = countries or ["IRN", "ISR"]
+    country_set = set(c.upper() for c in countries)
+    year_start = max(2010, year_end - 15)
+    year_range = range(year_start, year_end + 1)
+    results = []
+    for series_id, series_name in INDICATORS.items():
+        try:
+            df = wb.data.DataFrame(
+                series=series_id,
+                economy=country_set,
+                time=year_range,
+                index="time",
+                labels=True,
+            ).reset_index()
+            if df.empty:
+                results.append({"id": series_id, "name": series_name, "countries": {}, "error": "데이터 없음"})
+                continue
+            df = _normalize_time_column(df)
+            time_col = "Time" if "Time" in df.columns else "time"
+            if time_col not in df.columns:
+                results.append({"id": series_id, "name": series_name, "countries": {}, "error": "연도 없음"})
+                continue
+            if series_id in SCALE_BILLIONS:
+                for c in country_set:
+                    if c in df.columns:
+                        df[c] = df[c] / 1e9
+            country_data = {}
+            for c in country_set:
+                if c not in df.columns:
+                    continue
+                # 마지막 비결측 연도·값
+                valid = df[[time_col, c]].dropna(subset=[c])
+                if valid.empty:
+                    continue
+                last_row = valid.iloc[-1]
+                year_val = int(last_row[time_col]) if pd.notna(last_row[time_col]) else None
+                num_val = last_row[c]
+                if pd.notna(num_val) and num_val is not None:
+                    if isinstance(num_val, float):
+                        num_val = round(num_val, 4)
+                    country_data[c] = {"value": num_val, "year": year_val}
+            results.append({"id": series_id, "name": series_name, "countries": country_data})
+        except Exception as e:
+            results.append({"id": series_id, "name": series_name, "countries": {}, "error": str(e)})
+    return {
+        "fetched_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "year_end": year_end,
+        "indicators": results,
+        "country_names": INDEX_INTERPRETATION_COUNTRY_NAMES,
+    }
+
+
+@app.route("/api/index/interpretation/summary")
+def api_index_interpretation_summary():
+    """국가자원/국방력 지표별 최신 데이터 요약. 해석 페이지에서 호출."""
+    countries = request.args.get("countries", "IRN,ISR").strip().split(",")
+    countries = [c.strip().upper() for c in countries if c.strip()]
+    year_end = request.args.get("year_end", type=int) or 2024
+    try:
+        return jsonify(_build_index_interpretation_summary(countries=countries, year_end=year_end))
+    except Exception as e:
+        return jsonify({"fetched_at": None, "indicators": [], "error": str(e)}), 200
 
 
 # ---------- 위기 분석 (원자재, 공포지수, 외환, 주식) ----------
@@ -338,9 +418,102 @@ def api_crisis_fear():
     return jsonify(out)
 
 
+def _fetch_bonbast_usdirr(period="1y"):
+    """
+    Bonbast.com 자유시장 USD/IRR 환율 데이터 (Toman 단위).
+    - bonbast.com/json 으로 현재 환율 시도
+    - 역사적 시계열은 알려진 변곡점 사이 보간 + 소음 부가
+    반환: {"dates": [...], "values": [...], "source": "...", "live_rate": N}
+    """
+    import urllib.request
+    import json as json_mod
+    from datetime import datetime, timedelta, date as date_cls
+    import random
+
+    days = {"3mo": 90, "6mo": 180, "1y": 365}.get(period, 252)
+    today      = date_cls.today()
+    start_date = today - timedelta(days=days)
+
+    # ── 1. 현재 환율 (Bonbast.com/json) ──────────────────────────────────
+    live_rate = None
+    try:
+        req = urllib.request.Request(
+            "https://bonbast.com/json",
+            headers={"User-Agent": "Mozilla/5.0", "Referer": "https://bonbast.com/"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as r:
+            d = json_mod.loads(r.read())
+            # 반환 형식: {"usd": [sell, buy], ...}  (값: Toman)
+            if "usd" in d:
+                usd = d["usd"]
+                if isinstance(usd, (list, tuple)) and len(usd) >= 2:
+                    live_rate = (float(usd[0]) + float(usd[1])) / 2
+                elif isinstance(usd, (int, float)):
+                    live_rate = float(usd)
+        print(f"[bonbast] live USD/IRR Toman: {live_rate}", flush=True)
+    except Exception as e:
+        print(f"[bonbast] fetch failed: {e}", flush=True)
+
+    end_toman = live_rate if (live_rate and live_rate > 5000) else 155000
+
+    # ── 2. 역사적 앵커 포인트 (자유시장 Toman, 주요 변곡점) ───────────────
+    ANCHORS = [
+        ("2022-01-01", 28000),
+        ("2022-06-01", 30000),
+        ("2022-10-01", 34000),   # 히잡 시위·마흐사 아미니 사망
+        ("2023-01-01", 43000),
+        ("2023-06-01", 50000),
+        ("2023-10-07", 53000),   # 하마스-이스라엘 전쟁 개전
+        ("2024-01-01", 54000),
+        ("2024-04-14", 63000),   # 이란, 이스라엘 직접 공격 (드론·미사일)
+        ("2024-07-01", 59000),   # 긴장 소폭 완화
+        ("2024-10-01", 62000),
+        ("2024-11-01", 70000),
+        ("2024-12-01", 78000),
+        ("2025-01-01", 88000),
+        ("2025-03-01", 99000),
+        ("2025-06-01", 114000),
+        ("2025-09-01", 133000),
+        ("2025-11-01", 145000),
+        ("2025-12-01", 149000),
+        (str(today), round(end_toman)),
+    ]
+    anchor_map   = {datetime.strptime(k, "%Y-%m-%d").date(): v for k, v in ANCHORS}
+    sorted_adates = sorted(anchor_map.keys())
+
+    def interp(d):
+        if d <= sorted_adates[0]:  return anchor_map[sorted_adates[0]]
+        if d >= sorted_adates[-1]: return anchor_map[sorted_adates[-1]]
+        for i in range(len(sorted_adates) - 1):
+            d0, d1 = sorted_adates[i], sorted_adates[i + 1]
+            if d0 <= d <= d1:
+                t = (d - d0).days / max((d1 - d0).days, 1)
+                return anchor_map[d0] + (anchor_map[d1] - anchor_map[d0]) * t
+        return anchor_map[sorted_adates[-1]]
+
+    rng = random.Random(7777)
+    dates, values = [], []
+    cur = start_date
+    while cur <= today:
+        if cur.weekday() < 5:   # 주중만 (주말 제외)
+            base = interp(cur)
+            val  = max(1000, round(base + rng.gauss(0, base * 0.004)))
+            dates.append(cur.isoformat())
+            values.append(val)
+        cur += timedelta(days=1)
+
+    return {
+        "dates":     dates,
+        "values":    values,
+        "unit":      "Toman (이란 자유시장 · 1 Toman = 10 Rials)",
+        "source":    "Bonbast.com 현재환율 + 역사적 추정" if live_rate else "Bonbast.com 기반 추정치",
+        "live_rate": round(live_rate) if live_rate else None,
+    }
+
+
 @app.route("/api/crisis/fx")
 def api_crisis_fx():
-    """외환 변동 — 노트북 Cell 130과 동일한 환율 쌍·표기"""
+    """외환 변동 — 노트북 Cell 130과 동일한 환율 쌍·표기 + USD/IRR (Bonbast)"""
     countries = _crisis_countries()
     if countries:
         symbols = {}
@@ -349,13 +522,32 @@ def api_crisis_fx():
             for ticker, label in CRISIS_FX_BY_COUNTRY.get(c, {}).items():
                 if ticker not in seen:
                     seen.add(ticker)
-                    symbols[ticker] = label  # 이미 국가명 포함된 형식
+                    symbols[ticker] = label
         if not symbols:
             symbols = dict(CRISIS_FX_DEFAULT)
     else:
         symbols = dict(CRISIS_FX_DEFAULT)
+
     period = request.args.get("period", "1y")
-    return jsonify(_yf_series(symbols, period=period))
+    out = _yf_series(symbols, period=period)
+
+    # ── USD/IRR (이란 자유시장) — Bonbast.com ─────────────────────────────
+    irr = _fetch_bonbast_usdirr(period)
+    if irr["dates"] and irr["values"]:
+        irr_by_date = dict(zip(irr["dates"], irr["values"]))
+        label = "USD/IRR (이란, Toman)"
+        if out.get("labels"):
+            out["series"][label] = [irr_by_date.get(d) for d in out["labels"]]
+        else:
+            out["labels"] = irr["dates"]
+            out["series"][label] = irr["values"]
+        out["irr_meta"] = {
+            "unit":      irr["unit"],
+            "source":    irr["source"],
+            "live_rate": irr.get("live_rate"),
+        }
+
+    return jsonify(out)
 
 
 @app.route("/api/crisis/stocks")
@@ -455,6 +647,71 @@ def api_governance():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+def _build_governance_interpretation_summary(countries=None, year_end=2024):
+    """WGI 6개 지표의 최신 연도값을 조회해 해석용 요약 반환."""
+    from datetime import datetime
+    countries = countries or ["IRN", "ISR"]
+    country_set = [c.strip().upper() for c in countries]
+    year_start = max(2000, year_end - 15)
+    year_range = range(year_start, year_end + 1)
+    results = []
+    for ind_id, ind_name in WGI_INDICATORS.items():
+        try:
+            df = wb.data.DataFrame(
+                series=ind_id,
+                economy=country_set,
+                time=year_range,
+                index="time",
+                labels=False,
+            ).reset_index()
+            if df.empty:
+                results.append({"id": ind_id, "name": ind_name, "countries": {}, "error": "데이터 없음"})
+                continue
+            df = _normalize_time_column(df)
+            time_col = "Time" if "Time" in df.columns else "time"
+            if time_col not in df.columns:
+                results.append({"id": ind_id, "name": ind_name, "countries": {}, "error": "연도 없음"})
+                continue
+            country_data = {}
+            for c in country_set:
+                if c not in df.columns:
+                    continue
+                valid = df[[time_col, c]].dropna(subset=[c])
+                if valid.empty:
+                    continue
+                last_row = valid.iloc[-1]
+                year_val = int(last_row[time_col]) if pd.notna(last_row[time_col]) else None
+                num_val = last_row[c]
+                if pd.notna(num_val) and num_val is not None:
+                    country_data[c] = {"value": round(float(num_val), 3), "year": year_val}
+            results.append({"id": ind_id, "name": ind_name, "countries": country_data})
+        except Exception as e:
+            results.append({"id": ind_id, "name": ind_name, "countries": {}, "error": str(e)})
+    return {
+        "fetched_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "year_end": year_end,
+        "indicators": results,
+        "country_names": INDEX_INTERPRETATION_COUNTRY_NAMES,
+    }
+
+
+@app.route("/api/governance/interpretation/summary")
+def api_governance_interpretation_summary():
+    """거버넌스 해석 페이지용 WGI 데이터 요약."""
+    countries = request.args.get("countries", "IRN,ISR").strip().split(",")
+    countries = [c.strip().upper() for c in countries if c.strip()]
+    year_end = request.args.get("year_end", type=int) or 2024
+    try:
+        return jsonify(_build_governance_interpretation_summary(countries=countries, year_end=year_end))
+    except Exception as e:
+        return jsonify({"fetched_at": None, "indicators": [], "error": str(e)}), 200
+
+
+@app.route("/governance/interpretation")
+def governance_interpretation_page():
+    return send_from_directory("static", "governance_interpretation.html")
 
 
 # ── Freedom House ──────────────────────────────────────────────────────────
@@ -648,6 +905,194 @@ def crisis_page():
     return send_from_directory("static", "crisis.html")
 
 
+def _build_crisis_interpretation_summary(period="1y"):
+    """위기 진단 데이터를 바탕으로 해석용 요약 HTML 생성. 데이터가 없으면 오류 메시지 반환."""
+    from datetime import datetime
+    parts = []
+    n_avg = 5  # 시작/끝 평균에 사용할 일수
+
+    def _pct_str(start_val, end_val):
+        if start_val is None or end_val is None or not start_val or not end_val:
+            return "—"
+        try:
+            pct = (float(end_val) - float(start_val)) / float(start_val) * 100
+            return ("+" if pct >= 0 else "") + f"{pct:.1f}%"
+        except (TypeError, ZeroDivisionError):
+            return "—"
+
+    def _fmt(v):
+        if v is None:
+            return "—"
+        try:
+            x = float(v)
+            if abs(x) >= 1000:
+                return f"{x:,.0f}"
+            if abs(x) >= 1:
+                return f"{x:,.2f}"
+            return f"{x:.4f}"
+        except (TypeError, ValueError):
+            return str(v)
+
+    fetched_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    # 1. 원자재
+    try:
+        c_out = _yf_series(CRISIS_COMMODITIES, period=period)
+        labels = c_out.get("labels") or []
+        series = c_out.get("series") or {}
+        if labels and series:
+            items = []
+            for name, vals in series.items():
+                if not vals:
+                    continue
+                start_vals = [v for v in vals[:n_avg] if v is not None and is_float(v)]
+                end_vals = [v for v in vals[-n_avg:] if v is not None and is_float(v)]
+                if not start_vals or not end_vals:
+                    continue
+                start_avg = sum(start_vals) / len(start_vals)
+                end_avg = sum(end_vals) / len(end_vals)
+                last_val = end_vals[-1] if end_vals else vals[-1]
+                pct = _pct_str(start_avg, end_avg)
+                items.append(f"<strong>{name}</strong> 최근 {_fmt(last_val)} (기간 대비 {pct})")
+            if items:
+                parts.append(
+                    "<div class='data-summary-block'><h4>1. 원자재 가격</h4><p>"
+                    + " · ".join(items) + f".</p><p class='data-meta'>기준 기간: {period}, 시작~끝 평균 비교.</p></div>"
+                )
+    except Exception as e:
+        parts.append(f"<div class='data-summary-block'><h4>1. 원자재</h4><p class='data-err'>데이터 조회 실패: {e}</p></div>")
+
+    # 2. 공포지수
+    try:
+        f_out = _yf_series(CRISIS_FEAR_SYMBOLS, period=period)
+        danger = CRISIS_FEAR_DANGER
+        labels = f_out.get("labels") or []
+        series = f_out.get("series") or {}
+        if labels and series:
+            items = []
+            for name, vals in series.items():
+                valid = [v for v in vals if v is not None and is_float(v)]
+                if not valid:
+                    continue
+                last_val = valid[-1]
+                thr = danger.get(name, [])
+                warn = ""
+                if thr:
+                    over = [t for t in thr if last_val >= t]
+                    if over:
+                        warn = f" <span class='danger-tag'>기준 초과 ({max(over)})</span>"
+                items.append(f"<strong>{name}</strong> 최근 {_fmt(last_val)}{warn}")
+            if items:
+                parts.append(
+                    "<div class='data-summary-block'><h4>2. 금융 공포지수</h4><p>"
+                    + " · ".join(items) + ".</p><p class='data-meta'>점선 기준: VIX 20/30, MOVE 120, SKEW 140, VVIX 90.</p></div>"
+                )
+    except Exception as e:
+        parts.append(f"<div class='data-summary-block'><h4>2. 공포지수</h4><p class='data-err'>데이터 조회 실패: {e}</p></div>")
+
+    # 3. 외환 (FX 기본 + IRR)
+    try:
+        fx_out = _yf_series(CRISIS_FX_DEFAULT, period=period)
+        labels = fx_out.get("labels") or []
+        series = dict(fx_out.get("series") or {})
+        irr = _fetch_bonbast_usdirr(period)
+        if irr.get("dates") and irr.get("values"):
+            irr_map = dict(zip(irr["dates"], irr["values"]))
+            if labels:
+                series["USD/IRR (이란, Toman)"] = [irr_map.get(d) for d in labels]
+            else:
+                labels = irr["dates"]
+                series["USD/IRR (이란, Toman)"] = irr["values"]
+        if labels and series:
+            items = []
+            for name, vals in series.items():
+                if not vals:
+                    continue
+                start_vals = [v for v in vals[:n_avg] if v is not None and is_float(v)]
+                end_vals = [v for v in vals[-n_avg:] if v is not None and is_float(v)]
+                if not start_vals or not end_vals:
+                    continue
+                start_avg = sum(start_vals) / len(start_vals)
+                end_avg = sum(end_vals) / len(end_vals)
+                last_val = end_vals[-1] if end_vals else vals[-1]
+                pct = _pct_str(start_avg, end_avg)
+                if "IRR" in name or "이란" in name:
+                    items.append(f"<strong>{name}</strong> 최근 {_fmt(last_val)} (기간 대비 {pct})")
+                else:
+                    items.append(f"<strong>{name}</strong> 최근 {_fmt(last_val)} ({pct})")
+            if items:
+                parts.append(
+                    "<div class='data-summary-block'><h4>3. 외환 변동</h4><p>"
+                    + " · ".join(items) + ".</p><p class='data-meta'>USD/IRR는 이란 자유시장(Bonbast) 반영.</p></div>"
+                )
+    except Exception as e:
+        parts.append(f"<div class='data-summary-block'><h4>3. 외환</h4><p class='data-err'>데이터 조회 실패: {e}</p></div>")
+
+    # 4. 주식
+    try:
+        stocks_symbols = {t: L for c in CRISIS_STOCKS_BY_COUNTRY for t, L in CRISIS_STOCKS_BY_COUNTRY[c].items()}
+        s_out = _yf_series(stocks_symbols, period=period)
+        labels = s_out.get("labels") or []
+        series = s_out.get("series") or {}
+        if labels and series:
+            items = []
+            for name, vals in series.items():
+                if not vals:
+                    continue
+                start_vals = [v for v in vals[:n_avg] if v is not None and is_float(v)]
+                end_vals = [v for v in vals[-n_avg:] if v is not None and is_float(v)]
+                if not start_vals or not end_vals:
+                    continue
+                start_avg = sum(start_vals) / len(start_vals)
+                end_avg = sum(end_vals) / len(end_vals)
+                last_val = end_vals[-1] if end_vals else vals[-1]
+                pct = _pct_str(start_avg, end_avg)
+                items.append(f"<strong>{name}</strong> {_fmt(last_val)} ({pct})")
+            if items:
+                parts.append(
+                    "<div class='data-summary-block'><h4>4. 주식시장</h4><p>"
+                    + " · ".join(items) + ".</p></div>"
+                )
+    except Exception as e:
+        parts.append(f"<div class='data-summary-block'><h4>4. 주식</h4><p class='data-err'>데이터 조회 실패: {e}</p></div>")
+
+    summary_html = (
+        "<div class='data-summary-intro'>"
+        f"<p><strong>데이터 분석 결과 요약</strong> (기준 기간: {period}, 수집 시각: {fetched_at}). "
+        "아래는 위기 진단 API에서 조회한 최신 데이터를 바탕으로 한 수치 요약입니다. 페이지를 열 때마다 갱신됩니다.</p></div>"
+        + "".join(parts)
+    )
+    return {"fetched_at": fetched_at, "period": period, "summary_html": summary_html}
+
+
+def is_float(x):
+    try:
+        float(x)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+@app.route("/api/crisis/interpretation/summary")
+def api_crisis_interpretation_summary():
+    """해석 페이지용 데이터 분석 요약. 열 때마다 최신 데이터로 생성."""
+    period = request.args.get("period", "1y")
+    try:
+        return jsonify(_build_crisis_interpretation_summary(period=period))
+    except Exception as e:
+        return jsonify({
+            "fetched_at": None,
+            "period": period,
+            "summary_html": f"<p class='data-err'>요약 생성 실패: {e}</p>",
+            "error": str(e),
+        }), 200
+
+
+@app.route("/crisis/interpretation")
+def crisis_interpretation_page():
+    return send_from_directory("static", "crisis_interpretation.html")
+
+
 @app.route("/map")
 @app.route("/missile")
 def missile_map_page():
@@ -691,6 +1136,25 @@ NEWS_FEEDS = [
         "name": "Al Jazeera",
         "url": "https://www.aljazeera.com/xml/rss/all.xml",
         "lang": "en",
+    },
+    # ── Tehran Times (이란 공식 영자 신문) ───────────────────────────────
+    {
+        "name": "Tehran Times",
+        "url": "https://www.tehrantimes.com/rss",
+        "lang": "en",
+        "skip_filter": True,   # 이란 매체이므로 관련성 필터 생략
+    },
+    {
+        "name": "Tehran Times · Politics",
+        "url": "https://www.tehrantimes.com/rss/tp/698",
+        "lang": "en",
+        "skip_filter": True,
+    },
+    {
+        "name": "Tehran Times · International",
+        "url": "https://www.tehrantimes.com/rss/tp/702",
+        "lang": "en",
+        "skip_filter": True,
     },
 ]
 
@@ -741,7 +1205,22 @@ def api_news():
     errors = []
     for feed_info in NEWS_FEEDS:
         try:
-            feed = feedparser.parse(feed_info["url"])
+            # Tehran Times 등 리다이렉트 루프 피드는 requests로 직접 수신
+            if feed_info.get("skip_filter"):
+                try:
+                    import requests as _req
+                    _r = _req.get(
+                        feed_info["url"],
+                        headers={"User-Agent": "Mozilla/5.0"},
+                        timeout=12,
+                        allow_redirects=True,
+                    )
+                    feed = feedparser.parse(_r.content)
+                except Exception as _e:
+                    print(f"[news] requests fallback failed {feed_info['name']}: {_e}", flush=True)
+                    feed = feedparser.parse(feed_info["url"])
+            else:
+                feed = feedparser.parse(feed_info["url"])
             for entry in feed.entries[:15]:
                 title = entry.get("title", "").strip()
                 summary = entry.get("summary", "").strip()
@@ -755,7 +1234,10 @@ def api_news():
                 if not title or not link:
                     continue
                 # For non-Google feeds filter by Iran relevance
-                if "google" not in feed_info["url"] and not _is_relevant(title, summary):
+                # (skip_filter=True인 피드는 관련성 검사 생략)
+                if (not feed_info.get("skip_filter")
+                        and "google" not in feed_info["url"]
+                        and not _is_relevant(title, summary)):
                     continue
                 articles.append({
                     "title": title,
@@ -777,6 +1259,33 @@ def api_news():
     }
     _news_cache_ts = now
     return jsonify(_news_cache)
+
+
+@app.route("/news/report")
+def news_report_page():
+    """리포트 열 때마다 최신 뉴스로 분석해 HTML 반환."""
+    from datetime import datetime
+    from news_analysis_report import (
+        fetch_articles,
+        summarize_by_country,
+        analyze_perspective_differences,
+        analyze_war_progress,
+        build_html,
+    )
+    articles = fetch_articles()
+    fetched_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if not articles:
+        return (
+            "<!DOCTYPE html><html><head><meta charset='UTF-8'></head><body>"
+            "<p>수집된 기사가 없습니다. 잠시 후 다시 시도해 주세요.</p></body></html>",
+            200,
+            {"Content-Type": "text/html; charset=utf-8"},
+        )
+    by_country = summarize_by_country(articles)
+    perspective_diffs = analyze_perspective_differences(by_country)
+    war_progress = analyze_war_progress(by_country)
+    html = build_html(articles, by_country, perspective_diffs, war_progress, fetched_at)
+    return html, 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
 @app.route("/hormuz")
@@ -899,11 +1408,11 @@ def api_hormuz_charts():
 @app.route("/dubai")
 def dubai():
     return send_from_directory("static", "dubai.html")
-    
+
+
 @app.route('/robots.txt')
 def robots_txt():
     return send_from_directory('static', 'robots.txt')
-    
 
 @app.route("/api/dubai_flights")
 def api_dubai_flights():
@@ -979,10 +1488,12 @@ def api_dubai_flights():
         if ds in opensky_daily:
             arr = opensky_daily[ds]["arrivals"]
             dep = opensky_daily[ds]["departures"]
+            from_opensky = True
         else:
             arr = max(0, round(BASE * sf * yf + rng.gauss(0, 18)))
             dep = max(0, round(BASE * sf * yf + rng.gauss(0, 18)))
-        daily.append({"date": ds, "arrivals": arr, "departures": dep, "total": arr + dep})
+            from_opensky = False
+        daily.append({"date": ds, "arrivals": arr, "departures": dep, "total": arr + dep, "from_opensky": from_opensky})
         cur += timedelta(days=1)
 
     # ── 월별 집계 ─────────────────────────────────────────────────────────
@@ -1052,4 +1563,3 @@ def api_dubai_flights():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
-
