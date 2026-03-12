@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>두바이 공항 운항 분석 — DXB 항공 통계</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <link rel="stylesheet" href="/static/shared.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0f172a; --card:#1e293b; --border:#334155;
+      --text:#f1f5f9; --muted:#94a3b8;
+      --accent:#38bdf8; --accent-h:#7dd3fc; --accent-s:rgba(56,189,248,.15);
+      --green:#34d399; --red:#f87171; --orange:#fb923c; --purple:#a78bfa;
+      --r:12px; --sh:0 4px 24px rgba(0,0,0,.25);
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{font-family:"Noto Sans KR",-apple-system,sans-serif;margin:0;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
+    header{padding:20px 28px;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;box-shadow:var(--sh);position:relative;}
+    header h1{font-size:1.3rem;font-weight:700;margin:0;}
+    header .sub{font-size:12px;color:var(--muted);}
+    .nav a{color:var(--accent);text-decoration:none;font-size:13px;font-weight:500;padding:7px 13px;border:1px solid var(--border);border-radius:8px;background:var(--accent-s);margin-left:6px;transition:background .2s;}
+    .nav a:hover{background:rgba(56,189,248,.25);border-color:var(--accent);}
+    .container{max-width:1200px;margin:0 auto;padding:24px 20px;}
+    .card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:22px 24px;margin-bottom:20px;box-shadow:var(--sh);}
+    .card h2{font-size:1rem;font-weight:600;margin:0 0 4px;border-left:3px solid var(--accent);padding-left:11px;}
+    .subtext{font-size:12px;color:var(--muted);margin:3px 0 12px 14px;}
+    /* Controls */
+    .ctrl-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+    .btn-group{display:flex;gap:4px;flex-wrap:wrap;}
+    .seg-btn{padding:7px 16px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,color .15s,border-color .15s;}
+    .seg-btn:hover{background:rgba(56,189,248,.12);color:var(--accent);}
+    .seg-btn.active{background:var(--accent-s);color:var(--accent);border-color:var(--accent);}
+    /* KPI Row */
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+    .kpi{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:18px 20px;box-shadow:var(--sh);}
+    .kpi .lbl{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:6px;}
+    .kpi .val{font-size:1.9rem;font-weight:700;line-height:1;margin-bottom:4px;}
+    .kpi .sub{font-size:11px;color:var(--muted);}
+    .kpi.arr .val{color:var(--green);}
+    .kpi.dep .val{color:var(--orange);}
+    .kpi.tot .val{color:var(--accent);}
+    .kpi.wk  .val{color:var(--purple);}
+    /* Chart wrap */
+    .ch-wrap{position:relative;height:280px;}
+    /* Panels grid */
+    .panels{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:18px;margin-top:10px;}
+    .panel{background:#0f172a;border-radius:10px;border:1px solid var(--border);padding:14px;}
+    .panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .panel-title{font-size:13px;font-weight:600;}
+    .panel-desc{font-size:11px;color:var(--muted);margin-bottom:8px;}
+    .panel-ch{position:relative;height:220px;}
+    /* Section header */
+    .sec-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+    /* Table */
+    .tbl-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:12px;}
+    th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;}
+    th{background:#0f172a;color:var(--muted);font-weight:500;}
+    td:first-child,th:first-child{text-align:left;}
+    .num{font-variant-numeric:tabular-nums;}
+    .pos{color:var(--green);} .neg{color:var(--red);}
+    /* Buttons */
+    button.run{padding:9px 18px;border-radius:8px;border:none;background:var(--accent);color:#0f172a;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;}
+    button.run:hover{background:var(--accent-h);}
+    button.run:disabled{opacity:.5;cursor:default;}
+    button.csv{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;}
+    button.csv:hover{background:rgba(56,189,248,.12);color:var(--accent);border-color:var(--accent);}
+    button.csv:disabled{opacity:.4;cursor:default;}
+    /* Status & source */
+    .status{font-size:12px;color:var(--muted);}
+    .status.err{color:var(--red);}
+    .source-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);background:#0f172a;border:1px solid var(--border);border-radius:6px;padding:4px 10px;margin-top:8px;}
+    /* Note box */
+    .note-box{background:#0f172a;border:1px solid #1e3a5f;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);margin-top:12px;line-height:1.8;}
+    footer{padding:16px 0;border-top:1px solid var(--border);font-size:12px;color:var(--muted);text-align:center;margin-top:28px;}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>✈ 두바이 공항 운항 분석</h1>
+    <div class="sub">Dubai International Airport (DXB/OMDB) — 운항 추세 · 출발국 · 목적국</div>
+  </div>
+  <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기/닫기">☰</button>
+  <nav class="nav">
+    <a href="/why">왜 데이터인가</a>
+    <a href="/">🏦 국가자원/국방력</a>
+    <a href="/crisis">⚡ 위기 진단</a>
+    <a href="/governance">🏛 거버넌스/민주주의</a>
+    <a href="/news">📰 뉴스 스크랩</a>
+    <a href="/map">🗺 미사일 공격상황</a>
+    <a href="/hormuz">⚓ 호르무즈</a>
+    <a href="/dubai" style="opacity:.5;pointer-events:none;">✈ 두바이 공항</a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- ── 분석 조건 ── -->
+  <section class="card">
+    <h2>분석 조건</h2>
+    <div class="subtext">기간 선택 시 자동 업데이트. 출발국/목적국 패널은 도착·출발편 기준 Top 5 국가.</div>
+    <div class="ctrl-row">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">기간</div>
+        <div class="btn-group" id="periodBtns">
+          <button class="seg-btn" data-p="3mo">3개월</button>
+          <button class="seg-btn active" data-p="6mo">6개월</button>
+          <button class="seg-btn" data-p="1y">1년</button>
+        </div>
+      </div>
+      <span id="statusEl" class="status" style="margin-left:8px;"></span>
+    </div>
+    <div id="sourceNote" class="source-badge">
+      <span style="width:7px;height:7px;border-radius:50%;background:#38bdf8;display:inline-block;"></span>
+      데이터 로드 중…
+    </div>
+  </section>
+
+  <!-- ── KPI ── -->
+  <div class="kpi-row" id="kpiRow">
+    <div class="kpi tot"><div class="lbl">총 운항 (최근 1일)</div><div class="val" id="kpiTotal">—</div><div class="sub" id="kpiDate">날짜 로드 중</div></div>
+    <div class="kpi arr"><div class="lbl">도착 편수</div><div class="val" id="kpiArr">—</div><div class="sub" id="kpiArrSub">—</div></div>
+    <div class="kpi dep"><div class="lbl">출발 편수</div><div class="val" id="kpiDep">—</div><div class="sub" id="kpiDepSub">—</div></div>
+    <div class="kpi wk"><div class="lbl">7일 평균 도착</div><div class="val" id="kpiWk">—</div><div class="sub" id="kpiWkSub">출발 7일 평균 —</div></div>
+  </div>
+
+  <!-- ── 월별 추세 ── -->
+  <section class="card">
+    <div class="sec-hdr">
+      <h2 style="margin:0;">월별 운항 편수 추세</h2>
+      <div class="btn-group" id="viewBtns">
+        <button class="seg-btn active" data-v="total">전체 합산</button>
+        <button class="seg-btn" data-v="arrivals">도착편</button>
+        <button class="seg-btn" data-v="departures">출발편</button>
+        <button class="seg-btn" data-v="both">도착+출발 비교</button>
+      </div>
+    </div>
+    <div class="subtext">월별 운항 편수 (도착+출발 기준). OpenSky Network 실측 데이터 가용 시 최근 7일 반영.</div>
+    <div class="ch-wrap" style="height:300px;"><canvas id="trendChart"></canvas></div>
+    <div class="note-box">
+      <strong style="color:var(--text);">📌 데이터 해석 안내</strong><br>
+      • <strong>총 운항 편수</strong>는 도착(Arrival)과 출발(Departure)의 합산이며, DXB 하루 평균 약 1,400편(2024년 기준)이 운항됩니다.<br>
+      • <strong>OpenSky Network</strong>는 ADS-B 수신기 네트워크 기반 무료 API로, 최근 7일 실측 데이터 제공을 시도합니다. 실패 시 DXB 공식 연간 보고서 기반 추정치로 대체됩니다.<br>
+      • <strong>계절성</strong>: 겨울(11–3월) 피크, 여름(6–8월) 소폭 감소 — 주변국 관광 및 비즈니스 패턴 반영.
+    </div>
+  </section>
+
+  <!-- ── Top 5 출발국 (도착편) ── -->
+  <section class="card">
+    <div class="sec-hdr">
+      <div>
+        <h2 style="margin:0;">출발국 Top 5 <span style="font-size:11px;color:var(--muted);font-weight:400;">(도착편 기준)</span></h2>
+        <div class="subtext" style="margin-top:2px;">두바이로 입항한 항공기의 출발 국가 상위 5개국 월별 편수 추세</div>
+      </div>
+      <button class="csv" id="csvOriginBtn" disabled onclick="dlCSVCountry('arrivals')">⬇ CSV</button>
+    </div>
+    <div class="panels" id="originPanels">
+      <div style="color:var(--muted);font-size:13px;padding:20px;">데이터 로드 중…</div>
+    </div>
+  </section>
+
+  <!-- ── Top 5 목적국 (출발편) ── -->
+  <section class="card">
+    <div class="sec-hdr">
+      <div>
+        <h2 style="margin:0;">목적국 Top 5 <span style="font-size:11px;color:var(--muted);font-weight:400;">(출발편 기준)</span></h2>
+        <div class="subtext" style="margin-top:2px;">두바이에서 출발한 항공기의 목적 국가 상위 5개국 월별 편수 추세</div>
+      </div>
+      <button class="csv" id="csvDestBtn" disabled onclick="dlCSVCountry('departures')">⬇ CSV</button>
+    </div>
+    <div class="panels" id="destPanels">
+      <div style="color:var(--muted);font-size:13px;padding:20px;">데이터 로드 중…</div>
+    </div>
+  </section>
+
+  <!-- ── 최근 7일 원자료 ── -->
+  <section class="card">
+    <div class="sec-hdr">
+      <h2 style="margin:0;">최근 7일 원자료</h2>
+      <button class="csv" id="csvDailyBtn" disabled onclick="dlCSVDaily()">⬇ CSV 다운로드</button>
+    </div>
+    <div class="subtext">일별 도착·출발·합계 편수. CSV 다운로드는 전체 기간 일별 데이터를 포함합니다.</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>날짜</th>
+          <th>도착 편수</th>
+          <th>출발 편수</th>
+          <th>합계</th>
+          <th>전일 대비 합계</th>
+        </tr></thead>
+        <tbody id="recentTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>자료: Dubai Airports Corp. 공식 연간 보고서 · OpenSky Network (ADS-B 실측). 서울대학교 고길곤 교수 연구실.</footer>
+</main>
+
+<script>
+/* ── 공통 설정 ───────────────────────────────────────────────────── */
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
+  Chart.defaults.color       = '#94a3b8';
+  Chart.defaults.borderColor = '#334155';
+}
+
+const COLORS = ['#f97316','#38bdf8','#34d399','#a78bfa','#f472b6'];
+
+let _data       = null;
+let _period     = '6mo';
+let _trendView  = 'total';
+let _trendChart = null;
+const _panelCharts = {};
+
+/* ── 상태 표시 ───────────────────────────────────────────────────── */
+function setStatus(msg, err) {
+  const el = document.getElementById('statusEl');
+  el.textContent  = msg || '';
+  el.className    = 'status' + (err ? ' err' : '');
+}
+
+/* ── 숫자 포맷 ───────────────────────────────────────────────────── */
+function fmt(n) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('ko-KR');
+}
+function fmtDiff(cur, prev) {
+  if (cur == null || prev == null) return '';
+  const d = cur - prev;
+  const pct = (d / prev * 100).toFixed(1);
+  return (d >= 0 ? '+' : '') + d.toLocaleString('ko-KR') + ' (' + pct + '%)';
+}
+
+/* ── KPI 렌더링 ──────────────────────────────────────────────────── */
+function renderKPI() {
+  const k = _data.kpi;
+  document.getElementById('kpiTotal').textContent  = fmt(k.latest_total);
+  document.getElementById('kpiArr').textContent    = fmt(k.latest_arrivals);
+  document.getElementById('kpiDep').textContent    = fmt(k.latest_departures);
+  document.getElementById('kpiWk').textContent     = fmt(k.prev7_avg_arr);
+  document.getElementById('kpiDate').textContent   = k.latest_date ? k.latest_date + ' 기준' : '—';
+  document.getElementById('kpiArrSub').textContent = k.prev7_avg_arr
+    ? '7일 평균 ' + fmt(k.prev7_avg_arr) + '편' : '—';
+  document.getElementById('kpiDepSub').textContent = k.prev7_avg_dep
+    ? '7일 평균 ' + fmt(k.prev7_avg_dep) + '편' : '—';
+  document.getElementById('kpiWkSub').textContent  = k.prev7_avg_dep
+    ? '출발 7일 평균 ' + fmt(k.prev7_avg_dep) + '편' : '—';
+}
+
+/* ── 추세 차트 ───────────────────────────────────────────────────── */
+function renderTrend() {
+  if (_trendChart) { _trendChart.destroy(); _trendChart = null; }
+  const m = _data.monthly;
+  let datasets;
+
+  if (_trendView === 'arrivals') {
+    datasets = [{
+      label: '도착 편수', data: m.arrivals,
+      borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.1)',
+      fill: true, tension: 0.35, pointRadius: 3, borderWidth: 2,
+    }];
+  } else if (_trendView === 'departures') {
+    datasets = [{
+      label: '출발 편수', data: m.departures,
+      borderColor: '#fb923c', backgroundColor: 'rgba(251,146,60,.1)',
+      fill: true, tension: 0.35, pointRadius: 3, borderWidth: 2,
+    }];
+  } else if (_trendView === 'both') {
+    datasets = [
+      {label:'도착 편수', data:m.arrivals,
+       borderColor:'#34d399', backgroundColor:'rgba(52,211,153,.07)',
+       fill:false, tension:0.35, pointRadius:2, borderWidth:2},
+      {label:'출발 편수', data:m.departures,
+       borderColor:'#fb923c', backgroundColor:'rgba(251,146,60,.07)',
+       fill:false, tension:0.35, pointRadius:2, borderWidth:2},
+    ];
+  } else {
+    datasets = [{
+      label: '총 운항 편수', data: m.totals,
+      borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.1)',
+      fill: true, tension: 0.35, pointRadius: 3, borderWidth: 2,
+    }];
+  }
+
+  _trendChart = new Chart(
+    document.getElementById('trendChart').getContext('2d'),
+    {
+      type: 'line',
+      data: { labels: m.labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 10, padding: 10 } },
+          tooltip: { mode: 'index', intersect: false,
+            callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw) + '편' } },
+        },
+        scales: {
+          x: { ticks: { maxTicksLimit: 12, color: '#94a3b8' }, grid: { color: '#1e293b' } },
+          y: {
+            ticks: { color: '#94a3b8', callback: v => fmt(v) },
+            grid: { color: '#334155' },
+            title: { display: true, text: '편수', color: '#64748b', font: { size: 11 } },
+          },
+        },
+      },
+    }
+  );
+}
+
+/* ── 패널 차트 공통 생성 ─────────────────────────────────────────── */
+function mkPanelChart(container, canvasId, countryName, labels, counts, color, shareStr) {
+  const div = document.createElement('div');
+  div.className = 'panel';
+  div.innerHTML =
+    `<div class="panel-hdr"><span class="panel-title">${countryName}</span>`
+    + `<span style="font-size:11px;color:var(--muted);">점유율 ${shareStr}</span></div>`
+    + `<div class="panel-ch"><canvas id="${canvasId}"></canvas></div>`;
+  container.appendChild(div);
+
+  if (_panelCharts[canvasId]) { try { _panelCharts[canvasId].destroy(); } catch(e){} }
+  _panelCharts[canvasId] = new Chart(
+    document.getElementById(canvasId).getContext('2d'),
+    {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: countryName, data: counts,
+          borderColor: color, backgroundColor: color + '22',
+          fill: true, tension: 0.3, pointRadius: 2, borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => fmt(ctx.raw) + '편' } },
+        },
+        scales: {
+          x: { ticks: { maxTicksLimit: 6, color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
+          y: { ticks: { color: '#64748b', font: { size: 10 }, callback: v => fmt(v) }, grid: { color: '#1e2d40' } },
+        },
+      },
+    }
+  );
+}
+
+/* ── 출발국 패널 ─────────────────────────────────────────────────── */
+function renderOriginPanels() {
+  const container = document.getElementById('originPanels');
+  container.innerHTML = '';
+  const top5 = _data.top5_countries;
+  top5.forEach((c, i) => {
+    const series  = _data.country_arrivals[c.name] || [];
+    const labels  = series.map(d => d.month);
+    const counts  = series.map(d => d.count);
+    const canvasId = 'origC_' + i;
+    const shareStr = (c.share * 100).toFixed(0) + '%';
+    mkPanelChart(container, canvasId, c.name, labels, counts, COLORS[i % COLORS.length], shareStr);
+  });
+  document.getElementById('csvOriginBtn').disabled = false;
+}
+
+/* ── 목적국 패널 ─────────────────────────────────────────────────── */
+function renderDestPanels() {
+  const container = document.getElementById('destPanels');
+  container.innerHTML = '';
+  const top5 = _data.top5_countries;
+  top5.forEach((c, i) => {
+    const series  = _data.country_departures[c.name] || [];
+    const labels  = series.map(d => d.month);
+    const counts  = series.map(d => d.count);
+    const canvasId = 'destC_' + i;
+    const shareStr = (c.share * 100).toFixed(0) + '%';
+    mkPanelChart(container, canvasId, c.name, labels, counts, COLORS[i % COLORS.length], shareStr);
+  });
+  document.getElementById('csvDestBtn').disabled = false;
+}
+
+/* ── 최근 7일 테이블 ─────────────────────────────────────────────── */
+function renderRecentTable() {
+  const rows = _data.recent_7;
+  let html   = '';
+  rows.forEach((r, idx) => {
+    const prev  = rows[idx + 1];
+    const diff  = prev ? r.total - prev.total : null;
+    const cls   = diff == null ? '' : diff >= 0 ? 'pos' : 'neg';
+    const diffStr = diff == null ? '—'
+      : (diff >= 0 ? '+' : '') + diff.toLocaleString('ko-KR');
+    html +=
+      `<tr>`
+      + `<td>${r.date}</td>`
+      + `<td class="num">${fmt(r.arrivals)}</td>`
+      + `<td class="num">${fmt(r.departures)}</td>`
+      + `<td class="num">${fmt(r.total)}</td>`
+      + `<td class="num ${cls}">${diffStr}</td>`
+      + `</tr>`;
+  });
+  document.getElementById('recentTbody').innerHTML = html;
+  document.getElementById('csvDailyBtn').disabled  = false;
+}
+
+/* ── 전체 렌더링 ─────────────────────────────────────────────────── */
+function renderAll() {
+  renderKPI();
+  renderTrend();
+  renderOriginPanels();
+  renderDestPanels();
+  renderRecentTable();
+  document.getElementById('sourceNote').innerHTML =
+    '<span style="width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;"></span> '
+    + _data.source;
+}
+
+/* ── 데이터 로드 ─────────────────────────────────────────────────── */
+async function loadData() {
+  setStatus('데이터 로드 중…');
+  document.getElementById('originPanels').innerHTML =
+    '<div style="color:var(--muted);font-size:13px;padding:20px;">불러오는 중…</div>';
+  document.getElementById('destPanels').innerHTML =
+    '<div style="color:var(--muted);font-size:13px;padding:20px;">불러오는 중…</div>';
+  try {
+    const res = await fetch('/api/dubai_flights?period=' + _period);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _data = await res.json();
+    renderAll();
+    setStatus('');
+  } catch (e) {
+    setStatus('오류: ' + e.message, true);
+  }
+}
+
+/* ── CSV 다운로드 ────────────────────────────────────────────────── */
+function dlCSV(filename, rows) {
+  const blob = new Blob(['\uFEFF' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+}
+
+function dlCSVDaily() {
+  if (!_data) return;
+  const rows = ['"날짜","도착편수","출발편수","합계"'];
+  _data.daily.forEach(r =>
+    rows.push(`"${r.date}",${r.arrivals},${r.departures},${r.total}`)
+  );
+  dlCSV('DXB_일별운항_' + _period + '.csv', rows);
+}
+
+function dlCSVCountry(type) {
+  if (!_data) return;
+  const src  = type === 'arrivals' ? _data.country_arrivals : _data.country_departures;
+  const label = type === 'arrivals' ? '도착편_출발국' : '출발편_목적국';
+  const countries = Object.keys(src);
+  const months    = _data.monthly.labels;
+  const header    = ['"월"', ...countries.map(c => '"' + c + '"')].join(',');
+  const rows      = [header];
+  months.forEach((m, mi) => {
+    const row = ['"' + m + '"'];
+    countries.forEach(c => {
+      const s = src[c] || [];
+      row.push(s[mi] ? s[mi].count : '');
+    });
+    rows.push(row.join(','));
+  });
+  dlCSV('DXB_' + label + '_' + _period + '.csv', rows);
+}
+
+/* ── 이벤트 바인딩 ───────────────────────────────────────────────── */
+document.querySelectorAll('#periodBtns .seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    _period = btn.dataset.p;
+    document.querySelectorAll('#periodBtns .seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadData();
+  });
+});
+
+document.querySelectorAll('#viewBtns .seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    _trendView = btn.dataset.v;
+    document.querySelectorAll('#viewBtns .seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (_data) renderTrend();
+  });
+});
+
+/* ── 초기 로드 ───────────────────────────────────────────────────── */
+loadData();
+</script>
+
+<script>
+(function(){
+  var btn = document.getElementById('navToggle');
+  var nav = document.querySelector('header nav.nav');
+  if (!btn || !nav) return;
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('mobile-open');
+    btn.textContent = open ? '✕' : '☰';
+  });
+  nav.addEventListener('click', function(e){
+    if (e.target.tagName === 'A') {
+      nav.classList.remove('mobile-open');
+      btn.textContent = '☰';
+    }
+  });
+})();
+</script>
+</body>
+</html>
