@@ -6,4 +6,3 @@ yfinance
 requests
 openpyxl
 feedparser
-gunicorn

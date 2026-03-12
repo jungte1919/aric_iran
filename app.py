@@ -896,6 +896,155 @@ def api_hormuz_charts():
     return jsonify({"chart": chart_name, "image_base64": b64, "format": "png"})
 
 
+@app.route("/dubai")
+def dubai():
+    return send_from_directory("static", "dubai.html")
+
+
+@app.route("/api/dubai_flights")
+def api_dubai_flights():
+    """
+    두바이 국제공항(DXB/OMDB) 운항 통계
+    OpenSky Network로 최근 7일 실제 데이터 시도, 나머지는 DXB 공식 통계 기반 데모 데이터.
+    """
+    import random
+    import json as json_mod
+    import urllib.request
+    from datetime import datetime, timedelta, date as date_cls
+
+    period = request.args.get("period", "6mo")
+    today  = date_cls.today()
+    days_back = {"3mo": 90, "1y": 365}.get(period, 180)
+    start_date = today - timedelta(days=days_back)
+
+    # DXB 상위 출발/목적 국가 (IATA 공식 통계 기반)
+    TOP_COUNTRIES = [
+        {"name": "인도",           "share": 0.28, "color": "#f97316"},
+        {"name": "영국",           "share": 0.09, "color": "#38bdf8"},
+        {"name": "사우디아라비아", "share": 0.08, "color": "#34d399"},
+        {"name": "파키스탄",       "share": 0.07, "color": "#a78bfa"},
+        {"name": "미국",           "share": 0.06, "color": "#f472b6"},
+        {"name": "독일",           "share": 0.05, "color": "#facc15"},
+        {"name": "호주",           "share": 0.04, "color": "#60a5fa"},
+        {"name": "프랑스",         "share": 0.03, "color": "#4ade80"},
+        {"name": "태국",           "share": 0.03, "color": "#fb7185"},
+        {"name": "중국",           "share": 0.03, "color": "#c084fc"},
+    ]
+
+    # ── OpenSky Network: 최근 7일 실제 데이터 시도 ───────────────────────
+    opensky_daily = {}
+    opensky_ok    = False
+    try:
+        for offset in range(7):
+            d = today - timedelta(days=offset + 1)
+            begin_ts = int(datetime(d.year, d.month, d.day, 0, 0, 0).timestamp())
+            end_ts   = begin_ts + 86400
+            arr_cnt = dep_cnt = 0
+            for ep, is_arr in [("arrival", True), ("departure", False)]:
+                url = (f"https://opensky-network.org/api/flights/{ep}"
+                       f"?airport=OMDB&begin={begin_ts}&end={end_ts}")
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=6) as r:
+                    lst = json_mod.loads(r.read())
+                    cnt = len(lst) if isinstance(lst, list) else 0
+                    if is_arr: arr_cnt = cnt
+                    else:      dep_cnt = cnt
+            if arr_cnt or dep_cnt:
+                opensky_daily[d.isoformat()] = {
+                    "arrivals": arr_cnt, "departures": dep_cnt,
+                    "total": arr_cnt + dep_cnt
+                }
+                opensky_ok = True
+    except Exception:
+        pass
+
+    # ── 일별 시계열 생성 ────────────────────────────────────────────────
+    # DXB 계절 팩터 (겨울 피크, 여름 소폭 감소)
+    SEASON  = {1:1.08, 2:1.06, 3:1.04, 4:1.02, 5:0.98, 6:0.94,
+               7:0.92, 8:0.93, 9:0.97, 10:1.01, 11:1.05, 12:1.09}
+    BASE    = 720   # 하루 도착/출발 기준 편수 (2024년 실적 기반)
+    REF_Y   = 2023
+
+    rng = random.Random(42)
+    daily = []
+    cur = start_date
+    while cur <= today:
+        sf = SEASON.get(cur.month, 1.0)
+        yf = 1.0 + 0.03 * (cur.year - REF_Y + (cur.month - 1) / 12)
+        ds = cur.isoformat()
+        if ds in opensky_daily:
+            arr = opensky_daily[ds]["arrivals"]
+            dep = opensky_daily[ds]["departures"]
+        else:
+            arr = max(0, round(BASE * sf * yf + rng.gauss(0, 18)))
+            dep = max(0, round(BASE * sf * yf + rng.gauss(0, 18)))
+        daily.append({"date": ds, "arrivals": arr, "departures": dep, "total": arr + dep})
+        cur += timedelta(days=1)
+
+    # ── 월별 집계 ─────────────────────────────────────────────────────────
+    monthly_map = {}
+    for row in daily:
+        ym = row["date"][:7]
+        if ym not in monthly_map:
+            monthly_map[ym] = {"arrivals": 0, "departures": 0}
+        monthly_map[ym]["arrivals"]   += row["arrivals"]
+        monthly_map[ym]["departures"] += row["departures"]
+    sorted_months = sorted(monthly_map.keys())
+
+    # ── 국가별 월별 시리즈 (Top5) ─────────────────────────────────────────
+    rng2 = random.Random(99)
+    top5 = TOP_COUNTRIES[:5]
+    country_arrivals   = {}
+    country_departures = {}
+    for c in top5:
+        cn, share = c["name"], c["share"]
+        country_arrivals[cn]   = []
+        country_departures[cn] = []
+        for ym in sorted_months:
+            n1 = rng2.gauss(1.0, 0.04)
+            n2 = rng2.gauss(1.0, 0.04)
+            country_arrivals[cn].append({
+                "month": ym,
+                "count": max(0, round(monthly_map[ym]["arrivals"]   * share * n1))
+            })
+            country_departures[cn].append({
+                "month": ym,
+                "count": max(0, round(monthly_map[ym]["departures"] * share * n2))
+            })
+
+    recent_7 = daily[-7:][::-1]
+    last  = daily[-1] if daily else {}
+    prev7 = daily[-8:-1] if len(daily) >= 8 else []
+
+    return jsonify({
+        "period": period,
+        "source": (
+            "OpenSky Network (최근 7일 실측) + 데모 데이터 혼합"
+            if opensky_ok else
+            "데모 데이터 — DXB 공식 연간 보고서 기반 추정"
+        ),
+        "daily": daily,
+        "monthly": {
+            "labels":     sorted_months,
+            "arrivals":   [monthly_map[m]["arrivals"]   for m in sorted_months],
+            "departures": [monthly_map[m]["departures"] for m in sorted_months],
+            "totals":     [monthly_map[m]["arrivals"] + monthly_map[m]["departures"]
+                           for m in sorted_months],
+        },
+        "country_arrivals":   country_arrivals,
+        "country_departures": country_departures,
+        "top5_countries":     top5,
+        "recent_7": recent_7,
+        "kpi": {
+            "latest_date":      last.get("date"),
+            "latest_arrivals":  last.get("arrivals"),
+            "latest_departures":last.get("departures"),
+            "latest_total":     last.get("total"),
+            "prev7_avg_arr": round(sum(d["arrivals"]   for d in prev7) / len(prev7)) if prev7 else None,
+            "prev7_avg_dep": round(sum(d["departures"] for d in prev7) / len(prev7)) if prev7 else None,
+        },
+    })
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
-
