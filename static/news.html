@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>이란 전쟁 뉴스 스크랩 — 데이터로 이해하는 이란 전쟁</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/shared.css">
   <style>
     :root {
       --bg: #0f172a; --bg2: #1e293b; --bg3: #263347; --border: #334155;
@@ -138,13 +139,13 @@
     <h1>📰 이란 전쟁 뉴스 스크랩</h1>
     <div class="sub">Google News · Reuters · BBC · Al Jazeera — 이란·이스라엘 관련 뉴스 실시간 수집</div>
   </div>
+  <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기/닫기">☰</button>
   <nav class="nav">
-    <a href="/why" style="background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fbbf24;">왜 데이터인가</a>
-    <a href="/">🏦 국가자원/국방력</a>
-    <a href="/crisis">⚡ 위기 진단</a>
-    <a href="/governance">🏛 거버넌스/민주주의</a>
-    <a href="/news" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">📰 뉴스 스크랩</a>
-    <a href="/map">🗺 미사일 공격상황</a>
+    <a href="/">대시보드</a>
+    <a href="/crisis">위기 진단</a>
+    <a href="/governance">거버넌스</a>
+    <a href="/why">왜 데이터인가</a>
+    <a href="/hormuz">⚓ 호르무즈</a>
   </nav>
 </header>
 
@@ -370,5 +371,23 @@ setInterval(() => loadNews(false), 30 * 60 * 1000);
 // ── init ──────────────────────────────────────────────────────────────────
 loadNews(false);
 </script>
+<script>
+(function(){
+  var btn = document.getElementById('navToggle');
+  var nav = document.querySelector('header nav.nav');
+  if (!btn || !nav) return;
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('mobile-open');
+    btn.textContent = open ? '✕' : '☰';
+  });
+  nav.addEventListener('click', function(e){
+    if (e.target.tagName === 'A') {
+      nav.classList.remove('mobile-open');
+      btn.textContent = '☰';
+    }
+  });
+})();
+</script>
 </body>
 </html>
+

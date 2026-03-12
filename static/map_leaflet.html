@@ -30,6 +30,15 @@
     .leaflet-popup-content table { width: 100%; border-collapse: collapse; }
     .leaflet-popup-content td { padding: 4px 6px; vertical-align: top; }
     .leaflet-popup-content td:first-child { font-weight: 600; width: 38%; color: #475569; }
+    /* 모바일 대응 */
+    @media (max-width: 640px) {
+      header { padding: 8px 12px; gap: 6px; }
+      header h1 { font-size: 0.9rem; }
+      .nav { gap: 4px; max-width: 100%; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+      .nav a { font-size: 11px; padding: 4px 9px; white-space: nowrap; }
+      #map { height: calc(100vh - 58px); }
+      .legend { right: 8px; bottom: 8px; padding: 10px 12px; max-width: calc(100vw - 16px); font-size: 11px; }
+    }
   </style>
 </head>
 <body>

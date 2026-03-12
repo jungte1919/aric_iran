@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>호르무즈 해협 선박 통계</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <link rel="stylesheet" href="/static/shared.css">
+  <style>
+    :root {
+      --bg-page:   #0f172a;
+      --bg-card:   #1e293b;
+      --border:    #334155;
+      --text:      #f1f5f9;
+      --muted:     #94a3b8;
+      --accent:    #38bdf8;
+      --accent-h:  #7dd3fc;
+      --accent-s:  rgba(56,189,248,.15);
+      --red:       #f87171;
+      --green:     #34d399;
+      --orange:    #fbbf24;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(0,0,0,.25);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family:"Noto Sans KR",-apple-system,sans-serif; margin:0; padding:0;
+           background:var(--bg-page); color:var(--text); font-size:14px; line-height:1.6; }
+    header { padding:18px 28px; background:linear-gradient(135deg,#1e293b,#0f172a);
+             border-bottom:1px solid var(--border); display:flex; flex-wrap:wrap;
+             gap:12px; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
+    header h1 { font-size:1.3rem; font-weight:700; margin:0; }
+    .nav-links { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .nav-links a { color:var(--accent); text-decoration:none; font-size:13px; font-weight:500;
+                   padding:7px 13px; border:1px solid var(--border); border-radius:8px;
+                   background:var(--accent-s); transition:background .2s,border-color .2s; }
+    .nav-links a:hover { background:rgba(56,189,248,.25); border-color:var(--accent); }
+    .container { max-width:1200px; margin:0 auto; padding:28px 20px; }
+    .card { background:var(--bg-card); border-radius:var(--radius); border:1px solid var(--border);
+            padding:22px 24px 24px; margin-bottom:24px; box-shadow:var(--shadow); }
+    .card h2 { font-size:1.05rem; font-weight:600; margin:0 0 4px;
+               border-left:3px solid var(--accent); padding-left:11px; }
+    .subtext { font-size:12px; color:var(--muted); margin-bottom:14px; margin-left:14px; }
+    .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:6px; }
+    .kpi { background:#0f172a; border:1px solid var(--border); border-radius:10px;
+           padding:16px 18px; text-align:center; }
+    .kpi .val { font-size:2rem; font-weight:700; line-height:1.1; }
+    .kpi .lbl { font-size:11px; color:var(--muted); margin-top:4px; }
+    .kpi .sub { font-size:11px; color:var(--muted); }
+    .kpi.crisis .val  { color:var(--red); }
+    .kpi.normal .val  { color:var(--green); }
+    .kpi.warning .val { color:var(--orange); }
+    .row { display:flex; flex-wrap:wrap; gap:16px; }
+    .col-half { flex:1 1 460px; min-width:0; }
+    .chart-wrap { background:#0f172a; border:1px solid var(--border); border-radius:10px;
+                  padding:14px; min-height:260px; position:relative; }
+    .chart-wrap img { width:100%; border-radius:8px; display:block; }
+    .spinner { width:36px; height:36px; border:3px solid var(--border);
+               border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite;
+               margin:40px auto; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .alert { border-radius:8px; padding:12px 16px; font-size:13px; margin-bottom:18px; }
+    .alert-warning { background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.4); color:var(--orange); }
+    .alert-info    { background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.4); color:var(--accent); }
+    .alert-danger  { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    label { font-size:12px; font-weight:500; color:var(--muted); display:block; margin-bottom:4px; }
+    input[type=text], input[type=number], select {
+      padding:9px 11px; border-radius:8px; border:1px solid var(--border);
+      background:#0f172a; color:var(--text); font-size:13px; outline:none;
+      width:100%; font-family:inherit; }
+    input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-s); }
+    button.primary { padding:9px 18px; border-radius:8px; border:none; background:var(--accent);
+                     color:#0f172a; font-size:13px; font-weight:600; cursor:pointer;
+                     display:inline-flex; align-items:center; gap:6px; font-family:inherit;
+                     transition:background .2s,transform .1s; }
+    button.primary:hover { background:var(--accent-h); transform:translateY(-1px); }
+    button.primary:disabled { opacity:.5; cursor:default; transform:none; }
+    .btn-group { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .btn-tab { padding:7px 16px; border-radius:20px; border:1px solid var(--border);
+               background:transparent; color:var(--muted); font-size:12px; cursor:pointer;
+               font-family:inherit; transition:background .2s,color .2s; }
+    .btn-tab.active, .btn-tab:hover { background:var(--accent-s); color:var(--accent);
+                                      border-color:var(--accent); }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th,td { padding:8px 10px; text-align:right; border-bottom:1px solid var(--border); }
+    th { background:#0f172a; color:var(--muted); font-weight:500; position:sticky; top:0; z-index:1; }
+    td:first-child, th:first-child { text-align:left; }
+    .table-wrap { max-height:280px; overflow:auto; border-radius:10px; border:1px solid var(--border); }
+    .tag { display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; }
+    .tag-red    { background:rgba(248,113,113,.15); color:var(--red); border:1px solid rgba(248,113,113,.3); }
+    .tag-green  { background:rgba(52,211,153,.15);  color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .tag-orange { background:rgba(251,191,36,.15);  color:var(--orange); border:1px solid rgba(251,191,36,.3); }
+    .tag-blue   { background:rgba(56,189,248,.15);  color:var(--accent); border:1px solid rgba(56,189,248,.3); }
+    .api-box { background:#0f172a; border:1px solid var(--border); border-radius:10px;
+               padding:16px 18px; font-size:12px; margin-bottom:12px; }
+    .api-box h3 { font-size:13px; font-weight:600; margin:0 0 8px; }
+    .api-box .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;
+                      margin-bottom:8px; }
+    .free   { background:rgba(52,211,153,.15);  color:var(--green);  border:1px solid rgba(52,211,153,.3); }
+    .paid   { background:rgba(248,113,113,.15); color:var(--red);    border:1px solid rgba(248,113,113,.3); }
+    .freemium { background:rgba(251,191,36,.15); color:var(--orange); border:1px solid rgba(251,191,36,.3); }
+    .api-box ul { margin:0; padding-left:16px; color:var(--muted); line-height:1.8; }
+    .api-box a { color:var(--accent); }
+    .crisis-banner { background:linear-gradient(90deg,rgba(220,38,38,.15),rgba(220,38,38,.05));
+                     border:1px solid rgba(248,113,113,.4); border-radius:10px;
+                     padding:14px 18px; margin-bottom:20px; }
+    .crisis-banner strong { color:var(--red); }
+    #statusMsg { font-size:12px; color:var(--muted); margin-left:8px; }
+    #statusMsg.err { color:var(--red); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>⚓ 호르무즈 해협 선박 통계</h1>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;">일별 통과 추세 · 국적별 분포 · 선종 분석 — AIS 데이터 기반</div>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기/닫기">☰</button>
+    <div class="nav-links">
+      <a href="/why" style="background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fbbf24;">왜 데이터인가</a>
+      <a href="/">🏦 국가자원/국방력</a>
+      <a href="/crisis">⚡ 위기 진단</a>
+      <a href="/governance">🏛 거버넌스</a>
+      <a href="/news">📰 뉴스</a>
+      <a href="/map">🗺 공격지도</a>
+      <a href="/hormuz" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">⚓ 호르무즈</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 위기 배너 -->
+    <div class="crisis-banner">
+      <strong>⚠ 현재 위기 상황 (2026.02.28~)</strong> — 미·이스라엘의 이란 공습 이후 통과 선박이
+      <strong>평시 대비 약 85% 급감</strong>. 마에르스크·MSC·CMA CGM·하팍-로이드 등 주요 선사들이 운항을 전면 중단.
+      이란이 라디오 경고를 통해 선박 통과 금지를 선언함.
+      <span style="color:var(--muted);font-size:11px;"> (출처: WorldwideAIS.org, 2026.03)</span>
+    </div>
+
+    <!-- KPI 카드 -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi normal"><div class="val" id="kpiNormal">~</div><div class="lbl">평시 평균 (척/일)</div><div class="sub">위기 전 90일 기준</div></div>
+      <div class="kpi crisis"><div class="val" id="kpiCrisis">~</div><div class="lbl">위기 이후 평균 (척/일)</div><div class="sub">2026.02.28 이후</div></div>
+      <div class="kpi warning"><div class="val" id="kpiDrop">~</div><div class="lbl">통과량 감소율</div><div class="sub">평시 대비</div></div>
+      <div class="kpi"><div class="val" style="color:var(--accent)" id="kpiTypes">37%</div><div class="lbl">유조선 비율</div><div class="sub">탐지 선박 중</div></div>
+      <div class="kpi"><div class="val" style="color:#a78bfa" id="kpiAsia">5:1</div><div class="lbl">아시아 : 유럽 방향</div><div class="sub">유조선 행선지 비율</div></div>
+    </div>
+
+    <!-- 차트 탭 + 설정 -->
+    <div class="card">
+      <h2>시각화 설정</h2>
+      <div class="subtext">분석 기간 및 AISHub 사용자명을 입력하면 실시간 데이터가 적용됩니다 (선택사항).</div>
+      <div class="row" style="align-items:flex-end;gap:12px;flex-wrap:wrap;">
+        <div style="flex:0 0 140px;">
+          <label>분석 기간 (일)</label>
+          <select id="daysSelect">
+            <option value="30">최근 30일</option>
+            <option value="60">최근 60일</option>
+            <option value="90" selected>최근 90일</option>
+            <option value="180">최근 180일</option>
+          </select>
+        </div>
+        <div style="flex:1 1 200px;">
+          <label>AISHub 사용자명 <span style="color:var(--muted);font-weight:400;">(선택 · 실시간 데이터)</span></label>
+          <input type="text" id="aishubUser" placeholder="aishub_username (없으면 데모 데이터 사용)" />
+        </div>
+        <div style="flex:0 0 auto;display:flex;align-items:center;gap:8px;">
+          <button class="primary" id="loadBtn">📊 불러오기</button>
+          <span id="statusMsg"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 차트 선택 탭 -->
+    <div class="card">
+      <h2>분석 차트</h2>
+      <div class="subtext">탭을 눌러 차트를 전환합니다. 데모 데이터는 실제 통계 기반으로 생성됩니다.</div>
+      <div class="btn-group">
+        <button class="btn-tab active" data-chart="daily_trend">📈 일별 추세</button>
+        <button class="btn-tab" data-chart="nationality">🌍 국적별 분포</button>
+        <button class="btn-tab" data-chart="ship_type">🚢 선종별 구성</button>
+      </div>
+      <div class="chart-wrap" id="chartArea">
+        <div class="spinner" id="spinner"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+        * 데모 데이터는 실제 AIS 통계(WorldwideAIS.org, MarineTraffic 공개 보고서)를 기반으로 생성됩니다.
+          AISHub 계정 입력 시 실시간 호르무즈 해협 탐지 선박 데이터로 교체됩니다.
+      </div>
+    </div>
+
+    <!-- 국적별 테이블 -->
+    <div class="card">
+      <h2>국적별 상세 통계</h2>
+      <div class="subtext">편의치적(파나마·마샬군도·라이베리아 등)이 상위를 차지하는 특성상 실 운영국과 차이가 있습니다.</div>
+      <div class="table-wrap">
+        <table id="natTable">
+          <thead>
+            <tr>
+              <th>순위</th><th>등록 국가 (기국)</th><th>선박 수</th><th>비율</th><th>주요 선종</th>
+            </tr>
+          </thead>
+          <tbody id="natTbody"><tr><td colspan="5" style="text-align:center;color:var(--muted);">불러오는 중…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 행선지 통계 -->
+    <div class="card">
+      <h2>유조선 목적지 국가별 통계</h2>
+      <div class="subtext">탐지된 유조선 중 목적지가 확인된 선박 기준 (2026년 2월 기준, WorldwideAIS.org).</div>
+      <div style="height:200px;position:relative;">
+        <canvas id="destChart"></canvas>
+      </div>
+    </div>
+
+    <!-- API 안내 -->
+    <div class="card">
+      <h2>사용 가능한 API 및 데이터 소스</h2>
+      <div class="subtext">각 API의 비용·조건 및 접근 방법을 확인하세요.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">
+
+        <div class="api-box">
+          <h3>🛰 AISHub</h3>
+          <span class="badge free">무료 (조건부)</span>
+          <ul>
+            <li>실시간 선박 위치 (JSON/XML/CSV)</li>
+            <li>지역 경계 박스 쿼리 가능</li>
+            <li><strong>조건:</strong> AIS 수신기 보유 또는 파트너 공유</li>
+            <li>1분당 1회 요청 제한</li>
+            <li><a href="https://www.aishub.net/join-us" target="_blank">가입 신청 →</a></li>
+          </ul>
+        </div>
+
+        <div class="api-box">
+          <h3>📡 aisstream.io</h3>
+          <span class="badge freemium">무료 티어 있음</span>
+          <ul>
+            <li>실시간 WebSocket AIS 스트림</li>
+            <li>경계 박스 구독 방식</li>
+            <li>무료: 일부 선박 유형·지역 제한</li>
+            <li>선박 위치·속도·선종 수신</li>
+            <li><a href="https://aisstream.io" target="_blank">API 키 발급 →</a></li>
+          </ul>
+        </div>
+
+        <div class="api-box">
+          <h3>⚡ EIA (에너지정보청)</h3>
+          <span class="badge free">완전 무료</span>
+          <ul>
+            <li>호르무즈 통과 석유 유량 (월별)</li>
+            <li>백만 배럴/일 단위 통계</li>
+            <li>STEO 시리즈: PATC_HORMUZ</li>
+            <li>최대 36개월 이력 제공</li>
+            <li><a href="https://www.eia.gov/opendata/" target="_blank">무료 키 발급 →</a></li>
+          </ul>
+        </div>
+
+        <div class="api-box">
+          <h3>🗺 MarineTraffic API</h3>
+          <span class="badge paid">유료</span>
+          <ul>
+            <li>가장 포괄적인 AIS 이력 데이터</li>
+            <li>지역 통계·국적·선종 집계 지원</li>
+            <li>CS1 플랜: 월 $50~부터</li>
+            <li>최대 190일 이력 조회 가능</li>
+            <li><a href="https://www.marinetraffic.com/en/ais-api-services" target="_blank">플랜 확인 →</a></li>
+          </ul>
+        </div>
+
+        <div class="api-box">
+          <h3>🔍 VesselFinder API</h3>
+          <span class="badge paid">유료</span>
+          <ul>
+            <li>실시간·이력 선박 위치 데이터</li>
+            <li>선박 세부 정보 (IMO, 국기, 선종)</li>
+            <li>상업 플랜별 쿼리 수 상이</li>
+            <li><a href="https://api.vesselfinder.com/" target="_blank">문서 확인 →</a></li>
+          </ul>
+        </div>
+
+        <div class="api-box">
+          <h3>🌐 Worldwide AIS Network</h3>
+          <span class="badge freemium">공개 보고서</span>
+          <ul>
+            <li>호르무즈 위기 특별 모니터링</li>
+            <li>7일 단위 탐지 통계 발표</li>
+            <li>선종·국적·목적지 집계 제공</li>
+            <li>API 없음, 보고서만 공개</li>
+            <li><a href="https://www.worldwideais.org" target="_blank">보고서 보기 →</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- 스크립트 다운로드 안내 -->
+      <div class="alert alert-info" style="margin-top:16px;">
+        💡 <strong>Python 분석 스크립트:</strong>
+        <code>hormuz_shipping.py</code>를 직접 실행하면 PNG 차트가 저장됩니다.<br>
+        <code style="background:#0f172a;padding:4px 8px;border-radius:4px;display:inline-block;margin-top:6px;">
+          python hormuz_shipping.py --days 90 --out ./charts
+        </code><br>
+        AISHub 계정이 있으면: <code style="background:#0f172a;padding:4px 8px;border-radius:4px;">
+          python hormuz_shipping.py --aishub &lt;사용자명&gt;
+        </code>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ── 상태 ─────────────────────────────────────────────────────────────────
+    let currentChart = 'daily_trend';
+    let summaryData  = null;
+
+    // ── 초기 로드 ──────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      setupTabs();
+      setupDestChart();
+    });
+
+    function setupTabs() {
+      document.querySelectorAll('.btn-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentChart = btn.dataset.chart;
+          loadChart(currentChart);
+        });
+      });
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', loadData);
+
+    // ── 데이터 로드 ────────────────────────────────────────────────────────
+    async function loadData() {
+      const days    = document.getElementById('daysSelect').value;
+      const aishub  = document.getElementById('aishubUser').value.trim();
+      const btn     = document.getElementById('loadBtn');
+      const statusEl = document.getElementById('statusMsg');
+
+      btn.disabled = true;
+      statusEl.className = '';
+      statusEl.textContent = '불러오는 중…';
+
+      let url = `/api/hormuz/summary?days=${days}`;
+      if (aishub) url += `&aishub=${encodeURIComponent(aishub)}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        summaryData = await res.json();
+
+        updateKPIs(summaryData);
+        renderNatTable(summaryData.nationality_top15);
+        loadChart(currentChart);
+
+        const src = summaryData.meta.source;
+        statusEl.textContent = `✓ ${src} (${days}일)`;
+      } catch (e) {
+        statusEl.className = 'err';
+        statusEl.textContent = '로드 실패: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── KPI 업데이트 ───────────────────────────────────────────────────────
+    function updateKPIs(d) {
+      const s = d.daily_stats;
+      document.getElementById('kpiNormal').textContent =
+        s.normal_avg != null ? s.normal_avg.toFixed(0) + '척' : '-';
+      document.getElementById('kpiCrisis').textContent =
+        s.crisis_avg != null ? s.crisis_avg.toFixed(0) + '척' : '-';
+      document.getElementById('kpiDrop').textContent =
+        s.drop_pct  != null ? s.drop_pct.toFixed(1) + '%' : '-';
+      if (d.live_vessel_count != null) {
+        document.getElementById('kpiAsia').textContent = d.live_vessel_count + '척';
+        document.querySelector('#kpiRow .kpi:last-child .lbl').textContent = '현재 탐지 선박';
+        document.querySelector('#kpiRow .kpi:last-child .sub').textContent = 'AISHub 실시간';
+      }
+    }
+
+    // ── 국적 테이블 ────────────────────────────────────────────────────────
+    function renderNatTable(rows) {
+      const total = rows.reduce((s, r) => s + r.count, 0);
+      const tbody = document.getElementById('natTbody');
+      tbody.innerHTML = rows.map((r, i) => {
+        const pct  = (r.count / total * 100).toFixed(1);
+        const rank = i + 1;
+        const bar  = `<div style="background:rgba(56,189,248,.25);border-radius:4px;height:6px;width:${pct}%;min-width:4px;"></div>`;
+        const isConvenience = ['파나마','마샬군도','라이베리아','바하마','몰타'].includes(r.nation);
+        const tag  = isConvenience
+          ? `<span class="tag tag-orange">편의치적</span>`
+          : `<span class="tag tag-blue">자국적</span>`;
+        return `<tr>
+          <td style="color:var(--muted)">${rank}</td>
+          <td>${r.nation} ${tag}</td>
+          <td>${r.count.toLocaleString()}</td>
+          <td><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+              <span>${pct}%</span>${bar}</div></td>
+          <td style="color:var(--muted)">${r.main_type || '-'}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── 차트 로드 (서버 이미지) ───────────────────────────────────────────
+    async function loadChart(chartName) {
+      const area    = document.getElementById('chartArea');
+      const days    = document.getElementById('daysSelect').value;
+      area.innerHTML = '<div class="spinner"></div>';
+      try {
+        const res = await fetch(`/api/hormuz/charts?chart=${chartName}&days=${days}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        area.innerHTML = `<img src="data:image/png;base64,${data.image_base64}" alt="${chartName} 차트" />`;
+      } catch (e) {
+        area.innerHTML = `<div style="color:var(--red);padding:20px;text-align:center;">차트 로드 실패: ${e.message}</div>`;
+      }
+    }
+
+    // ── 목적지 Chart.js 차트 ─────────────────────────────────────────────
+    function setupDestChart() {
+      const ctx = document.getElementById('destChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['인도', '중국', '동남아시아', '유럽', '일본', '한국'],
+          datasets: [{
+            label: '유조선 수 (척)',
+            data: [22, 21, 17, 14, 6, 5],
+            backgroundColor: [
+              'rgba(16,185,129,.7)',
+              'rgba(56,189,248,.7)',
+              'rgba(139,92,246,.7)',
+              'rgba(251,191,36,.7)',
+              'rgba(248,113,113,.7)',
+              'rgba(167,139,250,.7)',
+            ],
+            borderRadius: 6,
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.raw}척 (${(ctx.raw/85*100).toFixed(1)}%)`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(51,65,85,.6)' },
+              ticks: { color: '#94a3b8', font: { family: 'Noto Sans KR' } }
+            },
+            y: {
+              grid: { color: 'rgba(51,65,85,.6)' },
+              ticks: {
+                color: '#94a3b8',
+                font: { family: 'Noto Sans KR' },
+                callback: v => v + '척'
+              },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+  </script>
+  <script>
+    (function(){
+      var btn = document.getElementById('navToggle');
+      var nav = document.querySelector('header .nav-links');
+      if (!btn || !nav) return;
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('mobile-open');
+        btn.textContent = open ? '✕' : '☰';
+      });
+      nav.addEventListener('click', function(e){
+        if (e.target.tagName === 'A') {
+          nav.classList.remove('mobile-open');
+          btn.textContent = '☰';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

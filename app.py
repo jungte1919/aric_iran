@@ -779,6 +779,11 @@ def api_news():
     return jsonify(_news_cache)
 
 
+@app.route("/hormuz")
+def hormuz():
+    return send_from_directory("static", "hormuz.html")
+
+
 @app.route("/install_yfinance.bat")
 def download_install_bat():
     """yfinance 설치용 배치 파일 다운로드 (프로젝트 폴더에 저장 후 더블클릭)"""
@@ -788,6 +793,108 @@ def download_install_bat():
     )
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+# ─── 호르무즈 해협 선박 통계 ──────────────────────────────────────────────────
 
+@app.route("/api/hormuz/summary")
+def api_hormuz_summary():
+    """
+    호르무즈 해협 선박 통계 요약
+    query params:
+      days      : 분석 기간(일), 기본 90
+      aishub    : AISHub 사용자명 (선택)
+    """
+    from hormuz_shipping import generate_demo_data, AISHubClient, aishub_to_df
+    import datetime as dt
+
+    days = int(request.args.get("days", 90))
+    aishub_user = request.args.get("aishub", "").strip()
+
+    daily_df, nat_df = generate_demo_data(days=days)
+
+    # 실시간 시도
+    live_count = None
+    live_nationality = None
+    if aishub_user:
+        try:
+            vessels = AISHubClient(aishub_user).fetch_hormuz()
+            live_df = aishub_to_df(vessels)
+            live_count = len(live_df)
+            live_nationality = (
+                live_df.groupby("country").size()
+                .reset_index(name="count")
+                .rename(columns={"country": "nation"})
+                .sort_values("count", ascending=False)
+                .head(15)
+                .to_dict(orient="records")
+            )
+        except Exception as exc:
+            live_nationality = {"error": str(exc)}
+
+    crisis_date = dt.datetime(2026, 2, 28)
+    pre  = daily_df[daily_df["date"] < crisis_date]["vessel_count"]
+    post = daily_df[daily_df["date"] >= crisis_date]["vessel_count"]
+
+    return jsonify({
+        "meta": {
+            "source": "AISHub 실시간" if live_count is not None else "데모 데이터",
+            "period_days": days,
+            "start": str(daily_df["date"].min().date()),
+            "end": str(daily_df["date"].max().date()),
+            "crisis_date": "2026-02-28",
+        },
+        "daily_stats": {
+            "normal_avg": round(float(pre.mean()), 1) if len(pre) else None,
+            "normal_max": int(pre.max()) if len(pre) else None,
+            "crisis_avg": round(float(post.mean()), 1) if len(post) else None,
+            "crisis_min": int(post.min()) if len(post) else None,
+            "drop_pct":   round((post.mean() - pre.mean()) / pre.mean() * 100, 1)
+                          if len(pre) and len(post) else None,
+        },
+        "daily_series": [
+            {"date": str(r["date"].date()), "count": int(r["vessel_count"])}
+            for _, r in daily_df.iterrows()
+        ],
+        "nationality_top15": nat_df.head(15).rename(
+            columns={"국적": "nation", "선박_수": "count", "주요_선종": "main_type"}
+        ).to_dict(orient="records"),
+        "ship_types": [
+            {"type": "유조선",       "pct": 37},
+            {"type": "화물선",       "pct": 31},
+            {"type": "벌크선",       "pct": 8},
+            {"type": "LNG선",       "pct": 6},
+            {"type": "예인선/서비스", "pct": 9},
+            {"type": "기타",         "pct": 9},
+        ],
+        "live_vessel_count": live_count,
+        "live_nationality":  live_nationality,
+    })
+
+
+@app.route("/api/hormuz/charts")
+def api_hormuz_charts():
+    """
+    호르무즈 해협 분석 차트 (base64 PNG)
+    query params:
+      chart  : daily_trend | nationality | ship_type  (기본: daily_trend)
+      days   : 기간(일), 기본 90
+    """
+    from hormuz_shipping import generate_demo_data, plot_daily_trend, \
+        plot_nationality_stats, plot_ship_type_breakdown
+
+    chart_name = request.args.get("chart", "daily_trend")
+    days = int(request.args.get("days", 90))
+
+    daily_df, nat_df = generate_demo_data(days=days)
+
+    if chart_name == "nationality":
+        b64 = plot_nationality_stats(nat_df)
+    elif chart_name == "ship_type":
+        b64 = plot_ship_type_breakdown()
+    else:
+        b64 = plot_daily_trend(daily_df)
+
+    return jsonify({"chart": chart_name, "image_base64": b64, "format": "png"})
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

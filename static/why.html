@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/shared.css">
   <style>
     :root {
       --bg: #0f172a; --bg2: #1e293b; --border: #334155;
@@ -129,6 +130,7 @@
     <h1>데이터로 이해하는 이란 전쟁</h1>
     <div class="sub">서울대 행정대학원 고길곤 교수 연구실 · 아시아 지역정보센터</div>
   </div>
+  <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기/닫기">☰</button>
   <nav class="nav">
     <a href="/why" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">왜 데이터인가</a>
     <a href="/">🏦 국가자원/국방력</a>
@@ -136,6 +138,7 @@
     <a href="/governance">🏛 거버넌스/민주주의</a>
     <a href="/news">📰 뉴스 스크랩</a>
     <a href="/map">🗺 미사일 공격상황</a>
+    <a href="/hormuz">⚓ 호르무즈</a>
   </nav>
 </header>
 
@@ -354,6 +357,25 @@
       </div>
     </div>
 
+    <!-- 10. 호르무즈 AIS -->
+    <div class="data-card" style="border-color: rgba(16,185,129,.3);">
+      <div class="dc-icon">⚓</div>
+      <div class="dc-source">AISHub · aisstream.io · EIA — 호르무즈 해협</div>
+      <div class="dc-title">호르무즈 해협 선박 통계 (AIS)</div>
+      <div class="dc-desc">전 세계 원유·LNG의 약 20~21%가 통과하는 호르무즈 해협의 일별 선박 통과량, 국적(기국)별 분포, 선종 구성을 AIS(선박자동식별장치) 데이터로 시각화합니다. 2026년 2월 28일 이후 위기 상황에서 통과량이 평시 대비 약 85% 급감했습니다.</div>
+      <div class="dc-vars">
+        <span class="tag green">일별 통과 척수</span>
+        <span class="tag green">국적별 분포</span>
+        <span class="tag green">유조선 비율</span>
+        <span class="tag gold">목적지 국가</span>
+        <span class="tag red">위기 지수</span>
+      </div>
+      <div class="dc-freshness">
+        <span class="fresh-dot dot-live"></span>
+        <span><strong>실시간 (AISHub 계정 필요) / 데모 모드 지원</strong> — AISHub 사용자명 입력 시 호르무즈 해협 범위(위도 25.5–27.5°N, 경도 56–60°E) 내 선박을 실시간 수집. 계정 없을 때는 실제 통계 기반 데모 데이터 표시. EIA API로 석유 유량(백만 배럴/일) 병행 조회 가능.</span>
+      </div>
+    </div>
+
   </div>
 </div>
 </section>
@@ -415,6 +437,13 @@
         <p>무기 수입 규모(MS.MIL.MPRT.KD)는 외부 지원의 크기를 보여줍니다. 이란에 대한 국제 무기 공급망 분석은 러시아·중국의 역할을, 이스라엘에 대한 분석은 미국 지원의 규모를 수치로 확인하는 단서를 제공합니다.</p>
       </div>
     </div>
+    <div class="insight">
+      <div class="insight-num">08</div>
+      <div class="insight-body">
+        <h4>호르무즈 해협 — 세계 에너지 공급망의 가장 좁은 목</h4>
+        <p>호르무즈 해협(폭 약 54km)은 하루 평균 약 138척의 선박이 통과하며, 전 세계 원유의 20%, LNG의 25%가 이 수로를 경유합니다. 2026년 2월 28일 미·이스라엘의 이란 공습 이후 통과 선박이 약 21척/일(전시 85% 감소)로 급락했습니다. AIS 실시간 데이터로 일별 통과량·국적별 분포·선종 구성을 추적하면, 뉴스보다 먼저 봉쇄 위기의 심도를 측정할 수 있습니다. 유조선과 LNG선의 비율 변화는 글로벌 에너지 공급 교란의 선행 지표입니다.</p>
+      </div>
+    </div>
   </div>
 </div>
 </section>
@@ -445,6 +474,12 @@
       <div class="dc-desc">정부/정치 역량 페이지에서 <strong>WGI·Freedom House·V-Dem</strong>으로 이란·이스라엘의 거버넌스와 민주주의 수준을 비교하세요. 전쟁의 배후에 있는 제도적 맥락을 파악합니다.</div>
       <div class="dc-vars"><a href="/governance" class="tag purple" style="text-decoration:none;">→ 거버넌스</a></div>
     </div>
+    <div class="data-card" style="border-color: rgba(16,185,129,.3);">
+      <div class="dc-icon">⚓</div>
+      <div class="dc-title" style="color:#34d399;">Step 4 — 해상 공급망 충격 추적</div>
+      <div class="dc-desc">호르무즈 해협 페이지에서 <strong>일별 선박 통과량·국적별 분포·유조선 비율</strong>을 확인하세요. 위기 발생 직후 해상 물동량 데이터는 에너지 공급 교란을 가장 빠르게 포착하는 실물 지표입니다.</div>
+      <div class="dc-vars"><a href="/hormuz" class="tag green" style="text-decoration:none;">→ 호르무즈 해협</a></div>
+    </div>
   </div>
 </div>
 </section>
@@ -459,6 +494,7 @@
       <a href="/" class="btn-primary">📊 국가 역량 대시보드</a>
       <a href="/crisis" class="btn-outline">📉 위기 진단 (실시간)</a>
       <a href="/governance" class="btn-outline">🏛 거버넌스 & 민주주의</a>
+      <a href="/hormuz" class="btn-outline">⚓ 호르무즈 해협</a>
       <a href="/map" class="btn-outline">🗺 미사일 공격상황</a>
     </div>
   </div>
@@ -528,7 +564,7 @@
       <div class="cred-desc">
         <p>이 플랫폼은 <strong>서울대학교 행정대학원 고길곤 교수 연구실</strong>과 <strong>아시아 지역정보센터</strong>가 공동 구축한 데이터 기반 지역 분석 도구입니다.</p>
         <p>이란·이스라엘 갈등을 포함한 중동 지역의 정치·경제·안보 역학을 객관적 데이터로 이해하고, 감정과 이념이 아닌 수치와 근거에 기반한 정책 분석·교육을 지원하기 위해 제작되었습니다.</p>
-        <p>활용 데이터: <strong>World Bank Open Data</strong> · <strong>Yahoo Finance (yfinance)</strong> · <strong>Freedom House Freedom in the World</strong> · <strong>V-Dem (Our World in Data)</strong> · <strong>World Bank WGI</strong></p>
+        <p>활용 데이터: <strong>World Bank Open Data</strong> · <strong>Yahoo Finance (yfinance)</strong> · <strong>Freedom House Freedom in the World</strong> · <strong>V-Dem (Our World in Data)</strong> · <strong>World Bank WGI</strong> · <strong>AISHub / aisstream.io (선박 AIS)</strong> · <strong>EIA Open Data (에너지 통계)</strong></p>
         <p style="margin:0; color:var(--muted2); font-size:12px;">※ 본 자료는 교육·연구 목적으로 제작되었으며, 특정 정치적 입장을 지지하지 않습니다.</p>
       </div>
     </div>
@@ -542,5 +578,22 @@
   교육·연구 목적
 </footer>
 
+<script>
+(function(){
+  var btn = document.getElementById('navToggle');
+  var nav = document.querySelector('header nav.nav');
+  if (!btn || !nav) return;
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('mobile-open');
+    btn.textContent = open ? '✕' : '☰';
+  });
+  nav.addEventListener('click', function(e){
+    if (e.target.tagName === 'A') {
+      nav.classList.remove('mobile-open');
+      btn.textContent = '☰';
+    }
+  });
+})();
+</script>
 </body>
 </html>

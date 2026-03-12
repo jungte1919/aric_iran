@@ -1,0 +1,209 @@
+/* ═══════════════════════════════════════════════════════════════
+   모바일 공통 반응형 스타일  (모든 페이지에서 공유)
+   사용법: <link rel="stylesheet" href="/static/shared.css">
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── 햄버거 버튼: 데스크탑에서 숨김 ─────────────────────────────── */
+.nav-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  background: rgba(56, 189, 248, .1);
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .2s, border-color .2s;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  user-select: none;
+}
+.nav-toggle:hover  { background: rgba(56,189,248,.22); border-color: #38bdf8; }
+.nav-toggle:active { background: rgba(56,189,248,.3); }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   모바일  (640px 이하)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* ── 전체 폰트 ── */
+  body { font-size: 13px !important; }
+
+  /* ── 헤더 ──
+     position: relative는 !important 없이 → sticky 헤더(news/why)는 페이지 스타일이 우선 */
+  header {
+    position: relative;
+    flex-direction: column !important;
+    padding: 11px 54px 11px 14px !important;   /* 오른쪽: 버튼 공간 */
+    gap: 0 !important;
+    align-items: flex-start !important;
+  }
+  header h1  { font-size: 1rem !important; line-height: 1.35; }
+  header .sub,
+  header .subtext { font-size: 10px !important; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── 햄버거 버튼 ── */
+  .nav-toggle { display: flex !important; }
+
+  /* ── 내비게이션: 기본 숨김 ── */
+  header .nav-links:not(.mobile-open),
+  header nav.nav:not(.mobile-open),
+  header .nav:not(.mobile-open) {
+    display: none !important;
+  }
+
+  /* ── 내비게이션: 열림 ── */
+  header .nav-links.mobile-open,
+  header nav.nav.mobile-open,
+  header .nav.mobile-open {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #334155;
+    gap: 5px !important;
+  }
+  header .nav-links.mobile-open a,
+  header nav.nav.mobile-open a,
+  header .nav.mobile-open a {
+    display: block !important;
+    margin-left: 0 !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    border-radius: 8px;
+    width: 100%;
+  }
+
+  /* ── 배지 숨김 (nav 안의 badge) ── */
+  .nav-links .badge { display: none !important; }
+
+  /* ── 컨테이너 ── */
+  .container,
+  main.container { padding: 10px 12px !important; }
+
+  /* ── 카드 ── */
+  .card { padding: 12px !important; }
+
+  /* ── governance: 패널 그리드 ── */
+  .panels {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── hormuz: 좌우 분할 컬럼 ── */
+  .col-half {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ── hormuz: KPI 그리드 (2열) ── */
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .kpi .val { font-size: 1.45rem !important; }
+  .kpi .lbl { font-size: 10px !important; }
+  .kpi .sub { font-size: 10px !important; }
+
+  /* ── 테이블 가로 스크롤 ── */
+  .table-wrap,
+  .table-wrapper,
+  .tbl-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── 차트 높이 축소 ── */
+  .chart-wrap     { min-height: 180px !important; }
+  .ch-wrap        { height: 200px !important; }
+  #chartTrend,
+  #chartBar,
+  #chartIndex     { height: 200px !important; }
+
+  /* ── why.html 히어로 ── */
+  .hero { padding: 36px 16px 32px !important; }
+  .hero h2 { font-size: clamp(1.5rem, 6vw, 2.2rem) !important; }
+
+  /* ── governance: 컨트롤 섹션 ── */
+  .controls { flex-direction: column !important; }
+  .ctrl-col { width: 100%; }
+  select[multiple] { min-width: unset !important; }
+
+  /* ── hormuz: 설정 row ── */
+  .card .row { flex-wrap: wrap !important; }
+  .card .row > * { flex: 1 1 100% !important; }
+
+  /* ── btn-group ── */
+  .btn-group { flex-wrap: wrap !important; }
+
+  /* ── crisis 배너 ── */
+  .crisis-banner { font-size: 12px !important; padding: 10px 12px !important; }
+
+  /* ── 스크롤 힌트 (가로 스크롤 가능한 테이블) ── */
+  .table-wrap::after,
+  .table-wrapper::after {
+    content: "← 좌우로 스크롤하세요 →";
+    display: block;
+    font-size: 10px;
+    color: #64748b;
+    text-align: center;
+    padding: 4px 0;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   태블릿  (641px ~ 1024px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (min-width: 641px) and (max-width: 1024px) {
+
+  header { padding: 14px 20px !important; }
+
+  .panels {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+  }
+
+  .col-half { flex: 1 1 300px !important; }
+
+  .container,
+  main.container { padding: 20px 16px !important; }
+
+  .kpi-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   페이지별 세부 조정
+   ═══════════════════════════════════════════════════════════════ */
+
+/* index.html: 멀티셀렉트 모바일 */
+@media (max-width: 640px) {
+  select[multiple] {
+    min-height: 100px !important;
+    font-size: 13px;
+  }
+  /* 컬럼 레이아웃 */
+  .row .col { flex: 1 1 100% !important; }
+}
+
+/* governance.html: 탭 버튼 */
+@media (max-width: 640px) {
+  .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .tab-btn { white-space: nowrap; flex-shrink: 0; padding: 8px 14px; font-size: 12px; }
+}
+
+/* news.html: 카드 그리드 */
+@media (max-width: 640px) {
+  .news-grid,
+  .cards-grid { grid-template-columns: 1fr !important; }
+}

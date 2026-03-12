@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/shared.css">
   <style>
     :root {
       --bg-page: #0f172a;
@@ -65,6 +66,7 @@
       <h1>데이터로 이해하는 이란 전쟁</h1>
       <div class="subtext">🏦 국가자원 · 국방력 — World Bank 지표로 이란·이스라엘 등 국가별 역량을 비교합니다.</div>
     </div>
+    <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기/닫기">☰</button>
     <div class="nav-links">
       <a href="/why" style="background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.4); color: #fbbf24;">왜 데이터인가</a>
       <a href="/" style="background:rgba(56,189,248,.25);border-color:var(--accent);font-weight:700;pointer-events:none;">🏦 국가자원/국방력</a>
@@ -72,6 +74,7 @@
       <a href="/governance">🏛 거버넌스/민주주의</a>
       <a href="/news">📰 뉴스 스크랩</a>
       <a href="/map">🗺 미사일 공격상황</a>
+      <a href="/hormuz">⚓ 호르무즈</a>
       <div class="badge"><span class="badge-dot"></span> World Bank API</div>
     </div>
   </header>
@@ -115,8 +118,11 @@
       <div id="wrapIndex"><div class="chart-wrap"><div id="chartIndexPlace" style="min-height: 280px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">—</div></div><p class="chart-footnote" id="footnoteIndex" style="display:none;">자료: World Bank. 서울대학교 고길곤 교수 연구실.</p></div>
     </section>
     <section class="card">
-      <h2>원자료</h2>
-      <div class="subtext">그래프에 사용된 연도·국가별 수치.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+        <h2 style="margin:0;">원자료</h2>
+        <button id="csvBtn" class="primary" style="font-size:11px;padding:6px 13px;opacity:.45;cursor:default;" disabled>⬇ CSV 다운로드</button>
+      </div>
+      <div class="subtext">그래프에 사용된 연도·국가별 수치. 분석 실행 후 CSV로 내려받을 수 있습니다.</div>
       <div class="table-wrapper">
         <table id="dataTable"><thead></thead><tbody></tbody></table>
       </div>
@@ -153,6 +159,7 @@
     const chartIndexPlace = document.getElementById('chartIndexPlace');
 
     let chartTrend = null, chartBar = null, chartIndex = null;
+    let _csvRows = null, _csvSeriesName = '', _csvTimeKey = 'Time';
 
     function setStatus(msg, isError) {
       statusEl.textContent = msg || '';
@@ -280,6 +287,15 @@
           .sort(function(a, b) {
             return Number(a[timeKey]) - Number(b[timeKey]);
           });
+
+        // CSV 다운로드용 데이터 저장
+        _csvRows = rows;
+        _csvSeriesName = seriesName;
+        _csvTimeKey = timeKey;
+        const csvBtn = document.getElementById('csvBtn');
+        csvBtn.disabled = false;
+        csvBtn.style.opacity = '1';
+        csvBtn.style.cursor = 'pointer';
 
         // 테이블 렌더링
         if (Array.isArray(rows) && rows.length > 0) {
@@ -462,9 +478,62 @@
       }
     });
 
+    // ── CSV 다운로드 ────────────────────────────────────────────────────────
+    function downloadCSV() {
+      if (!_csvRows || _csvRows.length === 0) {
+        alert('먼저 「분석 실행」을 눌러 데이터를 불러오세요.');
+        return;
+      }
+      const cols = Object.keys(_csvRows[0]);
+      const lines = [];
+      // BOM(\uFEFF) 추가 → Excel에서 한글 깨짐 방지
+      lines.push('\uFEFF' + cols.map(function(c) {
+        return '"' + String(c).replace(/"/g, '""') + '"';
+      }).join(','));
+      _csvRows.forEach(function(row) {
+        lines.push(cols.map(function(c) {
+          var v = row[c];
+          if (v == null) return '';
+          return '"' + String(v).replace(/"/g, '""') + '"';
+        }).join(','));
+      });
+      const csv = lines.join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // 파일명: 지표명_날짜.csv
+      var indText = (document.getElementById('indicatorSelect').selectedOptions[0] || {}).text || 'data';
+      var safeName = indText.split('[')[0].trim().replace(/[^가-힣a-zA-Z0-9_\-]/g, '_').slice(0, 40);
+      a.download = 'worldbank_' + safeName + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('csvBtn').addEventListener('click', downloadCSV);
+
     fillCountrySelect(FALLBACK_COUNTRIES);
     loadCountries();
     loadIndicators();
+  </script>
+  <script>
+    (function(){
+      var btn = document.getElementById('navToggle');
+      var nav = document.querySelector('header .nav-links');
+      if (!btn || !nav) return;
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('mobile-open');
+        btn.textContent = open ? '✕' : '☰';
+      });
+      nav.addEventListener('click', function(e){
+        if (e.target.tagName === 'A') {
+          nav.classList.remove('mobile-open');
+          btn.textContent = '☰';
+        }
+      });
+    })();
   </script>
 </body>
 </html>
