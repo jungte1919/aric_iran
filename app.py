@@ -899,7 +899,11 @@ def api_hormuz_charts():
 @app.route("/dubai")
 def dubai():
     return send_from_directory("static", "dubai.html")
-
+    
+@app.route('/robots.txt')
+def robots_txt():
+    return send_from_directory('static', 'robots.txt')
+    
 
 @app.route("/api/dubai_flights")
 def api_dubai_flights():
@@ -1048,3 +1052,4 @@ def api_dubai_flights():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
+
