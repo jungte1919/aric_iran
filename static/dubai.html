@@ -129,6 +129,13 @@
     <div class="kpi wk"><div class="lbl">7일 평균 도착</div><div class="val" id="kpiWk">—</div><div class="sub" id="kpiWkSub">출발 7일 평균 —</div></div>
   </div>
 
+  <!-- ── 최근 7일 일별 운항 (OpenSky 실측) ── -->
+  <section class="card">
+    <h2>최근 7일 일별 운항</h2>
+    <div class="subtext">일별 도착·출발 편수. OpenSky Network API 실측 데이터가 있으면 해당 일자에 반영됩니다.</div>
+    <div class="ch-wrap" style="height:260px;"><canvas id="daily7Chart"></canvas></div>
+  </section>
+
   <!-- ── 월별 추세 ── -->
   <section class="card">
     <div class="sec-hdr">
@@ -181,10 +188,10 @@
   <!-- ── 최근 7일 원자료 ── -->
   <section class="card">
     <div class="sec-hdr">
-      <h2 style="margin:0;">최근 7일 원자료</h2>
+      <h2 style="margin:0;">최근 7일 원자료 (일일 운항)</h2>
       <button class="csv" id="csvDailyBtn" disabled onclick="dlCSVDaily()">⬇ CSV 다운로드</button>
     </div>
-    <div class="subtext">일별 도착·출발·합계 편수. CSV 다운로드는 전체 기간 일별 데이터를 포함합니다.</div>
+    <div class="subtext">일별 도착·출발·합계 편수. <span style="color:var(--green);">● OpenSky</span> 표시는 OpenSky Network API 실측 데이터입니다. CSV는 전체 기간 일별 데이터를 포함합니다.</div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -192,7 +199,8 @@
           <th>도착 편수</th>
           <th>출발 편수</th>
           <th>합계</th>
-          <th>전일 대비 합계</th>
+          <th>전일 대비</th>
+          <th>데이터 출처</th>
         </tr></thead>
         <tbody id="recentTbody"></tbody>
       </table>
@@ -383,6 +391,46 @@ function renderDestPanels() {
   document.getElementById('csvDestBtn').disabled = false;
 }
 
+/* ── 최근 7일 일별 차트 ───────────────────────────────────────────── */
+let _daily7Chart = null;
+function renderDaily7Chart() {
+  if (_daily7Chart) { _daily7Chart.destroy(); _daily7Chart = null; }
+  const rows = (_data.recent_7 || []).slice().reverse();
+  const labels = rows.map(r => r.date.slice(5));
+  const arrivals  = rows.map(r => r.arrivals);
+  const departures = rows.map(r => r.departures);
+  const ctx = document.getElementById('daily7Chart');
+  if (!ctx || !labels.length) return;
+  _daily7Chart = new Chart(ctx.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: '도착', data: arrivals,  backgroundColor: 'rgba(52,211,153,.8)',  borderColor: '#34d399', borderWidth: 1 },
+        { label: '출발', data: departures, backgroundColor: 'rgba(251,146,60,.8)', borderColor: '#fb923c', borderWidth: 1 },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, padding: 10 } },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + fmt(c.raw) + '편' } },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#94a3b8', font: { size: 11 } },
+          grid: { color: '#1e293b' },
+        },
+        y: {
+          ticks: { color: '#94a3b8', callback: v => fmt(v) },
+          grid: { color: '#334155' },
+          title: { display: true, text: '편수', color: '#64748b', font: { size: 11 } },
+        },
+      },
+    },
+  });
+}
+
 /* ── 최근 7일 테이블 ─────────────────────────────────────────────── */
 function renderRecentTable() {
   const rows = _data.recent_7;
@@ -393,6 +441,9 @@ function renderRecentTable() {
     const cls   = diff == null ? '' : diff >= 0 ? 'pos' : 'neg';
     const diffStr = diff == null ? '—'
       : (diff >= 0 ? '+' : '') + diff.toLocaleString('ko-KR');
+    const srcBadge = r.from_opensky
+      ? '<span style="color:var(--green);font-size:11px;font-weight:600;">● OpenSky</span>'
+      : '<span style="color:var(--muted);font-size:11px;">추정</span>';
     html +=
       `<tr>`
       + `<td>${r.date}</td>`
@@ -400,6 +451,7 @@ function renderRecentTable() {
       + `<td class="num">${fmt(r.departures)}</td>`
       + `<td class="num">${fmt(r.total)}</td>`
       + `<td class="num ${cls}">${diffStr}</td>`
+      + `<td>${srcBadge}</td>`
       + `</tr>`;
   });
   document.getElementById('recentTbody').innerHTML = html;
@@ -409,6 +461,7 @@ function renderRecentTable() {
 /* ── 전체 렌더링 ─────────────────────────────────────────────────── */
 function renderAll() {
   renderKPI();
+  renderDaily7Chart();
   renderTrend();
   renderOriginPanels();
   renderDestPanels();

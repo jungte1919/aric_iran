@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>거버넌스 지표 해석 — 전쟁 역량 시사점</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/shared.css">
+  <style>
+    :root { --bg:#0f172a; --bg2:#1e293b; --border:#334155; --text:#f1f5f9; --muted:#94a3b8; --accent:#38bdf8; --green:#34d399; --red:#f87171; --gold:#f59e0b; --purple:#a78bfa; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, "Noto Sans KR", sans-serif; margin: 0; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.75; }
+    header { padding: 16px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 18px; margin: 0; }
+    .nav a { color: var(--accent); text-decoration: none; margin-left: 12px; font-size: 14px; }
+    .nav a:hover { text-decoration: underline; }
+    .container { max-width: 820px; margin: 0 auto; padding: 24px 20px; }
+    h2 { font-size: 1.15rem; color: var(--accent); border-left: 3px solid var(--accent); padding-left: 12px; margin: 28px 0 12px; }
+    h3 { font-size: 1rem; color: var(--muted); margin: 16px 0 6px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; }
+    .card h2 { margin-top: 0; }
+    .summary { color: var(--text); margin-bottom: 10px; }
+    .implication { background: rgba(248,113,113,.08); border-left: 3px solid var(--red); padding: 12px 14px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 13px; }
+    .implication strong { color: #fca5a5; }
+    .indicator-data { font-size: 13px; color: var(--green); margin-top: 8px; padding: 8px 12px; background: rgba(52,211,153,.08); border-radius: 8px; }
+    .indicator-data.empty { color: var(--muted); background: transparent; }
+    .meta { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+    ul { margin: 6px 0; padding-left: 22px; }
+    li { margin-bottom: 4px; }
+    footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); text-align: center; }
+    a.back { display: inline-block; margin-bottom: 16px; color: var(--accent); text-decoration: none; font-size: 13px; }
+    a.back:hover { text-decoration: underline; }
+    #data-summary-loading { min-height: 80px; color: var(--muted); }
+    .data-summary-intro { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+    .comprehensive { background: rgba(167,139,250,.1); border-left: 4px solid var(--purple); padding: 18px 20px; border-radius: 0 12px 12px 0; margin-top: 24px; }
+    .comprehensive h2 { color: var(--purple); border-color: var(--purple); }
+    .wgi-note { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>거버넌스 지표 해석 — 전쟁 역량 시사점</h1>
+      <div class="meta">World Bank WGI 6개 지표의 의미와 이란·이스라엘 전쟁 역량에 대한 시사점.</div>
+    </div>
+    <nav class="nav">
+      <a href="/governance">← 거버넌스/민주주의 (차트)</a>
+      <a href="/">🏦 국가자원</a>
+      <a href="/news">📰 뉴스 스크랩</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <a href="/governance" class="back">← 거버넌스 페이지로 돌아가기</a>
+
+    <section class="card" style="border-color:var(--green);">
+      <h2 style="border-color:var(--green);color:var(--green);">📊 WGI 데이터 요약</h2>
+      <div class="data-summary-intro">WGI 값은 약 −2.5 ~ +2.5 범위이며, 높을수록 긍정적입니다. 페이지를 열 때마다 최신 데이터로 갱신됩니다.</div>
+      <div id="data-summary-loading">데이터를 불러오는 중…</div>
+    </section>
+
+    <h2>지표별 의미와 해석</h2>
+
+    <section class="card" data-indicator="VA.EST">
+      <h3>1. 발언권과 책임성 (Voice &amp; Accountability)</h3>
+      <div class="summary">시민이 정부를 선출하고 언론·결사 자유를 누릴 수 있는 정도, 시민사회와 언론의 독립성, 정부에 대한 견제·책임을 묻는 제도적 역량을 반영한다.</div>
+      <div class="implication"><strong>전쟁 역량 시사점</strong> — 발언권이 높은 사회는 전시에도 정보 투명성·정책 논의가 상대적으로 열려 있어 동원의 정당성·국민 합의를 얻기 쉽다. 반대로 낮은 국가는 정부 독단·정보 통제로 단기적 동원은 빠를 수 있으나, 장기전에서 내부 불신·이탈 리스크가 커질 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="VA.EST">—</div>
+      <div class="wgi-note">WGI: −2.5 ~ +2.5</div>
+    </section>
+
+    <section class="card" data-indicator="PV.EST">
+      <h3>2. 정치 안정성 (Political Stability)</h3>
+      <div class="summary">정권 전복·정치적 폭력·테러 가능성에 대한 인식. 정부가 불안 없이 정책을 수행할 수 있는 정치 환경을 나타낸다.</div>
+      <div class="implication"><strong>전쟁 역량 시사점</strong> — 정치 안정성이 높으면 전시에도 내부 붕괴·쿠데타·반전 시위로 인한 동요가 상대적으로 적다. 낮으면 전쟁이 길어질수록 내부 분열·정치 위기가 전쟁 수행을 저해할 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="PV.EST">—</div>
+      <div class="wgi-note">WGI: −2.5 ~ +2.5</div>
+    </section>
+
+    <section class="card" data-indicator="GE.EST">
+      <h3>3. 정부 효과성 (Government Effectiveness)</h3>
+      <div class="summary">공공 서비스 품질, 정책 수립·집행 능력, 관료제의 독립성과 신뢰성. 정부가 목표를 얼마나 효과적으로 달성하는지를 평가한다.</div>
+      <div class="implication"><strong>전쟁 역량 시사점</strong> — 정부 효과성이 높을수록 군비 배분·보급·동원·규제가 체계적으로 이루어져 전쟁 지속력이 강하다. 낮으면 비효율·논리적 부패로 자원이 낭비되고 전선·후방 지원이 흔들릴 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="GE.EST">—</div>
+      <div class="wgi-note">WGI: −2.5 ~ +2.5</div>
+    </section>
+
+    <section class="card" data-indicator="RQ.EST">
+      <h3>4. 규제 품질 (Regulatory Quality)</h3>
+      <div class="summary">정부의 규제·정책이 시장 친화적·합리적으로 설계·집행되는 정도. 과도한 규제·독단적 개입이 적을수록 점수가 높다.</div>
+      <div class="implication"><strong>전쟁 역량 시사점</strong> — 규제 품질이 높으면 전시 물자 조달·민간 산업 동원·수입 대체가 유연하게 이루어질 여지가 크다. 낮으면 군수 산업·물자 배분이 비효율·정치적 선호에 휘둘려 전쟁 비용이 불필요하게 커질 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="RQ.EST">—</div>
+      <div class="wgi-note">WGI: −2.5 ~ +2.5</div>
+    </section>
+
+    <section class="card" data-indicator="RL.EST">
+      <h3>5. 법치주의 (Rule of Law)</h3>
+      <div class="summary">법의 지배, 계약 이행, 사법 독립, 범죄·폭력 통제. 사회가 규칙에 따라 예측 가능하게 움직이는 정도를 반영한다.</div>
+      <div class="implication"><strong>전쟁 역량 시사점</strong> — 법치가 확립된 국가는 전시에도 계약·조달·징발이 상대적으로 투명하고 부패·탈취가 적어 자원이 전선에 효율적으로 배분된다. 법치가 약하면 군수 비리·암시장·내부 착취로 전쟁 수행 능력이 약화될 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="RL.EST">—</div>
+      <div class="wgi-note">WGI: −2.5 ~ +2.5</div>
+    </section>
+
+    <section class="card" data-indicator="CC.EST">
+      <h3>6. 부패 통제 (Control of Corruption)</h3>
+      <div class="summary">공직자가 사적 이익을 위해 권력을 남용하지 않도록 통제되는 정도. 부패가 적을수록 점수가 높다.</div>
+      <div class="implication"><strong>전쟁 역량 시사점</strong> — 부패 통제가 강하면 군비·구호자금·물자가 목적대로 쓰여 전쟁 효율이 높다. 부패가 심하면 장비·보급품 유출, 계약 비리로 동일 예산으로도 전투력이 떨어지고, 국민 동의와 동맹국 지원이 약해질 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="CC.EST">—</div>
+      <div class="wgi-note">WGI: −2.5 ~ +2.5</div>
+    </section>
+
+    <section class="card comprehensive">
+      <h2>거버넌스와 전쟁 역량 — 종합 시사점</h2>
+      <div class="summary">
+        <p><strong>정치·제도적 기반</strong> — WGI 6개 지표는 「국가가 얼마나 잘 돌아가는가」를 측정한다. 발언권·정치 안정·정부 효과성·규제 품질·법치·부패 통제가 모두 높은 국가는 전쟁 시에도 자원 동원·배분·국민 동의를 얻는 데 유리하다. 반대로 지표가 낮은 국가는 단기적으로 강압 동원은 가능해도, 장기전·소모전에서는 비효율·내부 불신·제재 취약성이 누적되어 전쟁 수행 역량이 약화될 수 있다.</p>
+        <p><strong>이란·이스라엘 대비</strong> — 이스라엘은 WGI 전반에서 이란보다 높은 편이다. 이란은 제재·권위주의 구조 하에서 정부 효과성·규제·법치·부패 통제가 제한적이라는 평가가 많다. 전쟁 역량 관점에서는 이스라엘이 동맹(미국) 지원·국내 합의·군수 효율에서 상대적 이점을 갖고, 이란은 인구·지역 네트워크로 보완하지만 장기전 시 제재·내부 자원 배분의 한계에 부딪힐 가능성이 크다.</p>
+        <p><strong>전쟁 지속력</strong> — 거버넌스가 좋을수록 전쟁이 길어져도 재정·물자·인력이 체계적으로 동원되고, 동맹국·국제기구의 신뢰를 얻기 쉽다. 거버넌스가 약한 국가는 전쟁 비용이 비효율적으로 증가하고, 대외 신뢰가 떨어져 외교·경제적 고립이 심화될 수 있다. 따라서 WGI 추세를 보면 「전쟁을 오래 지탱할 수 있는 제도적 역량」을 간접적으로 평가하는 데 도움이 된다.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    자료: World Bank WGI. 서울대학교 행정대학원 고길곤 교수 연구실 · 아시아 지역정보센터 | 교육·연구 목적
+  </footer>
+
+  <script>
+    (function() {
+      var loadingEl = document.getElementById('data-summary-loading');
+      if (!loadingEl) return;
+      fetch('/api/governance/interpretation/summary?countries=IRN,ISR')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.error) {
+            loadingEl.innerHTML = '<p style="color:var(--red);">요약 조회 실패: ' + (d.error || '') + '</p>';
+            return;
+          }
+          var names = d.country_names || {};
+          var intro = '수집 시각: ' + (d.fetched_at || '—') + ', 기준 연도 ~' + (d.year_end || '—') + '.';
+          var blocks = [];
+          (d.indicators || []).forEach(function(ind) {
+            var countryStrs = [];
+            Object.keys(ind.countries || {}).forEach(function(code) {
+              var c = ind.countries[code];
+              var label = names[code] || code;
+              var val = c.value;
+              if (typeof val === 'number') val = val.toFixed(2);
+              countryStrs.push(label + ' ' + val + (c.year ? ' (' + c.year + ')' : ''));
+            });
+            var dataEl = document.querySelector('.indicator-data[data-indicator-id="' + ind.id + '"]');
+            if (dataEl) {
+              if (countryStrs.length) {
+                dataEl.textContent = countryStrs.join(' · ');
+                dataEl.classList.remove('empty');
+              } else {
+                dataEl.textContent = ind.error || '데이터 없음';
+              }
+            }
+            if (countryStrs.length)
+              blocks.push('<strong>' + (ind.name || ind.id) + '</strong>: ' + countryStrs.join(' · '));
+          });
+          loadingEl.innerHTML = '<p class="data-summary-intro">' + intro + '</p>' +
+            (blocks.length ? '<p style="font-size:13px;line-height:1.8;">' + blocks.join('<br/>') + '</p>' : '');
+        })
+        .catch(function(e) {
+          loadingEl.innerHTML = '<p style="color:var(--red);">요청 실패: ' + (e.message || '알 수 없음') + '</p>';
+        });
+    })();
+  </script>
+</body>
+</html>

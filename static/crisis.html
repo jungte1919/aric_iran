@@ -106,6 +106,7 @@
         <option value="1y" selected>최근 1년</option>
       </select>
       <button id="btnLoad" class="primary">전체 새로고침</button>
+      <a href="/crisis/interpretation" target="_blank" style="padding:8px 14px;border-radius:8px;background:rgba(167,139,250,.2);border:1px solid #a78bfa;color:#c4b5fd;font-size:13px;font-weight:600;text-decoration:none;">📋 항목별 요약·전쟁 시사점 해석</a>
       <span id="globalStatus" class="status"></span>
     </div>
 
@@ -164,7 +165,7 @@
     <!-- 3. 외환 -->
     <section class="card">
       <h2>3. 외환 변동</h2>
-      <div class="subtext">USD/KRW · USD/JPY · USD/CNY · USD/EUR</div>
+      <div class="subtext">USD/KRW · USD/JPY · USD/CNY · USD/EUR · <strong style="color:#fb923c;">USD/IRR 이란 자유시장 (Bonbast.com)</strong></div>
       <div class="index-wrap">
         <div class="index-header">
           <span class="index-title">📊 항목 간 상대 추세 비교 <span style="font-weight:400;color:#64748b;">(시작월 평균 = 100)</span></span>
@@ -184,6 +185,14 @@
         <div class="tbl-recent">
           <table><thead id="thFx"></thead><tbody id="tbFx"></tbody></table>
         </div>
+      </div>
+      <div id="irrNote" style="display:none;margin-top:12px;background:#0f172a;border:1px solid #7c2d12;border-radius:8px;padding:12px 14px;font-size:12px;color:#94a3b8;line-height:1.8;">
+        <strong style="color:#fb923c;">📌 USD/IRR (이란 리알) 해석 안내</strong><br>
+        • 값은 <strong style="color:#f1f5f9;">이란 토만(Toman)</strong> 단위입니다. <span style="color:#64748b;">1 Toman = 10 Rials (이란 공식 화폐 단위)</span><br>
+        • <strong style="color:#f1f5f9;">자유시장(암시장) 환율</strong>로, 이란 정부 공식 환율과 크게 다릅니다. 실물 경제·제재 강도를 반영합니다.<br>
+        • 출처: <a href="https://bonbast.com" target="_blank" style="color:#fb923c;">Bonbast.com</a> — 이란 자유시장 환율 실시간 제공 사이트. 현재 환율을 API로 수신하며, 과거 추이는 공식 보고서 기반 추정치입니다.<br>
+        • <strong style="color:#f87171;">이란 리알 급락</strong>은 국제 제재·외교적 고립·에너지 수출 제한·군비 지출 확대와 밀접하게 연동됩니다.
+        <span id="irrLiveNote"></span>
       </div>
     </section>
 
@@ -431,6 +440,26 @@
 
           const btn = document.getElementById('csvBtn' + cap(endpoint));
           if (btn) btn.disabled = false;
+
+          // USD/IRR 해설 박스 (fx 섹션 전용)
+          if (endpoint === 'fx' && res.irr_meta) {
+            const noteEl = document.getElementById('irrNote');
+            if (noteEl) {
+              noteEl.style.display = 'block';
+              const liveEl = document.getElementById('irrLiveNote');
+              if (liveEl) {
+                if (res.irr_meta.live_rate) {
+                  liveEl.innerHTML =
+                    `<br>• <strong style="color:#fb923c;">Bonbast.com 실시간 환율:</strong> `
+                    + `<strong style="color:#f1f5f9;">1 USD ≈ ${res.irr_meta.live_rate.toLocaleString('ko-KR')} Toman</strong>`
+                    + ` <span style="color:#64748b;">(출처: Bonbast.com/json)</span>`;
+                } else {
+                  liveEl.innerHTML =
+                    `<br>• <span style="color:#64748b;">현재 환율 실시간 수신 실패 — 추정치 사용 중</span>`;
+                }
+              }
+            }
+          }
         })
         .catch(e => {
           document.getElementById(containerId).innerHTML =

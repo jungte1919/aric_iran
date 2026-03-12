@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>국가자원·국방력 지표 해석 — 전쟁 수행 역량</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/shared.css">
+  <style>
+    :root { --bg:#0f172a; --bg2:#1e293b; --border:#334155; --text:#f1f5f9; --muted:#94a3b8; --accent:#38bdf8; --green:#34d399; --red:#f87171; --gold:#f59e0b; --purple:#a78bfa; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, "Noto Sans KR", sans-serif; margin: 0; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.75; }
+    header { padding: 16px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 18px; margin: 0; }
+    .nav a { color: var(--accent); text-decoration: none; margin-left: 12px; font-size: 14px; }
+    .nav a:hover { text-decoration: underline; }
+    .container { max-width: 820px; margin: 0 auto; padding: 24px 20px; }
+    h2 { font-size: 1.15rem; color: var(--accent); border-left: 3px solid var(--accent); padding-left: 12px; margin: 28px 0 12px; }
+    h3 { font-size: 1rem; color: var(--muted); margin: 16px 0 6px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; }
+    .card h2 { margin-top: 0; }
+    .summary { color: var(--text); margin-bottom: 10px; }
+    .indicator-data { font-size: 13px; color: var(--green); margin-top: 8px; padding: 8px 12px; background: rgba(52,211,153,.08); border-radius: 8px; }
+    .indicator-data.empty { color: var(--muted); background: transparent; }
+    .meta { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+    ul { margin: 6px 0; padding-left: 22px; }
+    li { margin-bottom: 4px; }
+    footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); text-align: center; }
+    a.back { display: inline-block; margin-bottom: 16px; color: var(--accent); text-decoration: none; font-size: 13px; }
+    a.back:hover { text-decoration: underline; }
+    #data-summary-loading { min-height: 80px; color: var(--muted); }
+    .data-summary-intro { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+    .comprehensive { background: rgba(167,139,250,.1); border-left: 4px solid var(--purple); padding: 18px 20px; border-radius: 0 12px 12px 0; margin-top: 24px; }
+    .comprehensive h2 { color: var(--purple); border-color: var(--purple); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>국가자원·국방력 지표 해석 — 전쟁 수행 역량</h1>
+      <div class="meta">World Bank 지표별 의미와 이란·이스라엘 전쟁 수행 역량에 대한 종합 해석.</div>
+    </div>
+    <nav class="nav">
+      <a href="/">← 국가자원/국방력 (차트)</a>
+      <a href="/crisis">⚡ 위기 진단</a>
+      <a href="/news">📰 뉴스 스크랩</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <a href="/" class="back">← 국가자원/국방력 페이지로 돌아가기</a>
+
+    <section class="card" style="border-color:var(--green);">
+      <h2 style="border-color:var(--green);color:var(--green);">📊 데이터 분석 결과 요약</h2>
+      <div class="data-summary-intro">아래는 각 지표에 대해 이란(IRN)·이스라엘(ISR) 등 선택 국가의 최신 연도 데이터입니다. 페이지를 열 때마다 World Bank 기준으로 갱신됩니다.</div>
+      <div id="data-summary-loading">데이터를 불러오는 중…</div>
+    </section>
+
+    <h2>지표별 의미와 해석</h2>
+
+    <section class="card" data-indicator="SP.POP.TOTL">
+      <h3>1. 총 인구 (Population, total)</h3>
+      <div class="summary">국가의 총 인구. 인력 동원 잠재력·내수 시장·징병 규모의 기초가 된다. 인구가 많을수록 장기전에서 병력·산업 노동력 보충 여력이 커진다.</div>
+      <div class="indicator-data empty" data-indicator-id="SP.POP.TOTL">—</div>
+    </section>
+
+    <section class="card" data-indicator="SP.POP.1564.TO.ZS">
+      <h3>2. 15~64세 인구 비율 (%)</h3>
+      <div class="summary">생산가능인구 비율. 높을수록 병력·산업 인력으로 활용 가능한 인구 비중이 크다. 고령화가 진행되면 전쟁 지속력이 제약받을 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="SP.POP.1564.TO.ZS">—</div>
+    </section>
+
+    <section class="card" data-indicator="NE.CON.GOVT.KD">
+      <h3>3. 정부 최종소비지출 (2015년 불변 USD)</h3>
+      <div class="summary">정부가 재화·서비스에 쓰는 지출 규모. 국방·행정·인프라 등 공공 부문의 재정 역량을 반영한다. 전시에는 군비·구호·복구 지출로 확대된다.</div>
+      <div class="indicator-data empty" data-indicator-id="NE.CON.GOVT.KD">—</div>
+    </section>
+
+    <section class="card" data-indicator="NY.GDP.MKTP.KD.ZG">
+      <h3>4. GDP 성장률 (연간 %)</h3>
+      <div class="summary">경제 성장률. 전쟁·제재는 성장을 위축시키므로, 성장률 추이는 전쟁 비용·경제 회복력을 보는 지표가 된다.</div>
+      <div class="indicator-data empty" data-indicator-id="NY.GDP.MKTP.KD.ZG">—</div>
+    </section>
+
+    <section class="card" data-indicator="NY.GDP.MKTP.CD">
+      <h3>5. GDP (현재 USD)</h3>
+      <div class="summary">국가 경제 규모. 군사비·전쟁 비용을 감당하는 절대적 재정 기반이다. GDP가 큰 국가는 장기전·고강도 교전에 더 버틸 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="NY.GDP.MKTP.CD">—</div>
+    </section>
+
+    <section class="card" data-indicator="NY.GDP.PCAP.CD">
+      <h3>6. 1인당 GDP (현재 US$)</h3>
+      <div class="summary">국민 소득 수준. 높을수록 세수·저축·기술 수준이 높아 고급 무기·연구개발·인적 자원에 투자할 여력이 크다.</div>
+      <div class="indicator-data empty" data-indicator-id="NY.GDP.PCAP.CD">—</div>
+    </section>
+
+    <section class="card" data-indicator="MS.MIL.XPND.GD.ZS">
+      <h3>7. 군사비 지출 (GDP 대비 %)</h3>
+      <div class="summary">경제 대비 군사비 비중. 비중이 높으면 「군사 부담」이 크고, 전시 추가 동원 여력이 상대적으로 작을 수 있다. 적정 수준은 위협·동맹에 따라 다르다.</div>
+      <div class="indicator-data empty" data-indicator-id="MS.MIL.XPND.GD.ZS">—</div>
+    </section>
+
+    <section class="card" data-indicator="MS.MIL.XPND.CD">
+      <h3>8. 군사비 지출 (현재 USD)</h3>
+      <div class="summary">군사비의 절대 규모. 장비·훈련·급여·작전 비용을 반영한다. 규모가 클수록 현대화·지속적 교전 능력이 높다고 볼 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="MS.MIL.XPND.CD">—</div>
+    </section>
+
+    <section class="card" data-indicator="MS.MIL.TOTL.P1">
+      <h3>9. 총 병력 수 (현역+예비군)</h3>
+      <div class="summary">동원 가능한 총 병력. 인구·징병제·예비군 제도에 따라 달라진다. 장기전·다면전에서는 병력 규모가 중요한 변수다.</div>
+      <div class="indicator-data empty" data-indicator-id="MS.MIL.TOTL.P1">—</div>
+    </section>
+
+    <section class="card" data-indicator="MS.MIL.TOTL.TF.ZS">
+      <h3>10. 병력 (총 노동력 대비 %)</h3>
+      <div class="summary">노동력 대비 군인 비율. 높을수록 경제 대비 군사 동원이 크고, 전시 추가 동원 시 산업·노동력 부담이 커진다.</div>
+      <div class="indicator-data empty" data-indicator-id="MS.MIL.TOTL.TF.ZS">—</div>
+    </section>
+
+    <section class="card" data-indicator="MS.MIL.MPRT.KD">
+      <h3>11. 무기 수입 규모 (SIPRI TIV, 2023년 불변 USD)</h3>
+      <div class="summary">무기 수입 규모. 국산화 수준이 낮을수록 외부 공급에 의존하며, 제재·봉쇄 시 무기 확보가 불안정해질 수 있다.</div>
+      <div class="indicator-data empty" data-indicator-id="MS.MIL.MPRT.KD">—</div>
+    </section>
+
+    <section class="card" data-indicator="FI.RES.TOTL.CD">
+      <h3>12. 총 외환보유고 (금 포함, 현재 US$)</h3>
+      <div class="summary">중앙은행 외환·금 보유액. 전쟁·제재 시 수입 결제·채무 상환·통화 안정에 쓰인다. 보유고가 적으면 제재·장기전에 취약해진다.</div>
+      <div class="indicator-data empty" data-indicator-id="FI.RES.TOTL.CD">—</div>
+    </section>
+
+    <section class="card comprehensive">
+      <h2>전쟁 수행 역량 종합 해석</h2>
+      <div class="summary">
+        <p><strong>인구·경제 기반</strong> — 총 인구와 15~64세 비율은 동원 가능 인력의 상한을 보여준다. 이란은 인구 규모에서 우위에 있어 장기전·소모전에서 병력·산업 인력 보충 여력이 크다. 이스라엘은 인구가 적지만 1인당 GDP·기술 수준이 높아 질적 우위와 동맹(미국) 지원으로 보완한다.</p>
+        <p><strong>재정·군사비</strong> — GDP와 군사비(절대액·GDP 대비 %)는 전쟁을 얼마나 오래·얼마나 강하게 지탱할 수 있는지를 나타낸다. 군사비 GDP 대비가 높은 국가는 이미 부담이 커서 전시 추가 증액 여지가 상대적으로 작을 수 있다. 이란은 제재로 인해 GDP·외환보유고가 제한되며, 이스라엘은 미국의 군사원조로 실질 군사 부담이 완화된다.</p>
+        <p><strong>병력·무기</strong> — 총 병력 수는 현역·예비군 규모를, 무기 수입은 외부 의존도를 반영한다. 이란은 병력·지역 프록시(헤즈볼라 등) 동원력이 크고, 이스라엘은 첨단 무기·정보전·방어 체계에서 강점이 있다. 무기 수입 비중이 큰 쪽은 공급망·제재에 더 취약할 수 있다.</p>
+        <p><strong>외환보유고</strong> — 전쟁·제재가 길어지면 수입·에너지·식량 결제와 통화 안정에 외환이 쓰인다. 보유고가 부족한 국가는 대외 지불 능력이 약해지고, 전쟁 지속력이 떨어진다.</p>
+        <p><strong>종합</strong> — 단일 지표로 승패를 말할 수 없다. 인구·GDP·군사비·병력·외환보유고를 함께 보면 「규모의 이란」과 「질·동맹의 이스라엘」이라는 대비가 드러난다. 장기화될수록 인력·경제 지속력이 중요해지고, 단기·고강도 국면에서는 기술력·정보·동맹 지원이 더 큰 변수가 된다. 위 지표들의 추세(연도별 변화)를 보면 제재·전쟁이 각국 경제·군사에 어떤 영향을 주고 있는지 파악할 수 있다.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    자료: World Bank. 서울대학교 행정대학원 고길곤 교수 연구실 · 아시아 지역정보센터 | 교육·연구 목적
+  </footer>
+
+  <script>
+    (function() {
+      var loadingEl = document.getElementById('data-summary-loading');
+      if (!loadingEl) return;
+      fetch('/api/index/interpretation/summary?countries=IRN,ISR')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.error) {
+            loadingEl.innerHTML = '<p style="color:var(--red);">요약 조회 실패: ' + (d.error || '') + '</p>';
+            return;
+          }
+          var names = d.country_names || {};
+          var intro = '수집 시각: ' + (d.fetched_at || '—') + ', 기준 연도 ~' + (d.year_end || '—') + '.';
+          var blocks = [];
+          (d.indicators || []).forEach(function(ind) {
+            var countryStrs = [];
+            Object.keys(ind.countries || {}).forEach(function(code) {
+              var c = ind.countries[code];
+              var label = names[code] || code;
+              var val = c.value;
+              if (typeof val === 'number') {
+                if (val >= 1e6) val = (val / 1e6).toFixed(2) + 'M';
+                else if (val >= 1e3) val = (val / 1e3).toFixed(2) + 'K';
+                else val = val.toFixed(2);
+              }
+              countryStrs.push(label + ' ' + val + (c.year ? ' (' + c.year + ')' : ''));
+            });
+            var dataEl = document.querySelector('.indicator-data[data-indicator-id="' + ind.id + '"]');
+            if (dataEl) {
+              if (countryStrs.length) {
+                dataEl.textContent = countryStrs.join(' · ');
+                dataEl.classList.remove('empty');
+              } else {
+                dataEl.textContent = ind.error || '데이터 없음';
+              }
+            }
+            if (countryStrs.length)
+              blocks.push('<strong>' + (ind.name || ind.id) + '</strong>: ' + countryStrs.join(' · '));
+          });
+          loadingEl.innerHTML = '<p class="data-summary-intro">' + intro + '</p>' +
+            (blocks.length ? '<p style="font-size:13px;line-height:1.8;">' + blocks.join('<br/>') + '</p>' : '');
+        })
+        .catch(function(e) {
+          loadingEl.innerHTML = '<p style="color:var(--red);">요청 실패: ' + (e.message || '알 수 없음') + '</p>';
+        });
+    })();
+  </script>
+</body>
+</html>

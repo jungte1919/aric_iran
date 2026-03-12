@@ -17,7 +17,21 @@
     .nav a:hover { background: #e0f2fe; border-color: #93c5fd; }
     .nav a.current { background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; font-weight: 700; pointer-events: none; }
     .nav a.why { background: #fef3c7; border-color: #f59e0b; color: #d97706; }
-    #map { width: 100%; height: calc(100vh - 52px); }
+    #map { width: 100%; height: 55vh; min-height: 320px; }
+    .below-map { padding: 20px 24px 32px; max-width: 900px; margin: 0 auto; font-size: 14px; line-height: 1.75; color: #1e293b; background: #f8fafc; }
+    .below-map h2 { font-size: 1.1rem; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; color: #0f172a; }
+    .below-map h3 { font-size: 0.95rem; margin: 16px 0 8px; color: #334155; }
+    .below-map p, .below-map ul { margin: 0 0 10px; }
+    .below-map ul { padding-left: 22px; }
+    .below-map .source-list { list-style: none; padding-left: 0; }
+    .below-map .source-list li { margin-bottom: 10px; padding: 10px 14px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .below-map .source-list a { color: #1d4ed8; text-decoration: none; font-weight: 600; }
+    .below-map .source-list a:hover { text-decoration: underline; }
+    .below-map .source-list .note { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .damage-region { margin-bottom: 20px; padding: 14px 18px; background: #fff; border-radius: 8px; border-left: 4px solid #94a3b8; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .damage-region.iran { border-left-color: #dc2626; }
+    .damage-region.israel { border-left-color: #ea580c; }
+    .damage-region.mideast { border-left-color: #0891b2; }
     .legend { position: absolute; bottom: 24px; right: 24px; z-index: 1000; background: #fff; padding: 14px 18px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; line-height: 1.6; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 320px; }
     .legend h3 { margin: 0 0 10px; font-size: 13px; border-bottom: 2px solid #ff6b6b; padding-bottom: 6px; }
     .legend-row { margin-bottom: 8px; padding: 6px 8px; border-radius: 4px; }
@@ -61,20 +75,58 @@
     <div class="legend-row us">🟥 미국/이스라엘 → 이란 (군사시설·정부청사 등)</div>
     <div class="legend-row iran-israel">🟥 이란 → 이스라엘 (보복 공격)</div>
     <div class="legend-row mideast">🟦 이란 → 중동 미군기지 등</div>
-    <div class="legend-footer">● 원 크기 = 피해규모 (매우 심각/심각/중대)<br>자료: 서울대 고길곤 교수 연구실</div>
+    <div class="legend-footer">● 원 크기 = 피해규모 (매우 심각/심각/중대)<br>자료: 아래 출처 수집·정리</div>
+  </div>
+
+  <div class="below-map">
+    <h2>지역별 피해 설명</h2>
+    <p>아래는 지도에 표시된 공격 지역 중 대표 지역의 피해 수준과 특성을 정리한 내용입니다. 피해 규모·사상자 수치는 신문·당국 발표·OSINT 자료에 따라 차이가 있을 수 있습니다.</p>
+
+    <div class="damage-region iran">
+      <h3>이란 (미국·이스라엘의 공격 대상)</h3>
+      <p><strong>테헤란</strong> — 수도 핵심. 정부 청사·군 지도부 암살 시도, 공군·방공 시설 파괴, 민간 구역 피해. 이란 측 발표로 224명 이상 사망(민간인 다수). 이스라엘군이 「테헤란 상공 장악」 주장, 대규모 공격·대피 권고 보도(Reuters, 2025년 6월).</p>
+      <p><strong>이스파한</strong> — 핵 관련 시설 인근. 군사·핵 시설 타격 보도. <strong>곰·카라지·케르만샤·타브리즈·카즈빈</strong> — 군사 기지·미사일 기지·공군 기지 등 군사 시설 공격. 인근 민간 피해·사상자 일부 보고.</p>
+    </div>
+
+    <div class="damage-region israel">
+      <h3>이스라엘 (이란의 미사일·드론 공격 대상)</h3>
+      <p><strong>텔아비브·예루살렘</strong> — 민간 지역·공항·구도심 타격. 아파트·건물 파괴, 민간인 사상. 이스라엘 당국 발표로 24명 민간인 사망(Reuters). 하마스·헤즈볼라 대비 「심도·피해 규모가 크다」고 평가됨.</p>
+      <p><strong>하이파·베르셰바·아슈돗·네타냐·골란고원·에일랏</strong> — 항구·남부·해안·전략 요지. 시설·주거지 피해. 방어망 돌파 구간에서 직접 타격·화재 보도.</p>
+    </div>
+
+    <div class="damage-region mideast">
+      <h3>중동 지역 (이란 → 미군·연합 기지 및 동맹국)</h3>
+      <p><strong>바레인(마나마)·카타르(도하)·UAE(아부다비·두바이)·쿠웨이트·이라크(바그다드)·요르단(암만)·사우디(리야드·제다)·오만(무스카트·살랄라)·키프로스(니코시아)</strong> — 미 해군 5함대 사령부, 알 우데이드 공군기지, UAE·사우디 전략 시설·공항·에너지 시설, 영국 기지 등. 미·연합 군사 시설 및 동맹국 인프라 피해. 두바이·아부다비·리야드 등은 「심각」 수준 피해로 분류.</p>
+    </div>
+
+    <h2>수집 자료 출처</h2>
+    <p>위 지도 및 피해 설명에 활용한 자료는 아래 신문·데이터 사이트에서 수집·교차 확인하였습니다. 시점·당국 발표에 따라 수치·범위가 달라질 수 있으므로, 원문을 참고하시기 바랍니다.</p>
+    <ul class="source-list">
+      <li><a href="https://www.reuters.com/graphics/IRAN-NUCLEAR/ISRAEL/" target="_blank" rel="noopener">Reuters — Mapping Israeli strikes on Iran and Iran’s retaliation</a><br><span class="note">이스라엘 공격 이란·이란 보복 지도, 현지 보도·사진</span></li>
+      <li><a href="https://www.nytimes.com/live/world/israel-iran-maps" target="_blank" rel="noopener">The New York Times — Mapping the Israel-Iran Conflict</a><br><span class="note">이란 핵·미사일 시설 및 공격 추적 지도</span></li>
+      <li><a href="https://www.cnn.com/world/middleeast/maps-israel-iran-strikes-charts-invs-dg" target="_blank" rel="noopener">CNN — US and Israeli airstrikes on Iran and retaliation maps</a><br><span class="note">미국·이스라엘 공격 이란 및 이란 보복 시각화</span></li>
+      <li><a href="https://iranstrikes.com/map" target="_blank" rel="noopener">IranStrikes.com — Interactive Crisis Map</a><br><span class="note">미·이스라엘/이란 공격 구분, 기지·공항 표시</span></li>
+      <li><a href="https://github.com/danielrosehill/Iran-Israel-War-2026-OSINT-Data" target="_blank" rel="noopener">Iran-Israel War 2026 OSINT Data (GitHub)</a><br><span class="note">True Promise 1~4 웨이브, 좌표·무기·피해. Kaggle·Hugging Face 동일 데이터셋</span></li>
+      <li><a href="https://acleddata.com/iran-crisis-live" target="_blank" rel="noopener">ACLED — Iran Crisis Live</a><br><span class="note">이란 위기 이벤트·지리 데이터 (API·다운로드, 계정 필요)</span></li>
+      <li><a href="https://www.bbc.com/news" target="_blank" rel="noopener">BBC News</a><br><span class="note">중동·이란·이스라엘 미사일·공격 보도</span></li>
+      <li><a href="https://www.aljazeera.com/" target="_blank" rel="noopener">Al Jazeera</a><br><span class="note">중동 지역 미사일·공격·피해 보도</span></li>
+      <li><a href="https://www.tehrantimes.com/" target="_blank" rel="noopener">Tehran Times / IRNA</a><br><span class="note">이란 측 공격·피해·당국 발표</span></li>
+      <li><a href="https://www.idf.il/" target="_blank" rel="noopener">IDF (Israel Defense Forces)</a><br><span class="note">이스라엘 군 공식 발표·작전 개요</span></li>
+    </ul>
+    <p style="margin-top:20px;font-size:12px;color:#64748b;">자료 수집·지도 표시: 서울대학교 행정대학원 고길곤 교수 연구실 · 아시아 지역정보센터. 교육·연구 목적.</p>
   </div>
   <script>
     var attackData = [
-      { 도시명: '테헤란', 영문명: 'Tehran', 위도: 35.6892, 경도: 51.3890, 공격유형: '정부 청사, 지도부 암살', 공격국: '미국/이스라엘', 피해규모: '매우 심각', 지역분류: '이란' },
-      { 도시명: '이스파한', 영문명: 'Isfahan', 위도: 32.6546, 경도: 51.6243, 공격유형: '군사 시설', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
+      { 도시명: '테헤란', 영문명: 'Tehran', 위도: 35.6892, 경도: 51.3890, 공격유형: '정부 청사, 지도부 암살', 공격국: '미국/이스라엘', 피해규모: '매우 심각', 지역분류: '이란', 피해설명: '수도 핵심. 공군·방공 파괴, 민간 구역 피해. 이란 발표 224명 이상 사망(Reuters·OSINT).' },
+      { 도시명: '이스파한', 영문명: 'Isfahan', 위도: 32.6546, 경도: 51.6243, 공격유형: '군사 시설', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란', 피해설명: '핵 관련 시설 인근. 군사·산업 시설 피해(Reuters·CNN).' },
       { 도시명: '곰', 영문명: 'Gom', 위도: 34.2996, 경도: 50.9676, 공격유형: '군사 기지', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
       { 도시명: '카라지', 영문명: 'Karaj', 위도: 35.8172, 경도: 50.9808, 공격유형: '군사 시설', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
       { 도시명: '케르만샤', 영문명: 'Kermanshah', 위도: 34.3141, 경도: 46.0981, 공격유형: '미사일 기지', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
       { 도시명: '타브리즈', 영문명: 'Tabriz', 위도: 38.0808, 경도: 46.2919, 공격유형: '미사일 발사대', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
       { 도시명: '카즈빈', 영문명: 'Qazvin', 위도: 36.2765, 경도: 50.0068, 공격유형: '공군 기지', 공격국: '미국/이스라엘', 피해규모: '중대', 지역분류: '이란' },
-      { 도시명: '텔아비브', 영문명: 'Tel Aviv', 위도: 32.0853, 경도: 34.7818, 공격유형: '민간 지역, 공항', 공격국: '이란', 피해규모: '심각', 지역분류: '이스라엘' },
-      { 도시명: '예루살렘', 영문명: 'Jerusalem', 위도: 31.7683, 경도: 35.2137, 공격유형: '구도심 지역', 공격국: '이란', 피해규모: '심각', 지역분류: '이스라엘' },
-      { 도시명: '하이파', 영문명: 'Haifa', 위도: 32.8193, 경도: 34.9526, 공격유형: '항구도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
+      { 도시명: '텔아비브', 영문명: 'Tel Aviv', 위도: 32.0853, 경도: 34.7818, 공격유형: '민간 지역, 공항', 공격국: '이란', 피해규모: '심각', 지역분류: '이스라엘', 피해설명: '아파트·건물 파괴, 민간인 사상. 이스라엘 발표 민간인 24명 사망(Reuters).' },
+      { 도시명: '예루살렘', 영문명: 'Jerusalem', 위도: 31.7683, 경도: 35.2137, 공격유형: '구도심 지역', 공격국: '이란', 피해규모: '심각', 지역분류: '이스라엘', 피해설명: '구도심·시설 피해(Reuters·OSINT).' },
+      { 도시명: '하이파', 영문명: 'Haifa', 위도: 32.8193, 경도: 34.9526, 공격유형: '항구도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘', 피해설명: '항구·시설 타격, 화재·연기 보도(Reuters).' },
       { 도시명: '베르셰바', 영문명: 'Beer Sheva', 위도: 31.2461, 경도: 34.7913, 공격유형: '남부 도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
       { 도시명: '아슈돗', 영문명: 'Ashdod', 위도: 31.8041, 경도: 34.6479, 공격유형: '항구도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
       { 도시명: '네타냐', 영문명: 'Netanya', 위도: 32.3384, 경도: 34.8683, 공격유형: '해안 도시', 공격국: '이란', 피해규모: '중대', 지역분류: '이스라엘' },
@@ -104,7 +156,7 @@
     attackData.forEach(function(d) {
       var r = radiusByDamage[d.피해규모] || 16000;
       var fill = fillByRegion[d.지역분류] || '#4ecdc4';
-      var pop = '<h4>' + d.도시명 + '</h4><table><tr><td>영문명</td><td>' + d.영문명 + '</td></tr><tr><td>공격 유형</td><td>' + d.공격유형 + '</td></tr><tr><td>공격국</td><td>' + d.공격국 + '</td></tr><tr><td>피해규모</td><td>' + d.피해규모 + '</td></tr><tr><td>지역</td><td>' + d.지역분류 + '</td></tr></table>';
+      var pop = '<h4>' + d.도시명 + '</h4><table><tr><td>영문명</td><td>' + d.영문명 + '</td></tr><tr><td>공격 유형</td><td>' + d.공격유형 + '</td></tr><tr><td>공격국</td><td>' + d.공격국 + '</td></tr><tr><td>피해규모</td><td>' + d.피해규모 + '</td></tr><tr><td>지역</td><td>' + d.지역분류 + '</td></tr>' + (d.피해설명 ? '<tr><td>피해 개요</td><td>' + d.피해설명 + '</td></tr>' : '') + '</table>';
       L.circle([d.위도, d.경도], { radius: r, color: fill, fillColor: fill, fillOpacity: 0.55, weight: 2 }).addTo(m).bindPopup(pop);
       L.marker([d.위도, d.경도], { icon: L.divIcon({ className: 'marker-dot', html: '<div style="width:10px;height:10px;background:' + fill + ';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>', iconSize: [14, 14] }) }).addTo(m).bindPopup(pop);
     });

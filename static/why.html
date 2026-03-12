@@ -102,6 +102,19 @@
     @media(max-width:600px){ .divider{display:none;} }
     .cred-desc { font-size: 13px; color: var(--muted); line-height: 1.75; flex: 1; }
 
+    /* ─ 협력기관 (partner institutions) ─ */
+    .partners-wrap { margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--border); }
+    .partners-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+    .partners-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    .partner-link { display: inline-flex; align-items: center; gap: 12px; padding: 12px 18px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); text-decoration: none; color: var(--text); transition: border-color .2s, box-shadow .2s; }
+    .partner-link:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .partner-link img { height: 36px; width: auto; max-width: 140px; object-fit: contain; display: block; }
+    .partner-link .partner-text { font-size: 14px; font-weight: 700; color: var(--text); }
+    .partner-link .partner-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .partner-logo { flex-shrink: 0; width: 80px; text-align: center; }
+    .partner-logo-fallback { font-size: 1.25rem; font-weight: 800; color: var(--accent); letter-spacing: .02em; }
+    @media(max-width:500px){ .partners-row { flex-direction: column; align-items: flex-start; } }
+
     /* ─ data freshness badge ─ */
     .dc-freshness { display: flex; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted2); line-height: 1.5; }
     .fresh-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
@@ -566,7 +579,32 @@
         <p>이 플랫폼은 <strong>서울대학교 행정대학원 고길곤 교수 연구실</strong>과 <strong>아시아 지역정보센터</strong>가 공동 구축한 데이터 기반 지역 분석 도구입니다.</p>
         <p>이란·이스라엘 갈등을 포함한 중동 지역의 정치·경제·안보 역학을 객관적 데이터로 이해하고, 감정과 이념이 아닌 수치와 근거에 기반한 정책 분석·교육을 지원하기 위해 제작되었습니다.</p>
         <p>활용 데이터: <strong>World Bank Open Data</strong> · <strong>Yahoo Finance (yfinance)</strong> · <strong>Freedom House Freedom in the World</strong> · <strong>V-Dem (Our World in Data)</strong> · <strong>World Bank WGI</strong> · <strong>AISHub / aisstream.io (선박 AIS)</strong> · <strong>EIA Open Data (에너지 통계)</strong></p>
-        <p style="margin:0; color:var(--muted2); font-size:12px;">※ 본 자료는 교육·연구 목적으로 제작되었으며, 특정 정치적 입장을 지지하지 않습니다.</p>
+        <p style="margin:0; color: var(--muted2); font-size:12px;">※ 본 자료는 교육·연구 목적으로 제작되었으며, 특정 정치적 입장을 지지하지 않습니다.</p>
+      </div>
+    </div>
+    <div class="partners-wrap">
+      <div class="partners-title">협력기관</div>
+      <div class="partners-row">
+        <a class="partner-link" href="https://www.snugdi.snu.ac.kr/home" target="_blank" rel="noopener noreferrer" title="서울대학교 GDI (Global Development Institute for Public Affairs)">
+          <span class="partner-logo">
+            <img src="https://www.snugdi.snu.ac.kr/images/logo.png" alt="서울대 GDI" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="partner-logo-fallback" style="display:none;">GDI</span>
+          </span>
+          <span style="display:flex; flex-direction:column;">
+            <span class="partner-text">서울대학교 GDI</span>
+            <span class="partner-sub">Global Development Institute for Public Affairs</span>
+          </span>
+        </a>
+        <a class="partner-link" href="https://snuac.snu.ac.kr/" target="_blank" rel="noopener noreferrer" title="서울대학교 아시아연구소">
+          <span class="partner-logo">
+            <img src="https://snuac.snu.ac.kr/wp-content/themes/snuac/images/logo.png" alt="서울대 아시아연구소" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="partner-logo-fallback" style="display:none;">SNUAC</span>
+          </span>
+          <span style="display:flex; flex-direction:column;">
+            <span class="partner-text">서울대학교 아시아연구소</span>
+            <span class="partner-sub">SNUAC</span>
+          </span>
+        </a>
       </div>
     </div>
   </div>
